@@ -22,6 +22,8 @@ add_library(
     source/memory.cpp
     source/value.cpp
     source/vm.cpp
+    source/scanner.cpp
+    source/compiler.cpp
 )
 
 target_include_directories(

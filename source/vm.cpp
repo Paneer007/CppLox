@@ -3,6 +3,7 @@
 #include <stdio.h>
 
 #include "common.hpp"
+#include "compiler.hpp"
 #include "debug.hpp"
 
 VM::VM()
@@ -16,11 +17,10 @@ void VM::initVM()
 }
 void VM::freeVM() {}
 
-InterpretResult VM::interpret(Chunk& chunk)
+InterpretResult VM::interpret(const char* source)
 {
-  this->chunk = &chunk;
-  this->ip = this->chunk->code;
-  return this->run();
+  compile(source);
+  return INTERPRET_OK;
 }
 
 InterpretResult VM::run()

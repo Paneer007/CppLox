@@ -33,7 +33,7 @@ public:
 
   static VM* getVM();
 
-  InterpretResult interpret(Chunk& chunk);
+  InterpretResult interpret(const char* source);
   InterpretResult run();
 
   void push(Value value);
