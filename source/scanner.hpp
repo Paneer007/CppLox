@@ -80,9 +80,11 @@ public:
   char advance();
   bool match(char expected);
   void skipWhitespace();
+  
   char peek();
   char peekNext();
   Token string();
+
   bool isDigit(char c);
   Token number();
 

@@ -19,8 +19,22 @@ void VM::freeVM() {}
 
 InterpretResult VM::interpret(const char* source)
 {
-  compile(source);
-  return INTERPRET_OK;
+  auto vm = VM::getVM();
+  Chunk chunk;
+  chunk.initChunk();
+
+  if (!compile(source, &chunk)) {
+    chunk.freeChunk();
+    return INTERPRET_COMPILE_ERROR;
+  }
+
+  vm->chunk = &chunk;
+  vm->ip = vm->chunk->code;
+
+  InterpretResult result = run();
+
+  chunk.freeChunk();
+  return result;
 }
 
 InterpretResult VM::run()
