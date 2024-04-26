@@ -21,6 +21,7 @@ add_library(
     source/debug.cpp
     source/memory.cpp
     source/value.cpp
+    source/vm.cpp
 )
 
 target_include_directories(
