@@ -38,6 +38,12 @@ public:
 
   void push(Value value);
   Value pop();
+  Value peek(int distance);
+
+  bool isFalsey(Value value);
+  bool valuesEqual(Value a, Value b);
+
+  void runtimeError(const char* format, ...);
 };
 
 #endif

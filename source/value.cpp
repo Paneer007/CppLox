@@ -35,5 +35,15 @@ void ValueArray::freeValueArray()
 
 void printValue(Value value)
 {
-  printf("%g", value);
+  switch (value.type) {
+    case VAL_BOOL:
+      printf(AS_BOOL(value) ? "true" : "false");
+      break;
+    case VAL_NIL:
+      printf("nil");
+      break;
+    case VAL_NUMBER:
+      printf("%g", AS_NUMBER(value));
+      break;
+  }
 }

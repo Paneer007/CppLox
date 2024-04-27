@@ -97,7 +97,6 @@ TokenType Scanner::identifierType()
 
 bool Scanner::isAtEnd()
 {
-  printf("%c", *this->current);
   return *(this->current) == '\0';
 }
 
