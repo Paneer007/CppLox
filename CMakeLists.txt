@@ -24,6 +24,7 @@ add_library(
     source/vm.cpp
     source/scanner.cpp
     source/compiler.cpp
+    source/object.cpp
 )
 
 target_include_directories(

@@ -2,10 +2,13 @@
 
 #include <stdarg.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "common.hpp"
 #include "compiler.hpp"
 #include "debug.hpp"
+#include "memory.hpp"
+#include "object.hpp"
 
 VM::VM()
 {
@@ -15,8 +18,12 @@ VM::VM()
 void VM::initVM()
 {
   this->resetStack();
+  this->objects = NULL;
 }
-void VM::freeVM() {}
+void VM::freeVM()
+{
+  freeObjects();
+}
 
 InterpretResult VM::interpret(const char* source)
 {
@@ -36,6 +43,21 @@ InterpretResult VM::interpret(const char* source)
 
   chunk.freeChunk();
   return result;
+}
+
+void VM::concatenate()
+{
+  ObjString* b = AS_STRING(pop());
+  ObjString* a = AS_STRING(pop());
+
+  int length = a->length + b->length;
+  char* chars = ALLOCATE(char, length + 1);
+  memcpy(chars, a->chars, a->length);
+  memcpy(chars + a->length, b->chars, b->length);
+  chars[length] = '\0';
+
+  ObjString* result = takeString(chars, length);
+  push(OBJ_VAL(result));
 }
 
 InterpretResult VM::run()
@@ -86,7 +108,16 @@ InterpretResult VM::run()
         break;
       }
       case OP_ADD: {
-        BINARY_OP(NUMBER_VAL, +);
+        if (IS_STRING(peek(0)) && IS_STRING(peek(1))) {
+          concatenate();
+        } else if (IS_NUMBER(peek(0)) && IS_NUMBER(peek(1))) {
+          double b = AS_NUMBER(pop());
+          double a = AS_NUMBER(pop());
+          push(NUMBER_VAL(a + b));
+        } else {
+          runtimeError("Operands must be two numbers or two strings.");
+          return INTERPRET_RUNTIME_ERROR;
+        }
         break;
       }
       case OP_SUBTRACT: {
@@ -181,22 +212,6 @@ void VM::runtimeError(const char* format, ...)
   int line = this->chunk->lines[instruction];
   fprintf(stderr, "[line %d] in script\n", line);
   resetStack();
-}
-
-bool VM::valuesEqual(Value a, Value b)
-{
-  if (a.type != b.type)
-    return false;
-  switch (a.type) {
-    case VAL_BOOL:
-      return AS_BOOL(a) == AS_BOOL(b);
-    case VAL_NIL:
-      return true;
-    case VAL_NUMBER:
-      return AS_NUMBER(a) == AS_NUMBER(b);
-    default:
-      return false;  // Unreachable.
-  }
 }
 
 VM* VM::vm = new VM;

@@ -18,6 +18,7 @@ private:
   VM();
 
   void resetStack();
+  void concatenate();
 
 public:
   static VM* vm;
@@ -27,6 +28,7 @@ public:
 
   Value stack[STACK_MAX];
   Value* stackTop;
+  Obj* objects;
 
   void initVM();
   void freeVM();
@@ -41,7 +43,6 @@ public:
   Value peek(int distance);
 
   bool isFalsey(Value value);
-  bool valuesEqual(Value a, Value b);
 
   void runtimeError(const char* format, ...);
 };
