@@ -19,10 +19,12 @@ void VM::initVM()
 {
   this->resetStack();
   this->objects = NULL;
+  this->strings.initTable();
 }
 void VM::freeVM()
 {
   freeObjects();
+  this->strings.freeTable();
 }
 
 InterpretResult VM::interpret(const char* source)

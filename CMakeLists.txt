@@ -25,6 +25,7 @@ add_library(
     source/scanner.cpp
     source/compiler.cpp
     source/object.cpp
+    source/table.cpp
 )
 
 target_include_directories(

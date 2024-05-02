@@ -2,6 +2,7 @@
 #define clox_vm_h
 
 #include "chunk.hpp"
+#include "table.hpp"
 
 #define STACK_MAX 256
 
@@ -28,6 +29,7 @@ public:
 
   Value stack[STACK_MAX];
   Value* stackTop;
+  Table strings;
   Obj* objects;
 
   void initVM();
