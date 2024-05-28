@@ -80,7 +80,7 @@ public:
   char advance();
   bool match(char expected);
   void skipWhitespace();
-  
+
   char peek();
   char peekNext();
   Token string();

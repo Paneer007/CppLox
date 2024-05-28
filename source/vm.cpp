@@ -20,10 +20,12 @@ void VM::initVM()
   this->resetStack();
   this->objects = NULL;
   this->strings.initTable();
+  this->globals.initTable();
 }
 void VM::freeVM()
 {
   freeObjects();
+  this->globals.freeTable();
   this->strings.freeTable();
 }
 
@@ -66,6 +68,7 @@ InterpretResult VM::run()
 {
 #define READ_BYTE() (*(this->ip++))
 #define READ_CONSTANT() (this->chunk->constants.values[READ_BYTE()])
+#define READ_STRING() AS_STRING(READ_CONSTANT())
 #define BINARY_OP(valueType, op) \
   do { \
     if (!IS_NUMBER(peek(0)) || !IS_NUMBER(peek(1))) { \
@@ -96,8 +99,6 @@ InterpretResult VM::run()
         break;
       }
       case OP_RETURN: {
-        printValue(pop());
-        printf("\n");
         return INTERPRET_OK;
       }
       case OP_NEGATE: {
@@ -162,12 +163,56 @@ InterpretResult VM::run()
         push(BOOL_VAL(valuesEqual(a, b)));
         break;
       }
+      case OP_PRINT: {
+        printValue(pop());
+        printf("\n");
+        break;
+      }
+      case OP_POP:
+        pop();
+        break;
+      case OP_DEFINE_GLOBAL: {
+        ObjString* name = READ_STRING();
+        this->globals.tableSet(name, peek(0));
+        pop();
+        break;
+      }
+      case OP_GET_GLOBAL: {
+        ObjString* name = READ_STRING();
+        Value value;
+        if (!this->globals.tableGet(name, &value)) {
+          runtimeError("Undefined variable '%s'.", name->chars);
+          return INTERPRET_RUNTIME_ERROR;
+        }
+        push(value);
+        break;
+      }
+      case OP_GET_LOCAL: {
+        uint8_t slot = READ_BYTE();
+        push(this->vm->stack[slot]);
+        break;
+      }
+      case OP_SET_LOCAL: {
+        uint8_t slot = READ_BYTE();
+        this->vm->stack[slot] = peek(0);
+        break;
+      }
+      case OP_SET_GLOBAL: {
+        ObjString* name = READ_STRING();
+        if (this->globals.tableSet(name, peek(0))) {
+          this->globals.tableDelete(name);
+          runtimeError("Undefined variable '%s'.", name->chars);
+          return INTERPRET_RUNTIME_ERROR;
+        }
+        break;
+      }
     }
   }
 
 #undef READ_BYTE
 #undef READ_CONSTANT
 #undef BINARY_OP
+#undef READ_STRING
 }
 
 VM* VM::getVM()
