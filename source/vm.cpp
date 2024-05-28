@@ -69,6 +69,8 @@ InterpretResult VM::run()
 #define READ_BYTE() (*(this->ip++))
 #define READ_CONSTANT() (this->chunk->constants.values[READ_BYTE()])
 #define READ_STRING() AS_STRING(READ_CONSTANT())
+#define READ_SHORT() \
+  (this->vm->ip += 2, (uint16_t)((this->vm->ip[-2] << 8) | this->vm->ip[-1]))
 #define BINARY_OP(valueType, op) \
   do { \
     if (!IS_NUMBER(peek(0)) || !IS_NUMBER(peek(1))) { \
@@ -197,6 +199,12 @@ InterpretResult VM::run()
         this->vm->stack[slot] = peek(0);
         break;
       }
+      case OP_JUMP_IF_FALSE: {
+        uint16_t offset = READ_SHORT();
+        if (isFalsey(peek(0)))
+          this->vm->ip += offset;
+        break;
+      }
       case OP_SET_GLOBAL: {
         ObjString* name = READ_STRING();
         if (this->globals.tableSet(name, peek(0))) {
@@ -206,6 +214,16 @@ InterpretResult VM::run()
         }
         break;
       }
+      case OP_LOOP: {
+        uint16_t offset = READ_SHORT();
+        this->vm->ip -= offset;
+        break;
+      }
+      case OP_JUMP: {
+        uint16_t offset = READ_SHORT();
+        this->vm->ip += offset;
+        break;
+      }
     }
   }
 
@@ -213,6 +231,7 @@ InterpretResult VM::run()
 #undef READ_CONSTANT
 #undef BINARY_OP
 #undef READ_STRING
+#undef READ_SHORT
 }
 
 VM* VM::getVM()
