@@ -2,7 +2,6 @@
 #define clox_chunk_h
 
 #include "common.hpp"
-#include "memory.hpp"
 #include "value.hpp"
 
 typedef enum
@@ -25,6 +24,7 @@ typedef enum
   OP_JUMP,
   OP_JUMP_IF_FALSE,
   OP_LOOP,
+  OP_CALL,
   OP_POP,
   OP_GET_LOCAL,
   OP_SET_LOCAL,

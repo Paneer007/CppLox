@@ -3,12 +3,18 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
+#include <time.h>
 
 #include "common.hpp"
 #include "compiler.hpp"
 #include "debug.hpp"
 #include "memory.hpp"
 #include "object.hpp"
+
+static Value clockNative(int argCount, Value* args)
+{
+  return NUMBER_VAL((double)clock() / CLOCKS_PER_SEC);
+}
 
 VM::VM()
 {
@@ -21,6 +27,8 @@ void VM::initVM()
   this->objects = NULL;
   this->strings.initTable();
   this->globals.initTable();
+
+  defineNative("clock", clockNative);
 }
 void VM::freeVM()
 {
@@ -31,22 +39,13 @@ void VM::freeVM()
 
 InterpretResult VM::interpret(const char* source)
 {
-  auto vm = VM::getVM();
-  Chunk chunk;
-  chunk.initChunk();
-
-  if (!compile(source, &chunk)) {
-    chunk.freeChunk();
+  ObjFunction* function = compile(source);
+  if (function == NULL)
     return INTERPRET_COMPILE_ERROR;
-  }
 
-  vm->chunk = &chunk;
-  vm->ip = vm->chunk->code;
-
-  InterpretResult result = run();
-
-  chunk.freeChunk();
-  return result;
+  push(OBJ_VAL(function));
+  this->call(function, 0);
+  return run();
 }
 
 void VM::concatenate()
@@ -66,11 +65,13 @@ void VM::concatenate()
 
 InterpretResult VM::run()
 {
-#define READ_BYTE() (*(this->ip++))
-#define READ_CONSTANT() (this->chunk->constants.values[READ_BYTE()])
-#define READ_STRING() AS_STRING(READ_CONSTANT())
+  CallFrame* frame = &this->frames[this->frameCount - 1];
+
+#define READ_BYTE() (*frame->ip++)
 #define READ_SHORT() \
-  (this->vm->ip += 2, (uint16_t)((this->vm->ip[-2] << 8) | this->vm->ip[-1]))
+  (frame->ip += 2, (uint16_t)((frame->ip[-2] << 8) | frame->ip[-1]))
+#define READ_CONSTANT() (frame->function->chunk.constants.values[READ_BYTE()])
+#define READ_STRING() AS_STRING(READ_CONSTANT())
 #define BINARY_OP(valueType, op) \
   do { \
     if (!IS_NUMBER(peek(0)) || !IS_NUMBER(peek(1))) { \
@@ -91,7 +92,8 @@ InterpretResult VM::run()
       printf(" ]");
     }
     printf("\n");
-    disassembleInstruction(this->chunk, (int)(this->ip - this->chunk->code));
+    disassembleInstruction(&frame->function->chunk,
+                           (int)(frame->ip - frame->function->chunk.code));
 #endif
     uint8_t instruction;
     switch (instruction = READ_BYTE()) {
@@ -101,7 +103,17 @@ InterpretResult VM::run()
         break;
       }
       case OP_RETURN: {
-        return INTERPRET_OK;
+        Value result = pop();
+        this->frameCount--;
+        if (this->frameCount == 0) {
+          pop();
+          return INTERPRET_OK;
+        }
+
+        this->stackTop = frame->slots;
+        push(result);
+        frame = &this->frames[this->frameCount - 1];
+        break;
       }
       case OP_NEGATE: {
         if (!IS_NUMBER(this->peek(0))) {
@@ -170,6 +182,14 @@ InterpretResult VM::run()
         printf("\n");
         break;
       }
+      case OP_CALL: {
+        int argCount = READ_BYTE();
+        if (!callValue(peek(argCount), argCount)) {
+          return INTERPRET_RUNTIME_ERROR;
+        }
+        frame = &this->frames[this->frameCount - 1];
+        break;
+      }
       case OP_POP:
         pop();
         break;
@@ -191,18 +211,18 @@ InterpretResult VM::run()
       }
       case OP_GET_LOCAL: {
         uint8_t slot = READ_BYTE();
-        push(this->vm->stack[slot]);
+        push(frame->slots[slot]);
         break;
       }
       case OP_SET_LOCAL: {
         uint8_t slot = READ_BYTE();
-        this->vm->stack[slot] = peek(0);
+        frame->slots[slot] = peek(0);
         break;
       }
       case OP_JUMP_IF_FALSE: {
         uint16_t offset = READ_SHORT();
         if (isFalsey(peek(0)))
-          this->vm->ip += offset;
+          frame->ip += offset;
         break;
       }
       case OP_SET_GLOBAL: {
@@ -216,12 +236,12 @@ InterpretResult VM::run()
       }
       case OP_LOOP: {
         uint16_t offset = READ_SHORT();
-        this->vm->ip -= offset;
+        frame->ip -= offset;
         break;
       }
       case OP_JUMP: {
         uint16_t offset = READ_SHORT();
-        this->vm->ip += offset;
+        frame->ip += offset;
         break;
       }
     }
@@ -242,6 +262,7 @@ VM* VM::getVM()
 void VM::resetStack()
 {
   this->stackTop = this->stack;
+  this->frameCount = 0;
 }
 
 void VM::push(Value value)
@@ -261,6 +282,47 @@ Value VM::peek(int distance)
   return this->stackTop[-1 - distance];
 }
 
+bool VM::call(ObjFunction* function, int argCount)
+{
+  if (argCount != function->arity) {
+    runtimeError(
+        "Expected %d arguments but got %d.", function->arity, argCount);
+    return false;
+  }
+
+  if (this->frameCount == FRAMES_MAX) {
+    runtimeError("Stack overflow.");
+    return false;
+  }
+
+  CallFrame* frame = &this->frames[this->frameCount++];
+  frame->function = function;
+  frame->ip = function->chunk.code;
+  frame->slots = this->stackTop - argCount - 1;
+  return true;
+}
+
+bool VM::callValue(Value callee, int argCount)
+{
+  if (IS_OBJ(callee)) {
+    switch (OBJ_TYPE(callee)) {
+      case OBJ_FUNCTION:
+        return call(AS_FUNCTION(callee), argCount);
+      case OBJ_NATIVE: {
+        NativeFn native = AS_NATIVE(callee);
+        Value result = native(argCount, this->stackTop - argCount);
+        this->stackTop -= argCount + 1;
+        push(result);
+        return true;
+      }
+      default:
+        break;  // Non-callable object type.
+    }
+  }
+  this->runtimeError("Can only call functions and classes.");
+  return false;
+}
+
 bool VM::isFalsey(Value value)
 {
   return IS_NIL(value) || (IS_BOOL(value) && !AS_BOOL(value));
@@ -274,10 +336,34 @@ void VM::runtimeError(const char* format, ...)
   va_end(args);
   fputs("\n", stderr);
 
-  size_t instruction = this->ip - this->chunk->code - 1;
-  int line = this->chunk->lines[instruction];
+  CallFrame* frame = &this->frames[this->frameCount - 1];
+  size_t instruction = frame->ip - frame->function->chunk.code - 1;
+  int line = frame->function->chunk.lines[instruction];
+
   fprintf(stderr, "[line %d] in script\n", line);
+
+  for (int i = this->frameCount - 1; i >= 0; i--) {
+    CallFrame* frame = &this->frames[i];
+    ObjFunction* function = frame->function;
+    size_t instruction = frame->ip - function->chunk.code - 1;
+    fprintf(stderr, "[line %d] in ", function->chunk.lines[instruction]);
+    if (function->name == NULL) {
+      fprintf(stderr, "script\n");
+    } else {
+      fprintf(stderr, "%s()\n", function->name->chars);
+    }
+  }
+
   resetStack();
+}
+
+void VM::defineNative(const char* name, NativeFn function)
+{
+  push(OBJ_VAL(copyString(name, (int)strlen(name))));
+  push(OBJ_VAL(newNative(function)));
+  this->globals.tableSet(AS_STRING(this->stack[0]), this->stack[1]);
+  pop();
+  pop();
 }
 
 VM* VM::vm = new VM;

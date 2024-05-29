@@ -18,14 +18,14 @@ include(cmake/variables.cmake)
 add_library(
     CppLox_lib OBJECT
     source/chunk.cpp
+    source/compiler.cpp
     source/debug.cpp
     source/memory.cpp
+    source/object.cpp
+    source/scanner.cpp
+    source/table.cpp
     source/value.cpp
     source/vm.cpp
-    source/scanner.cpp
-    source/compiler.cpp
-    source/object.cpp
-    source/table.cpp
 )
 
 target_include_directories(

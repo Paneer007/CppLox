@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "memory.h"
+#include "memory.hpp"
 #include "table.hpp"
 #include "value.hpp"
 #include "vm.hpp"
@@ -21,6 +21,15 @@ static uint32_t hashString(const char* key, int length)
   return hash;
 }
 
+static void printFunction(ObjFunction* function)
+{
+  if (function->name == NULL) {
+    printf("<script>");
+    return;
+  }
+  printf("<fn %s>", function->name->chars);
+}
+
 static Obj* allocateObject(size_t size, ObjType type)
 {
   VM* vm = VM::getVM();
@@ -29,6 +38,22 @@ static Obj* allocateObject(size_t size, ObjType type)
   object->next = vm->objects;
   vm->objects = object;
   return object;
+}
+
+ObjFunction* newFunction()
+{
+  ObjFunction* function = ALLOCATE_OBJ(ObjFunction, OBJ_FUNCTION);
+  function->arity = 0;
+  function->name = NULL;
+  function->chunk.initChunk();
+  return function;
+}
+
+ObjNative* newNative(NativeFn function)
+{
+  ObjNative* native = ALLOCATE_OBJ(ObjNative, OBJ_NATIVE);
+  native->function = function;
+  return native;
 }
 
 static ObjString* allocateString(char* chars, int length, uint32_t hash)
@@ -64,8 +89,14 @@ ObjString* takeString(char* chars, int length)
 void printObject(Value value)
 {
   switch (OBJ_TYPE(value)) {
+    case OBJ_FUNCTION:
+      printFunction(AS_FUNCTION(value));
+      break;
     case OBJ_STRING:
       printf("%s", AS_CSTRING(value));
+      break;
+    case OBJ_NATIVE:
+      printf("<native fn>");
       break;
   }
 }
