@@ -85,6 +85,14 @@ int disassembleInstruction(Chunk* chunk, int offset)
       return simpleInstruction("OP_LESS", offset);
     case OP_PRINT:
       return simpleInstruction("OP_PRINT", offset);
+    case OP_CLOSURE: {
+      offset++;
+      uint8_t constant = chunk->code[offset++];
+      printf("%-16s %4d ", "OP_CLOSURE", constant);
+      printValue(chunk->constants.values[constant]);
+      printf("\n");
+      return offset;
+    }
     case OP_POP:
       return simpleInstruction("OP_POP", offset);
     case OP_DEFINE_GLOBAL:

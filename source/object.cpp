@@ -89,6 +89,9 @@ ObjString* takeString(char* chars, int length)
 void printObject(Value value)
 {
   switch (OBJ_TYPE(value)) {
+    case OBJ_CLOSURE:
+      printFunction(AS_CLOSURE(value)->function);
+      break;
     case OBJ_FUNCTION:
       printFunction(AS_FUNCTION(value));
       break;
@@ -99,4 +102,11 @@ void printObject(Value value)
       printf("<native fn>");
       break;
   }
+}
+
+ObjClosure* newClosure(ObjFunction* function)
+{
+  ObjClosure* closure = ALLOCATE_OBJ(ObjClosure, OBJ_CLOSURE);
+  closure->function = function;
+  return closure;
 }

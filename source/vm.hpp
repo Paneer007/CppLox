@@ -10,7 +10,7 @@
 class CallFrame
 {
 public:
-  ObjFunction* function;
+  ObjClosure* closure;
   uint8_t* ip;
   Value* slots;
 };
@@ -30,7 +30,7 @@ private:
   void resetStack();
   void concatenate();
 
-  bool call(ObjFunction* function, int argCount);
+  bool call(ObjClosure* closure, int argCount);
   bool callValue(Value callee, int argCount);
 
 public:

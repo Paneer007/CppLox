@@ -8,8 +8,10 @@
 #define OBJ_TYPE(value) (AS_OBJ(value)->type)
 #define IS_FUNCTION(value) isObjType(value, OBJ_FUNCTION)
 #define IS_STRING(value) isObjType(value, OBJ_STRING)
+#define IS_CLOSURE(value) isObjType(value, OBJ_CLOSURE)
 #define IS_NATIVE(value) isObjType(value, OBJ_NATIVE)
 
+#define AS_CLOSURE(value) ((ObjClosure*)AS_OBJ(value))
 #define AS_FUNCTION(value) ((ObjFunction*)AS_OBJ(value))
 #define AS_STRING(value) ((ObjString*)AS_OBJ(value))
 #define AS_CSTRING(value) (((ObjString*)AS_OBJ(value))->chars)
@@ -17,6 +19,7 @@
 
 typedef enum
 {
+  OBJ_CLOSURE,
   OBJ_FUNCTION,
   OBJ_NATIVE,
   OBJ_STRING,
@@ -46,6 +49,13 @@ public:
   ObjString* name;
 };
 
+class ObjClosure
+{
+public:
+  Obj obj;
+  ObjFunction* function;
+};
+
 typedef Value (*NativeFn)(int argCount, Value* args);
 
 class ObjNative
@@ -64,6 +74,7 @@ ObjString* copyString(const char* chars, int length);
 ObjString* takeString(char* chars, int length);
 ObjFunction* newFunction();
 ObjNative* newNative(NativeFn function);
+ObjClosure* newClosure(ObjFunction* function);
 
 void printObject(Value value);
 
