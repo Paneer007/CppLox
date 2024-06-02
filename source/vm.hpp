@@ -43,6 +43,7 @@ public:
   Value* stackTop;
   Table strings;
   Table globals;
+  ObjUpvalue* openUpvalues;
   Obj* objects;
 
   void initVM();

@@ -23,6 +23,7 @@ typedef enum
   OBJ_FUNCTION,
   OBJ_NATIVE,
   OBJ_STRING,
+  OBJ_UPVALUE
 } ObjType;
 
 class Obj
@@ -30,6 +31,15 @@ class Obj
 public:
   ObjType type;
   Obj* next;
+};
+
+class ObjUpvalue
+{
+public:
+  Obj obj;
+  Value* location;
+  Value closed;
+  ObjUpvalue* next;
 };
 
 class ObjString : public Obj
@@ -45,6 +55,7 @@ class ObjFunction
 public:
   Obj obj;
   int arity;
+  int upvalueCount;
   Chunk chunk;
   ObjString* name;
 };
@@ -54,6 +65,8 @@ class ObjClosure
 public:
   Obj obj;
   ObjFunction* function;
+  ObjUpvalue** upvalues;
+  int upvalueCount;
 };
 
 typedef Value (*NativeFn)(int argCount, Value* args);
@@ -75,6 +88,7 @@ ObjString* takeString(char* chars, int length);
 ObjFunction* newFunction();
 ObjNative* newNative(NativeFn function);
 ObjClosure* newClosure(ObjFunction* function);
+ObjUpvalue* newUpvalue(Value* slot);
 
 void printObject(Value value);
 
