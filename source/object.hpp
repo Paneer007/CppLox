@@ -30,6 +30,7 @@ class Obj
 {
 public:
   ObjType type;
+  bool isMarked;
   Obj* next;
 };
 

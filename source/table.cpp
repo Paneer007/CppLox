@@ -138,6 +138,25 @@ ObjString* Table::tableFindString(const char* chars, int length, uint32_t hash)
   }
 }
 
+void Table::markTable()
+{
+  for (int i = 0; i < this->capacity; i++) {
+    Entry* entry = &this->entries[i];
+    markObject((Obj*)entry->key);
+    markValue(entry->value);
+  }
+}
+
+void Table::tableRemoveWhite()
+{
+  for (int i = 0; i < this->capacity; i++) {
+    Entry* entry = &this->entries[i];
+    if (entry->key != NULL && !entry->key->isMarked) {
+      this->tableDelete(entry->key);
+    }
+  }
+}
+
 void tableAddAll(Table* from, Table* to)
 {
   for (int i = 0; i < from->capacity; i++) {

@@ -27,6 +27,9 @@ public:
   bool tableDelete(ObjString* key);
 
   ObjString* tableFindString(const char* chars, int length, uint32_t hash);
+
+  void markTable();
+  void tableRemoveWhite();
 };
 
 void tableAddAll(Table* from, Table* to);

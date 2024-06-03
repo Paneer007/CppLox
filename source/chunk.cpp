@@ -1,8 +1,10 @@
 #include "chunk.hpp"
-#include "memory.hpp"
 
 #include <stdio.h>
 #include <stdlib.h>
+
+#include "memory.hpp"
+#include "vm.hpp"
 
 Chunk::Chunk()
 {
@@ -42,6 +44,9 @@ void Chunk::freeChunk()
 
 int Chunk::addConstant(Value value)
 {
+  auto vm = VM::getVM();
+  vm->push(value);
   this->constants.writeValueArray(value);
+  vm->pop();
   return this->constants.count - 1;
 }
