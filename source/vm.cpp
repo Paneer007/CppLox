@@ -69,13 +69,17 @@ void VM::initVM()
   this->strings.initTable();
   this->globals.initTable();
 
+  this->initString = NULL;
+  this->initString = copyString("init", 4);
+
   defineNative("clock", clockNative);
 }
 void VM::freeVM()
 {
-  freeObjects();
   this->globals.freeTable();
   this->strings.freeTable();
+  freeObjects();
+  this->initString = NULL;
 }
 
 InterpretResult VM::interpret(const char* source)
@@ -90,6 +94,14 @@ InterpretResult VM::interpret(const char* source)
   push(OBJ_VAL(closure));
   call(closure, 0);
   return run();
+}
+
+void VM::defineMethod(ObjString* name)
+{
+  Value method = peek(0);
+  ObjClass* klass = AS_CLASS(peek(1));
+  klass->methods.tableSet(name, method);
+  pop();
 }
 
 void VM::concatenate()
@@ -107,6 +119,20 @@ void VM::concatenate()
   pop();
   pop();
   push(OBJ_VAL(result));
+}
+
+bool VM::bindMethod(ObjClass* klass, ObjString* name)
+{
+  Value method;
+  if (!klass->methods.tableGet(name, &method)) {
+    runtimeError("Undefined property '%s'.", name->chars);
+    return false;
+  }
+
+  ObjBoundMethod* bound = newBoundMethod(peek(0), AS_CLOSURE(method));
+  pop();
+  push(OBJ_VAL(bound));
+  return true;
 }
 
 InterpretResult VM::run()
@@ -225,7 +251,9 @@ InterpretResult VM::run()
         push(BOOL_VAL(valuesEqual(a, b)));
         break;
       }
-
+      case OP_METHOD:
+        defineMethod(READ_STRING());
+        break;
       case OP_CLASS:
         push(OBJ_VAL(newClass(READ_STRING())));
         break;
@@ -301,8 +329,10 @@ InterpretResult VM::run()
           push(value);
           break;
         }
-        runtimeError("Undefined property '%s'.", name->chars);
-        return INTERPRET_RUNTIME_ERROR;
+        if (!bindMethod(instance->klass, name)) {
+          return INTERPRET_RUNTIME_ERROR;
+        }
+        break;
       }
       case OP_SET_PROPERTY: {
         if (!IS_INSTANCE(peek(1))) {
@@ -353,6 +383,15 @@ InterpretResult VM::run()
       case OP_JUMP: {
         uint16_t offset = READ_SHORT();
         frame->ip += offset;
+        break;
+      }
+      case OP_INVOKE: {
+        ObjString* method = READ_STRING();
+        int argCount = READ_BYTE();
+        if (!invoke(method, argCount)) {
+          return INTERPRET_RUNTIME_ERROR;
+        }
+        frame = &this->frames[this->frameCount - 1];
         break;
       }
     }
@@ -419,9 +458,23 @@ bool VM::callValue(Value callee, int argCount)
 {
   if (IS_OBJ(callee)) {
     switch (OBJ_TYPE(callee)) {
+      case OBJ_BOUND_METHOD: {
+        ObjBoundMethod* bound = AS_BOUND_METHOD(callee);
+        this->stackTop[-argCount - 1] = bound->receiver;
+
+        return call(bound->method, argCount);
+      }
       case OBJ_CLASS: {
         ObjClass* klass = AS_CLASS(callee);
         this->stackTop[-argCount - 1] = OBJ_VAL(newInstance(klass));
+        Value initializer;
+        if (klass->methods.tableGet(this->initString, &initializer)) {
+          return call(AS_CLOSURE(initializer), argCount);
+        } else if (argCount != 0) {
+          runtimeError("Expected 0 arguments but got %d.", argCount);
+          return false;
+        }
+
         return true;
       }
       case OBJ_CLOSURE:
@@ -439,6 +492,33 @@ bool VM::callValue(Value callee, int argCount)
   }
   this->runtimeError("Can only call functions and classes.");
   return false;
+}
+
+bool VM::invokeFromClass(ObjClass* klass, ObjString* name, int argCount)
+{
+  Value method;
+  if (!klass->methods.tableGet(name, &method)) {
+    runtimeError("Undefined property '%s'.", name->chars);
+    return false;
+  }
+  return call(AS_CLOSURE(method), argCount);
+}
+
+bool VM::invoke(ObjString* name, int argCount)
+{
+  Value receiver = peek(argCount);
+  if (!IS_INSTANCE(receiver)) {
+    runtimeError("Only instances have methods.");
+    return false;
+  }
+  ObjInstance* instance = AS_INSTANCE(receiver);
+
+  Value value;
+  if (instance->fields.tableGet(name, &value)) {
+    this->stackTop[-argCount - 1] = value;
+    return callValue(value, argCount);
+  }
+  return invokeFromClass(instance->klass, name, argCount);
 }
 
 bool VM::isFalsey(Value value)

@@ -13,7 +13,9 @@
 #define IS_NATIVE(value) isObjType(value, OBJ_NATIVE)
 #define IS_CLASS(value) isObjType(value, OBJ_CLASS)
 #define IS_INSTANCE(value) isObjType(value, OBJ_INSTANCE)
+#define IS_BOUND_METHOD(value) isObjType(value, OBJ_BOUND_METHOD)
 
+#define AS_BOUND_METHOD(value) ((ObjBoundMethod*)AS_OBJ(value))
 #define AS_CLASS(value) ((ObjClass*)AS_OBJ(value))
 #define AS_CLOSURE(value) ((ObjClosure*)AS_OBJ(value))
 #define AS_FUNCTION(value) ((ObjFunction*)AS_OBJ(value))
@@ -24,6 +26,7 @@
 
 typedef enum
 {
+  OBJ_BOUND_METHOD,
   OBJ_CLASS,
   OBJ_CLOSURE,
   OBJ_INSTANCE,
@@ -82,14 +85,24 @@ class ObjClass
 public:
   Obj obj;
   ObjString* name;
+  Table methods;
 };
 
-typedef struct
+class ObjInstance
 {
+public:
   Obj obj;
   ObjClass* klass;
   Table fields;
-} ObjInstance;
+};
+
+class ObjBoundMethod
+{
+public:
+  Obj obj;
+  Value receiver;
+  ObjClosure* method;
+};
 
 typedef Value (*NativeFn)(int argCount, Value* args);
 
@@ -113,6 +126,7 @@ ObjNative* newNative(NativeFn function);
 ObjClosure* newClosure(ObjFunction* function);
 ObjUpvalue* newUpvalue(Value* slot);
 ObjInstance* newInstance(ObjClass* klass);
+ObjBoundMethod* newBoundMethod(Value receiver, ObjClosure* method);
 
 void printObject(Value value);
 

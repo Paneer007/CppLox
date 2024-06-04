@@ -50,6 +50,7 @@ public:
   int grayCount;
   int grayCapacity;
   Obj** grayStack;
+  ObjString* initString;
 
   void initVM();
   void freeVM();
@@ -64,10 +65,12 @@ public:
   Value peek(int distance);
 
   bool isFalsey(Value value);
-
   void defineNative(const char* name, NativeFn function);
-
   void runtimeError(const char* format, ...);
+  void defineMethod(ObjString* name);
+  bool bindMethod(ObjClass* klass, ObjString* name);
+  bool invoke(ObjString* name, int argCount);
+  bool invokeFromClass(ObjClass* klass, ObjString* name, int argCount);
 };
 
 #endif

@@ -25,6 +25,7 @@ typedef enum
   OP_JUMP_IF_FALSE,
   OP_LOOP,
   OP_CALL,
+  OP_INVOKE,
   OP_CLOSURE,
   OP_GET_UPVALUE,
   OP_SET_UPVALUE,
@@ -36,6 +37,7 @@ typedef enum
   OP_DEFINE_GLOBAL,
   OP_CLOSE_UPVALUE,
   OP_CLASS,
+  OP_METHOD,
   OP_GET_GLOBAL,
   OP_SET_GLOBAL,
 } OpCode;

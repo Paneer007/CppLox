@@ -1,18 +1,12 @@
-fun outer() {
-  var x = "value";
-  fun middle() {
-    fun inner() {
-      print x;
+class Oops {
+  init() {
+    fun f() {
+      print "not a method";
     }
 
-    print "create inner closure";
-    return inner;
+    this.field = f;
   }
-
-  print "return from outer";
-  return middle;
 }
 
-var mid = outer();
-var in = mid();
-in();
+var oops = Oops();
+oops.field();
