@@ -18,7 +18,7 @@ void Table::initTable()
 
 static Entry* findEntry(Entry* entries, int capacity, ObjString* key)
 {
-  uint32_t index = key->hash % capacity;
+  uint32_t index = key->hash & (capacity - 1);
   Entry* tombstone = NULL;
   for (;;) {
     Entry* entry = &entries[index];
@@ -35,7 +35,7 @@ static Entry* findEntry(Entry* entries, int capacity, ObjString* key)
       // We found the key.
       return entry;
     }
-    index = (index + 1) % capacity;
+    index = (index + 1) & (capacity - 1);
   }
 }
 
@@ -120,7 +120,7 @@ ObjString* Table::tableFindString(const char* chars, int length, uint32_t hash)
   if (this->count == 0)
     return NULL;
 
-  uint32_t index = hash % this->capacity;
+  uint32_t index = hash & (this->capacity - 1);
   for (;;) {
     Entry* entry = &this->entries[index];
     if (entry->key == NULL) {
@@ -134,7 +134,7 @@ ObjString* Table::tableFindString(const char* chars, int length, uint32_t hash)
       return entry->key;
     }
 
-    index = (index + 1) % this->capacity;
+    index = (index + 1) & (this->capacity - 1);
   }
 }
 
