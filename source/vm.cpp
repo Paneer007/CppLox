@@ -78,8 +78,9 @@ void VM::freeVM()
 {
   this->globals.freeTable();
   this->strings.freeTable();
-  freeObjects();
   this->initString = NULL;
+  freeObjects();
+
 }
 
 InterpretResult VM::interpret(const char* source)
@@ -490,7 +491,6 @@ bool VM::callValue(Value callee, int argCount)
       case OBJ_BOUND_METHOD: {
         ObjBoundMethod* bound = AS_BOUND_METHOD(callee);
         this->stackTop[-argCount - 1] = bound->receiver;
-
         return call(bound->method, argCount);
       }
       case OBJ_CLASS: {
