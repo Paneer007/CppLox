@@ -8,8 +8,8 @@
 #include "value.hpp"
 #include "vm.hpp"
 
-#define ALLOCATE_OBJ(type, objectType) \
-  (type*)allocateObject(sizeof(type), objectType)
+// #define ALLOCATE_OBJ(type, objectType) \
+//   (type*)allocateObject(sizeof(type), objectType)
 
 static uint32_t hashString(const char* key, int length)
 {
@@ -46,9 +46,15 @@ static Obj* allocateObject(size_t size, ObjType type)
   return object;
 }
 
+template<typename T>
+T* ALLOCATE_OBJ(ObjType x)
+{
+  return (T*)allocateObject(sizeof(T), x);
+}
+
 ObjBoundMethod* newBoundMethod(Value receiver, ObjClosure* method)
 {
-  ObjBoundMethod* bound = ALLOCATE_OBJ(ObjBoundMethod, OBJ_BOUND_METHOD);
+  ObjBoundMethod* bound = ALLOCATE_OBJ<ObjBoundMethod>(OBJ_BOUND_METHOD);
   bound->receiver = receiver;
   bound->method = method;
   return bound;
@@ -56,7 +62,7 @@ ObjBoundMethod* newBoundMethod(Value receiver, ObjClosure* method)
 
 ObjClass* newClass(ObjString* name)
 {
-  ObjClass* klass = ALLOCATE_OBJ(ObjClass, OBJ_CLASS);
+  ObjClass* klass = ALLOCATE_OBJ<ObjClass>(OBJ_CLASS);
   klass->name = name;
   klass->methods.initTable();
   return klass;
@@ -64,7 +70,7 @@ ObjClass* newClass(ObjString* name)
 
 ObjFunction* newFunction()
 {
-  ObjFunction* function = ALLOCATE_OBJ(ObjFunction, OBJ_FUNCTION);
+  ObjFunction* function = ALLOCATE_OBJ<ObjFunction>(OBJ_FUNCTION);
   function->arity = 0;
   function->upvalueCount = 0;
   function->name = NULL;
@@ -74,7 +80,7 @@ ObjFunction* newFunction()
 
 ObjNative* newNative(NativeFn function)
 {
-  ObjNative* native = ALLOCATE_OBJ(ObjNative, OBJ_NATIVE);
+  ObjNative* native = ALLOCATE_OBJ<ObjNative>(OBJ_NATIVE);
   native->function = function;
   return native;
 }
@@ -82,7 +88,7 @@ ObjNative* newNative(NativeFn function)
 static ObjString* allocateString(char* chars, int length, uint32_t hash)
 {
   VM* vm = VM::getVM();
-  ObjString* string = ALLOCATE_OBJ(ObjString, OBJ_STRING);
+  ObjString* string = ALLOCATE_OBJ<ObjString>(OBJ_STRING);
   string->length = length;
   string->chars = chars;
   string->hash = hash;
@@ -143,7 +149,7 @@ void printObject(Value value)
 
 ObjUpvalue* newUpvalue(Value* slot)
 {
-  ObjUpvalue* upvalue = ALLOCATE_OBJ(ObjUpvalue, OBJ_UPVALUE);
+  ObjUpvalue* upvalue = ALLOCATE_OBJ<ObjUpvalue>(OBJ_UPVALUE);
   upvalue->closed = NIL_VAL;
   upvalue->location = slot;
   upvalue->next = NULL;
@@ -157,7 +163,7 @@ ObjClosure* newClosure(ObjFunction* function)
     upvalues[i] = NULL;
   }
 
-  ObjClosure* closure = ALLOCATE_OBJ(ObjClosure, OBJ_CLOSURE);
+  ObjClosure* closure = ALLOCATE_OBJ<ObjClosure>(OBJ_CLOSURE);
   closure->function = function;
   closure->upvalues = upvalues;
   closure->upvalueCount = function->upvalueCount;
@@ -166,7 +172,7 @@ ObjClosure* newClosure(ObjFunction* function)
 
 ObjInstance* newInstance(ObjClass* klass)
 {
-  ObjInstance* instance = ALLOCATE_OBJ(ObjInstance, OBJ_INSTANCE);
+  ObjInstance* instance = ALLOCATE_OBJ<ObjInstance>(OBJ_INSTANCE);
   instance->klass = klass;
   instance->fields.initTable();
   return instance;

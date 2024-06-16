@@ -143,7 +143,7 @@ static void advance()
 
 static uint8_t makeConstant(Value value)
 {
-  int constant = currentChunk()->addConstant(value);
+  auto constant = currentChunk()->addConstant(value);
   if (constant > UINT8_MAX) {
     error("Too many constants in one chunk.");
     return 0;
@@ -212,7 +212,7 @@ static void emitConstant(Value value)
 static void patchJump(int offset)
 {
   // -2 to adjust for the bytecode for the jump offset itself.
-  int jump = currentChunk()->count - offset - 2;
+  auto jump = currentChunk()->count - offset - 2;
 
   if (jump > UINT16_MAX) {
     error("Too much code to jump over.");
@@ -238,7 +238,7 @@ static void initCompiler(Compiler* compiler, FunctionType type)
         copyString(parser.previous.start, parser.previous.length);
   }
 
-  Local* local = &current->locals[current->localCount++];
+  auto local = &current->locals[current->localCount++];
   local->depth = 0;
   local->isCaptured = false;
   if (type != TYPE_FUNCTION) {
@@ -308,7 +308,7 @@ static bool identifiersEqual(Token* a, Token* b)
 static int resolveLocal(Compiler* compiler, Token* name)
 {
   for (int i = compiler->localCount - 1; i >= 0; i--) {
-    Local* local = &compiler->locals[i];
+    auto local = &compiler->locals[i];
     if (identifiersEqual(name, &local->name)) {
       if (local->depth == -1) {
         error("Can't read local variable in its own initializer.");
@@ -366,7 +366,7 @@ static void addLocal(Token name)
     error("Too many local variables in function.");
     return;
   }
-  Local* local = &current->locals[current->localCount++];
+  auto local = &current->locals[current->localCount++];
   local->name = name;
   local->depth = -1;
   local->isCaptured = false;
@@ -385,9 +385,9 @@ static void declareVariable()
     return;
   }
 
-  Token* name = &parser.previous;
+  auto name = &parser.previous;
   for (int i = current->localCount - 1; i >= 0; i--) {
-    Local* local = &current->locals[i];
+    auto local = &current->locals[i];
     if (local->depth != -1 && local->depth < current->scopeDepth) {
       break;
     }
@@ -797,11 +797,11 @@ static void ifStatement()
   expression();
   consume(TOKEN_RIGHT_PAREN, "Expect ')' after condition.");
 
-  int thenJump = emitJump(OP_JUMP_IF_FALSE);
+  auto thenJump = emitJump(OP_JUMP_IF_FALSE);
   emitByte(OP_POP);
   statement();
 
-  int elseJump = emitJump(OP_JUMP);
+  auto elseJump = emitJump(OP_JUMP);
 
   patchJump(thenJump);
   emitByte(OP_POP);
@@ -837,12 +837,12 @@ static void returnStatement()
 
 static void whileStatement()
 {
-  int loopStart = currentChunk()->count;
+  auto loopStart = currentChunk()->count;
   consume(TOKEN_LEFT_PAREN, "Expect '(' after 'while'.");
   expression();
   consume(TOKEN_RIGHT_PAREN, "Expect ')' after condition.");
 
-  int exitJump = emitJump(OP_JUMP_IF_FALSE);
+  auto exitJump = emitJump(OP_JUMP_IF_FALSE);
   emitByte(OP_POP);
   statement();
   emitLoop(loopStart);
@@ -948,7 +948,7 @@ static void parsePrecedence(Precedence precedence)
 }
 static void unary(bool canAssign)
 {
-  TokenType operatorType = parser.previous.type;
+  auto operatorType = parser.previous.type;
 
   // Compile the operand.
   parsePrecedence(PREC_UNARY);

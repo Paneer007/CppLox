@@ -61,55 +61,49 @@ public:
   uint32_t hash;
 };
 
-class ObjFunction
+class ObjFunction : public Obj
 {
 public:
-  Obj obj;
   int arity;
   int upvalueCount;
   Chunk chunk;
   ObjString* name;
 };
 
-class ObjClosure
+class ObjClosure : public Obj
 {
 public:
-  Obj obj;
   ObjFunction* function;
   ObjUpvalue** upvalues;
   int upvalueCount;
 };
 
-class ObjClass
+class ObjClass : public Obj
 {
 public:
-  Obj obj;
   ObjString* name;
   Table methods;
 };
 
-class ObjInstance
+class ObjInstance : public Obj
 {
 public:
-  Obj obj;
   ObjClass* klass;
   Table fields;
 };
 
-class ObjBoundMethod
+class ObjBoundMethod : public Obj
 {
 public:
-  Obj obj;
   Value receiver;
   ObjClosure* method;
 };
 
 typedef Value (*NativeFn)(int argCount, Value* args);
 
-class ObjNative
+class ObjNative : public Obj
 {
 public:
-  Obj obj;
   NativeFn function;
 };
 
