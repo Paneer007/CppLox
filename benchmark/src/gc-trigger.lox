@@ -1,0 +1,15 @@
+var curr_string = "";
+var i = 0;
+while (i < 10000) {
+    var temp_value = (rand() * 6);
+    var temp_string = "";
+    if ((temp_value - 3) > 0) {
+        temp_string = "Foo"; 
+    }else{
+        temp_string = "Bar";
+    }
+    curr_string = curr_string + temp_string;
+    i = i + 1;
+}
+
+print curr_string;

@@ -21,6 +21,14 @@ cmake -S . -B build
 cmake --build build --config Release
 ```
 
+Here are the steps for building in release mode with a multi-configuration
+generator, like the Visual Studio ones:
+
+```sh
+cmake -S . -B build -DCMAKE_CXX_FLAGS=-pg
+cmake  --build build --config Release
+```
+
 ### Building with MSVC
 
 Note that MSVC by default is not standards compliant and you need to pass some

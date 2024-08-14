@@ -9,3 +9,6 @@ prefix/
 CMakeLists.txt.user
 CMakeUserPresets.json
 compile_commands.json
+benchmark/CppLox
+benchmark/profile_output.txt
+docs/pages
