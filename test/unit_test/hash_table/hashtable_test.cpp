@@ -137,10 +137,10 @@ static void test_function(TestType func, const char* msg)
 void test_hash()
 {
   test_function(HASH_8, "HASH_8");
-  // test_function(HASH_32, "HASH_32");
-  // test_function(HASH_128, "HASH_128");
-  // test_function(HASH_512, "HASH_512");
-  // test_function(HASH_1024, "HASH_1024");
+  test_function(HASH_32, "HASH_32");
+  test_function(HASH_128, "HASH_128");
+  test_function(HASH_512, "HASH_512");
+  test_function(HASH_1024, "HASH_1024");
 }
 
 int main()
