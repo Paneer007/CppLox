@@ -173,6 +173,13 @@ static void blackenObject(Obj* object)
     case OBJ_UPVALUE:
       markValue(((ObjUpvalue*)object)->closed);
       break;
+    case OBJ_LIST: {
+      ObjList* list = (ObjList*)object;
+      for (int i = 0; i < list->count; i++) {
+        markValue(list->items[i]);
+      }
+      break;
+    }
     case OBJ_NATIVE:
     case OBJ_STRING:
       break;
@@ -233,6 +240,12 @@ static void freeObject(Obj* object)
     case OBJ_UPVALUE:
       FREE<ObjUpvalue>(object);
       break;
+    case OBJ_LIST: {
+      ObjList* list = (ObjList*)object;
+      FREE_ARRAY<Value>(list->items, list->count);
+      FREE<ObjList>(object);
+      break;
+    }
   }
 }
 

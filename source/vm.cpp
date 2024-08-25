@@ -1,3 +1,4 @@
+#include <iostream>
 #include <random>
 
 #include "vm.hpp"
@@ -12,6 +13,119 @@
 #include "debug.hpp"
 #include "memory.hpp"
 #include "object.hpp"
+
+static Value appendNative(int argCount, Value* args)
+{
+  // Append a value to the end of a list increasing the list's length by 1
+  if (argCount != 2 || !IS_LIST(args[0])) {
+    // Handle error
+  }
+  ObjList* list = AS_LIST(args[0]);
+  Value item = args[1];
+
+  appendToList(list, item);
+  return NIL_VAL;
+}
+
+static Value deleteNative(int argCount, Value* args)
+{
+  // Delete an item from a list at the given index.
+  if (argCount != 2 || !IS_LIST(args[0]) || !IS_NUMBER(args[1])) {
+    // Handle error
+  }
+
+  ObjList* list = AS_LIST(args[0]);
+  int index = AS_NUMBER(args[1]);
+
+  if (!isValidListIndex(list, index)) {
+    // Handle error
+  }
+
+  deleteFromList(list, index);
+  return NIL_VAL;
+}
+
+static Value strInput(int argCount, Value* args)
+{
+  // Append a value to the end of a list increasing the list's length by 1
+  if (argCount > 1) {
+    // Handle error
+    exit(0);
+  }
+  if (argCount == 1 && !IS_STRING(args[0])) {
+    // Handle error
+    exit(0);
+  }
+  if (argCount == 1 && IS_STRING(args[0])) {
+    printf("%s", AS_CSTRING(args[0]));
+  }
+  std::string s;
+  std::cin >> s;
+  return OBJ_VAL(copyString(s.c_str(), s.size()));
+}
+
+static Value charInput(int argCount, Value* args)
+{
+  // Append a value to the end of a list increasing the list's length by 1
+  if (argCount > 1) {
+    // Handle error
+    exit(0);
+  }
+  if (argCount == 1 && !IS_STRING(args[0])) {
+    // Handle error
+    exit(0);
+  }
+  if (argCount == 1 && IS_STRING(args[0])) {
+    printf("%s", AS_CSTRING(args[0]));
+  }
+  char s[1];
+  scanf("%c", &s[0]);
+
+  return OBJ_VAL(copyString(s, 1));
+}
+
+static Value intInput(int argCount, Value* args)
+{
+  if (argCount > 1) {
+    // Handle error
+    exit(0);
+  }
+  if (argCount == 1 && !IS_STRING(args[0])) {
+    // Handle error
+    exit(0);
+  }
+  if (argCount == 1 && IS_STRING(args[0])) {
+    printf("%s", AS_CSTRING(args[0]));
+  }
+
+  double x;
+  scanf("%lf", &x);
+  return NUMBER_VAL(x);
+}
+
+static Value objLength(int argCount, Value* args)
+{
+  if (argCount != 1) {
+    exit(0);
+  }
+  if (!IS_STRING(args[0]) && !IS_LIST(args[0])) {
+    // Handle error
+    exit(0);
+  }
+  if (IS_STRING(args[0])) {
+    auto x = AS_STRING(args[0]);
+    auto len = static_cast<double>(x->length);
+    return NUMBER_VAL(len);
+  }
+
+  if (IS_LIST(args[0])) {
+    auto x = AS_LIST(args[0]);
+    auto len = static_cast<double>(x->count);
+    return NUMBER_VAL(len);
+  }
+
+  return NUMBER_VAL(-1);
+}
 
 /**
  * @brief Native function to return the current system time as a number.
@@ -132,6 +246,12 @@ void VM::initVM()
 
   defineNative("clock", clockNative);
   defineNative("rand", randNative);
+  defineNative("append", appendNative);
+  defineNative("delete", deleteNative);
+  defineNative("int_input", intInput);
+  defineNative("str_input", strInput);
+  defineNative("char_input", charInput);
+  defineNative("len", objLength);
 }
 
 /**
@@ -279,6 +399,28 @@ InterpretResult VM::run()
         push(NUMBER_VAL(a + b));
       } else {
         runtimeError("Operands must be two numbers or two strings.");
+        return INTERPRET_RUNTIME_ERROR;
+      }
+    } else if (op == '-') {
+      if (IS_STRING(this->peek(0)) && IS_STRING(this->peek(1))) {
+        auto a = AS_STRING(this->peek(0));
+        auto b = AS_STRING(this->peek(1));
+
+        if (b->length != 1 || a->length != 1) {
+          runtimeError("Operands must be two characters");
+          return INTERPRET_RUNTIME_ERROR;
+        }
+        auto diff = b->chars[0] - a->chars[0];
+        auto double_diff = static_cast<double>(diff);
+        pop();
+        pop();
+        push(NUMBER_VAL(double_diff));
+      } else if (IS_NUMBER(peek(0)) && IS_NUMBER(peek(1))) {
+        auto b = AS_NUMBER(pop());
+        auto a = AS_NUMBER(pop());
+        push(NUMBER_VAL(a - b));
+      } else {
+        runtimeError("Operands must be two numbers or two chars");
         return INTERPRET_RUNTIME_ERROR;
       }
     } else {
@@ -618,6 +760,105 @@ InterpretResult VM::run()
         frame = &this->frames[this->frameCount - 1];
         break;
       }
+      case OP_BUILD_LIST: {
+        ObjList* list = newList();
+        uint8_t itemCount = READ_BYTE();
+        push(OBJ_VAL(list));  // So list isn't sweeped by GC in appendToList
+        for (int i = itemCount; i > 0; i--) {
+          appendToList(list, peek(i));
+        }
+        pop();
+        while (itemCount-- > 0) {
+          pop();
+        }
+        push(OBJ_VAL(list));
+        break;
+      }
+      case OP_INDEX_GET: {
+        Value st_index = pop();
+        Value st_obj = pop();
+        Value result;
+
+        if (!IS_LIST(st_obj) && !IS_STRING(st_obj)) {
+          runtimeError("Invalid type to index into.");
+          return INTERPRET_RUNTIME_ERROR;
+        }
+        if (!IS_NUMBER(st_index)) {
+          runtimeError("List index is not a number.");
+          return INTERPRET_RUNTIME_ERROR;
+        }
+        if (IS_LIST(st_obj)) {
+          ObjList* list = AS_LIST(st_obj);
+          int index = AS_NUMBER(st_index);
+          if (!isValidListIndex(list, index)) {
+            runtimeError("List index out of range.");
+            return INTERPRET_RUNTIME_ERROR;
+          }
+
+          result = indexFromList(list, index);
+          push(result);
+        } else if (IS_STRING(st_obj)) {
+          ObjString* string = AS_STRING(st_obj);
+          int index = AS_NUMBER(st_index);
+          if (!isValidStringIndex(string, index)) {
+            runtimeError("String index out of range");
+            return INTERPRET_RUNTIME_ERROR;
+          }
+          result = indexFromString(string, index);
+          push(result);
+        }
+
+        break;
+      }
+      case OP_INDEX_SET: {
+        // Stack before: [list, index, item] and after: [item]
+        Value st_item = pop();
+        Value st_index = pop();
+        Value st_obj = pop();
+
+        if (!IS_LIST(st_obj) && !IS_STRING(st_obj)) {
+          runtimeError("Cannot store value in a non-list.");
+          return INTERPRET_RUNTIME_ERROR;
+        }
+
+        if (!IS_NUMBER(st_index)) {
+          runtimeError("List index is not a number.");
+          return INTERPRET_RUNTIME_ERROR;
+        }
+
+        if (IS_LIST(st_obj)) {
+          ObjList* list = AS_LIST(st_obj);
+          int index = AS_NUMBER(st_index);
+
+          if (!isValidListIndex(list, index)) {
+            runtimeError("Invalid list index.");
+            return INTERPRET_RUNTIME_ERROR;
+          }
+
+          storeToList(list, index, st_item);
+          push(st_item);
+        } else if (IS_STRING(st_obj)) {
+          ObjString* string = AS_STRING(st_obj);
+          int index = AS_NUMBER(st_index);
+
+          if (!isValidStringIndex(string, index)) {
+            runtimeError("Invalid list index.");
+            return INTERPRET_RUNTIME_ERROR;
+          }
+
+          ObjString* item = AS_STRING(st_item);
+
+          if (item->length > 1) {
+            runtimeError("Invalid assignment value");
+            return INTERPRET_RUNTIME_ERROR;
+          }
+
+          storeToString(string, index, item);
+          push(st_item);
+        }
+
+        break;
+      }
     }
   }
 }
@@ -824,9 +1065,7 @@ bool VM::invoke(ObjString* name, int argCount)
  *
  * Determines whether a given value is considered false in the language's
  * context. Currently, `nil` and `false` are considered falsey.
- *
- * @param value The value to check.
- * @return `true` if the value is falsey, `false` otherwise.
+ *LFwise.
  */
 bool VM::isFalsey(Value value)
 {

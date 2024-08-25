@@ -114,8 +114,8 @@ static int invokeInstruction(const char* name, Chunk* chunk, int offset)
 }
 
 /**
- * @brief Disassembles a single instruction from the given chunk at the specified
- * offset.
+ * @brief Disassembles a single instruction from the given chunk at the
+ * specified offset.
  *
  * Prints the disassembled instruction to stdout in a human-readable format.
  *
@@ -227,6 +227,13 @@ int disassembleInstruction(Chunk* chunk, int offset)
       return constantInstruction("OP_SET_PROPERTY", chunk, offset);
     case OP_INVOKE:
       return invokeInstruction("OP_INVOKE", chunk, offset);
+      // TODO: fix debugging of this instructions
+    case OP_BUILD_LIST:
+      return simpleInstruction("OP_BUILD_LIST", offset);
+    case OP_INDEX_GET:
+      return simpleInstruction("OP_INDEX_GET", offset);
+    case OP_INDEX_SET:
+      return simpleInstruction("OP_INDEX_SET", offset);
     default:
       printf("Unknown opcode %d\n", instruction);
       return offset + 1;

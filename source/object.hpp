@@ -14,6 +14,7 @@
 #define IS_CLASS(value) isObjType(value, OBJ_CLASS)
 #define IS_INSTANCE(value) isObjType(value, OBJ_INSTANCE)
 #define IS_BOUND_METHOD(value) isObjType(value, OBJ_BOUND_METHOD)
+#define IS_LIST(value) isObjType(value, OBJ_LIST)
 
 #define AS_BOUND_METHOD(value) ((ObjBoundMethod*)AS_OBJ(value))
 #define AS_CLASS(value) ((ObjClass*)AS_OBJ(value))
@@ -23,6 +24,7 @@
 #define AS_CSTRING(value) (((ObjString*)AS_OBJ(value))->chars)
 #define AS_NATIVE(value) (((ObjNative*)AS_OBJ(value))->function)
 #define AS_INSTANCE(value) ((ObjInstance*)AS_OBJ(value))
+#define AS_LIST(value) ((ObjList*)AS_OBJ(value))
 
 /**
  * @brief Enumeration representing object types in the virtual machine.
@@ -49,7 +51,8 @@ typedef enum
   OBJ_FUNCTION,
   OBJ_NATIVE,
   OBJ_STRING,
-  OBJ_UPVALUE
+  OBJ_UPVALUE,
+  OBJ_LIST
 } ObjType;
 
 /**
@@ -132,6 +135,14 @@ public:
   uint32_t hash;
 };
 
+class ObjList : public Obj
+{
+public:
+  int count;
+  int capacity;
+  Value* items;
+};
+
 /**
  * @brief Represents a compiled function.
  *
@@ -163,7 +174,7 @@ public:
 };
 
 /**
- * @brief Represents a closure over a function.
+ * @brief Represents a closure over a function.STRING
  *
  * Stores a reference to the function, its upvalues, and the number of upvalues.
  */
@@ -329,6 +340,8 @@ ObjFunction* newFunction();
  */
 ObjNative* newNative(NativeFn function);
 
+ObjList* newList();
+
 /**
  * @brief Creates a new closure object.
  *
@@ -379,5 +392,27 @@ ObjBoundMethod* newBoundMethod(Value receiver, ObjClosure* method);
  * @param value The value to be printed.
  */
 void printObject(Value value);
+
+// List functionality
+void appendToList(ObjList* list, Value value);
+
+void storeToList(ObjList* list, int index, Value value);
+
+Value indexFromList(ObjList* list, int index);
+
+void deleteFromList(ObjList* list, int index);
+
+bool isValidListIndex(ObjList* list, int index);
+
+// String functionality
+void appendToString(ObjString* string, Value value);
+
+void storeToString(ObjString* string, int index, ObjString* item);
+
+Value indexFromString(ObjString* string, int index);
+
+void deleteFromString(ObjString* string, int index);
+
+bool isValidStringIndex(ObjString* string, int index);
 
 #endif

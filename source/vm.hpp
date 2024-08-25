@@ -4,7 +4,7 @@
 #include "object.hpp"
 #include "table.hpp"
 
-constexpr int FRAMES_MAX = 64;
+constexpr int FRAMES_MAX = 2048;
 constexpr int STACK_MAX = (FRAMES_MAX * UINT8_COUNT);
 
 /**

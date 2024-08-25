@@ -13,6 +13,8 @@
 
 // #define NAN_BOXING
 
+// #define ENABLE_MP
+
 constexpr int UINT8_COUNT = (UINT8_MAX + 1);
 
 #endif

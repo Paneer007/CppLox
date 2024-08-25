@@ -47,6 +47,9 @@ typedef enum
   OP_METHOD,
   OP_GET_GLOBAL,
   OP_SET_GLOBAL,
+  OP_BUILD_LIST,
+  OP_INDEX_GET,
+  OP_INDEX_SET
 } OpCode;
 
 /**

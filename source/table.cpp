@@ -7,6 +7,11 @@
 #include "object.hpp"
 #include "value.hpp"
 
+#ifdef ENABLE_MP
+#  include <omp.h>
+#  include <stdlib.h>
+#endif
+
 /**
  * @brief Maximum load factor for the hash table before resizing.
  *
@@ -48,6 +53,42 @@ static Entry* findEntry(Entry* entries, int capacity, ObjString* key)
 {
   uint32_t index = key->hash & (capacity - 1);
   Entry* tombstone = NULL;
+  Entry* res = NULL;
+#ifdef ENABLE_MP
+
+#  pragma omp parallel num_threads(4) default(none) firstprivate(index) \
+      shared(tombstone, res, entries, capacity, key)
+  for (int thread_id = omp_get_thread_num();;
+       index = (index + 4) & (capacity - 1))
+  {
+    auto search_id = (index + thread_id) & (capacity - 1);
+    Entry* entry = &entries[search_id];
+    if (entry->key == NULL) {
+      if (IS_NIL(entry->value)) {
+        // Empty entry.
+        if (tombstone != NULL) {
+          res = tombstone;
+        } else {
+          res = entry;
+        }
+        // printf("Look here \n");
+#  pragma omp cancel parallel
+      } else {
+        // We found a tombstone
+        if (tombstone == NULL)
+          tombstone = entry;
+      }
+    } else if (entry->key == key) {
+      // We found the key.
+      res = entry;
+      // printf("Look here \n");
+#  pragma omp cancel parallel
+    }
+
+#  pragma omp cancellation point parallel
+  }
+  return res;
+#else
   for (;;) {
     Entry* entry = &entries[index];
     if (entry->key == NULL) {
@@ -65,6 +106,7 @@ static Entry* findEntry(Entry* entries, int capacity, ObjString* key)
     }
     index = (index + 1) & (capacity - 1);
   }
+#endif
 }
 
 /**

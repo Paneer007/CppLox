@@ -52,6 +52,7 @@ typedef enum
   PREC_FACTOR,  ///< Factor (*, /)
   PREC_UNARY,  ///< Unary (!, -)
   PREC_CALL,  ///< Function call (.)
+  PREC_SUBSCRIPT,
   PREC_PRIMARY  ///< Primary (highest precedence)
 } Precedence;
 
@@ -1048,6 +1049,46 @@ static void literal(bool canAssign)
   }
 }
 
+static void list(bool canAssign)
+{
+  int itemCount = 0;
+  if (!check(TOKEN_RIGHT_BRACKET)) {
+    do {
+      if (check(TOKEN_RIGHT_BRACKET)) {
+        // Trailing comma case
+        break;
+      }
+
+      parsePrecedence(PREC_OR);
+
+      if (itemCount == UINT8_COUNT) {
+        error("Cannot have more than 256 items in a list literal.");
+      }
+      itemCount++;
+    } while (match(TOKEN_COMMA));
+  }
+
+  consume(TOKEN_RIGHT_BRACKET, "Expect ']' after list literal.");
+
+  emitByte(OP_BUILD_LIST);
+  emitByte(itemCount);
+  return;
+}
+
+static void subscript(bool canAssign)
+{
+  parsePrecedence(PREC_OR);
+  consume(TOKEN_RIGHT_BRACKET, "Expect ']' after index.");
+
+  if (canAssign && match(TOKEN_EQUAL)) {
+    expression();
+    emitByte(OP_INDEX_SET);
+  } else {
+    emitByte(OP_INDEX_GET);
+  }
+  return;
+}
+
 /**
  * @brief Parses a grouped expression.
  *
@@ -1289,9 +1330,6 @@ static void forStatement()
     exitJump = emitJump(OP_JUMP_IF_FALSE);
     emitByte(OP_POP);  // Condition.
   }
-
-  consume(TOKEN_SEMICOLON, "Expect ';'.");
-  consume(TOKEN_RIGHT_PAREN, "Expect ')' after for clauses.");
 
   if (!match(TOKEN_RIGHT_PAREN)) {
     int bodyJump = emitJump(OP_JUMP);
@@ -1563,6 +1601,28 @@ static void unary(bool canAssign)
   }
 }
 
+static void or_(bool canAssign)
+{
+  int elseJump = emitJump(OP_JUMP_IF_FALSE);
+  int endJump = emitJump(OP_JUMP);
+
+  patchJump(elseJump);
+  emitByte(OP_POP);
+
+  parsePrecedence(PREC_OR);
+  patchJump(endJump);
+}
+
+static void and_(bool canAssign)
+{
+  int endJump = emitJump(OP_JUMP_IF_FALSE);
+
+  emitByte(OP_POP);
+  parsePrecedence(PREC_AND);
+
+  patchJump(endJump);
+}
+
 /**
  * @brief Lookup table for parsing rules.
  *
@@ -1593,7 +1653,7 @@ ParseRule rules[] = {
     [TOKEN_IDENTIFIER] = {variable, NULL, PREC_NONE},
     [TOKEN_STRING] = {string, NULL, PREC_NONE},
     [TOKEN_NUMBER] = {number, NULL, PREC_NONE},
-    [TOKEN_AND] = {NULL, NULL, PREC_NONE},
+    [TOKEN_AND] = {NULL, and_, PREC_AND},
     [TOKEN_CLASS] = {NULL, NULL, PREC_NONE},
     [TOKEN_ELSE] = {NULL, NULL, PREC_NONE},
     [TOKEN_FALSE] = {literal, NULL, PREC_NONE},
@@ -1601,7 +1661,7 @@ ParseRule rules[] = {
     [TOKEN_FUN] = {NULL, NULL, PREC_NONE},
     [TOKEN_IF] = {NULL, NULL, PREC_NONE},
     [TOKEN_NIL] = {literal, NULL, PREC_NONE},
-    [TOKEN_OR] = {NULL, NULL, PREC_NONE},
+    [TOKEN_OR] = {NULL, or_, PREC_OR},
     [TOKEN_PRINT] = {NULL, NULL, PREC_NONE},
     [TOKEN_RETURN] = {NULL, NULL, PREC_NONE},
     [TOKEN_SUPER] = {super_, NULL, PREC_NONE},
@@ -1611,6 +1671,8 @@ ParseRule rules[] = {
     [TOKEN_WHILE] = {NULL, NULL, PREC_NONE},
     [TOKEN_ERROR] = {NULL, NULL, PREC_NONE},
     [TOKEN_EOF] = {NULL, NULL, PREC_NONE},
+    [TOKEN_LEFT_BRACKET] = {list, subscript, PREC_SUBSCRIPT},
+    [TOKEN_RIGHT_BRACKET] = {NULL, NULL, PREC_NONE},
 };
 
 /**

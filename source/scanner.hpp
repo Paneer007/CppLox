@@ -58,7 +58,10 @@ typedef enum
   TOKEN_WHILE,  ///< While keyword 'while'
 
   TOKEN_ERROR,  ///< Error token
-  TOKEN_EOF  ///< End of file
+  TOKEN_EOF,  ///< End of file
+
+  TOKEN_LEFT_BRACKET,
+  TOKEN_RIGHT_BRACKET
 } TokenType;
 
 /**

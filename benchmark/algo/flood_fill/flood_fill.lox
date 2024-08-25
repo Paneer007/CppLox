@@ -1,0 +1,58 @@
+var dir = [[1,0],[-1,0],[0,1],[0,-1]];
+var n = 0;
+var m = 0;
+var count = 0;
+
+fun floodFill(adjMat,i,j){
+    if(i<0 or j <0 or i >= n or j >= m){
+        return;
+    }
+    var node = adjMat[i];
+    var value = node[j];
+    if (value == "#"){
+        return;
+    }
+    node[j] = "#";
+    adjMat[i] = node;
+
+    for(var t = 0; t< 4;t = t+1){
+        var x = dir[t];
+        var ni = i + x[0];
+        var nj = j + x[1];
+        floodFill(adjMat,ni, nj);
+    }
+}
+
+
+n = int_input();
+m = int_input();
+var adjMat = [];
+
+for(var i= 0; i<=n; i = i + 1){
+    var temp = [];
+    for(var j=0; j<=m; j = j + 1){
+        var x = char_input();
+        if (j != 0){
+            append(temp, x);
+        }
+    }
+    append(adjMat, temp);
+}
+
+
+print adjMat;
+
+
+
+for(var i= 0; i<n;i = i + 1){
+    for(var j=0; j<m;j = j + 1){
+        var node = adjMat[i];
+        var value = node[j];
+        if(value != "#"){
+            count =  count + 1;
+            floodFill(adjMat, i, j);
+        }
+    }
+}
+
+print count;

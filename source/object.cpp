@@ -21,12 +21,21 @@
  */
 static uint32_t hashString(const char* key, int length)
 {
+#ifdef ENABLE_MP
   uint32_t hash = 2166136261u;
   for (int i = 0; i < length; i++) {
     hash ^= (uint8_t)key[i];
     hash *= 16777619;
   }
   return hash;
+#else
+  uint32_t hash = 2166136261u;
+  for (int i = 0; i < length; i++) {
+    hash ^= (uint8_t)key[i];
+    hash *= 16777619;
+  }
+  return hash;
+#endif
 }
 
 /**
@@ -269,6 +278,16 @@ void printObject(Value value)
     case OBJ_INSTANCE:
       printf("%s instance", AS_INSTANCE(value)->klass->name->chars);
       break;
+    case OBJ_LIST:
+      printf("[");
+      for (int i = 0; i < AS_LIST(value)->count; i++) {
+        printValue(AS_LIST(value)->items[i]);
+        if (i != AS_LIST(value)->count - 1) {
+          printf(",");
+        }
+      }
+      printf("]");
+      break;
   }
 }
 
@@ -329,4 +348,77 @@ ObjInstance* newInstance(ObjClass* klass)
   instance->klass = klass;
   instance->fields.initTable();
   return instance;
+}
+
+ObjList* newList()
+{
+  ObjList* list = ALLOCATE_OBJ<ObjList>(OBJ_LIST);
+  list->items = NULL;
+  list->count = 0;
+  list->capacity = 0;
+  return list;
+}
+
+void appendToList(ObjList* list, Value value)
+{
+  if (list->capacity < list->count + 1) {
+    int oldCapacity = list->capacity;
+    list->capacity = GROW_CAPACITY(oldCapacity);
+    list->items = GROW_ARRAY<Value>(list->items, oldCapacity, list->capacity);
+  }
+  list->items[list->count] = value;
+  list->count++;
+  return;
+}
+
+void storeToList(ObjList* list, int index, Value value)
+{
+  list->items[index] = value;
+}
+//
+Value indexFromList(ObjList* list, int index)
+{
+  return list->items[index];
+}
+
+void deleteFromList(ObjList* list, int index)
+{
+  for (int i = index; i < list->count - 1; i++) {
+    list->items[i] = list->items[i + 1];
+  }
+  list->items[list->count - 1] = NIL_VAL;
+  list->count--;
+}
+
+bool isValidListIndex(ObjList* list, int index)
+{
+  if (index < 0 || index > list->count - 1) {
+    return false;
+  }
+  return true;
+}
+
+// TODO: String Operator
+
+void appendToString(ObjString* string, Value value) {}
+
+void storeToString(ObjString* string, int index, ObjString* item)
+{
+  string->chars[index] = item->chars[0];
+}
+
+Value indexFromString(ObjString* string, int index)
+{
+  auto val = string->chars[index];
+  return OBJ_VAL(copyString(&val, 1));
+}
+
+void deleteFromString(ObjString* string, int index) {}
+
+bool isValidStringIndex(ObjString* string, int index)
+{
+  if (index < 0 || index > string->length - 1) {
+    return false;
+  }
+  return true;
 }
