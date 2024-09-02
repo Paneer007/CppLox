@@ -1,0 +1,26 @@
+var mod = 10000007;
+var n = int_input();
+var target = int_input();
+var c = [];
+for(var i = 0; i<n;i= i+1){
+    var v = int_input();
+    append(c, v);
+}
+
+var dp = [];
+for(var i = 0; i<=target ; i = i+1){
+    append(dp,0);
+}
+
+dp[0] = 1;
+
+for(var  j = 0; j< n; j = j+1){
+    for(var i=1;i<=target ; i=i+1){
+        if(i - c[j] >= 0){
+            dp[i] = dp[i] + dp[i-c[j]];
+        }
+    }
+}
+
+print dp[target];
+

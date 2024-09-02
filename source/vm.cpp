@@ -1,3 +1,6 @@
+#include <iostream>
+#include <random>
+
 #include "vm.hpp"
 
 #include <stdarg.h>
@@ -11,17 +14,168 @@
 #include "memory.hpp"
 #include "object.hpp"
 
+static Value appendNative(int argCount, Value* args)
+{
+  // Append a value to the end of a list increasing the list's length by 1
+  if (argCount != 2 || !IS_LIST(args[0])) {
+    // Handle error
+  }
+  ObjList* list = AS_LIST(args[0]);
+  Value item = args[1];
+
+  appendToList(list, item);
+  return NIL_VAL;
+}
+
+static Value deleteNative(int argCount, Value* args)
+{
+  // Delete an item from a list at the given index.
+  if (argCount != 2 || !IS_LIST(args[0]) || !IS_NUMBER(args[1])) {
+    // Handle error
+  }
+
+  ObjList* list = AS_LIST(args[0]);
+  int index = AS_NUMBER(args[1]);
+
+  if (!isValidListIndex(list, index)) {
+    // Handle error
+  }
+
+  deleteFromList(list, index);
+  return NIL_VAL;
+}
+
+static Value strInput(int argCount, Value* args)
+{
+  // Append a value to the end of a list increasing the list's length by 1
+  if (argCount > 1) {
+    // Handle error
+    exit(0);
+  }
+  if (argCount == 1 && !IS_STRING(args[0])) {
+    // Handle error
+    exit(0);
+  }
+  if (argCount == 1 && IS_STRING(args[0])) {
+    printf("%s", AS_CSTRING(args[0]));
+  }
+  std::string s;
+  std::cin >> s;
+  return OBJ_VAL(copyString(s.c_str(), s.size()));
+}
+
+static Value charInput(int argCount, Value* args)
+{
+  // Append a value to the end of a list increasing the list's length by 1
+  if (argCount > 1) {
+    // Handle error
+    exit(0);
+  }
+  if (argCount == 1 && !IS_STRING(args[0])) {
+    // Handle error
+    exit(0);
+  }
+  if (argCount == 1 && IS_STRING(args[0])) {
+    printf("%s", AS_CSTRING(args[0]));
+  }
+  char s[1];
+  scanf("%c", &s[0]);
+
+  return OBJ_VAL(copyString(s, 1));
+}
+
+static Value intInput(int argCount, Value* args)
+{
+  if (argCount > 1) {
+    // Handle error
+    exit(0);
+  }
+  if (argCount == 1 && !IS_STRING(args[0])) {
+    // Handle error
+    exit(0);
+  }
+  if (argCount == 1 && IS_STRING(args[0])) {
+    printf("%s", AS_CSTRING(args[0]));
+  }
+
+  double x;
+  scanf("%lf", &x);
+  return NUMBER_VAL(x);
+}
+
+static Value objLength(int argCount, Value* args)
+{
+  if (argCount != 1) {
+    exit(0);
+  }
+  if (!IS_STRING(args[0]) && !IS_LIST(args[0])) {
+    // Handle error
+    exit(0);
+  }
+  if (IS_STRING(args[0])) {
+    auto x = AS_STRING(args[0]);
+    auto len = static_cast<double>(x->length);
+    return NUMBER_VAL(len);
+  }
+
+  if (IS_LIST(args[0])) {
+    auto x = AS_LIST(args[0]);
+    auto len = static_cast<double>(x->count);
+    return NUMBER_VAL(len);
+  }
+
+  return NUMBER_VAL(-1);
+}
+
+/**
+ * @brief Native function to return the current system time as a number.
+ *
+ * This function implements the built-in `clock` function, which returns the
+ * current system time as a number representing the elapsed CPU time since
+ * program start. The returned value is divided by `CLOCKS_PER_SEC` to obtain a
+ * floating-point representation of seconds.
+ *
+ * @param argCount The number of arguments passed to the function (ignored).
+ * @param args The arguments passed to the function (ignored).
+ * @return A number value representing the current system time in seconds.
+ */
 static Value clockNative(int argCount, Value* args)
 {
   return NUMBER_VAL((double)clock() / CLOCKS_PER_SEC);
 }
 
+/**
+ * @brief Native function to generate a random number.
+ *
+ * This function implements a built-in `rand` function, returning a random
+ * number between 0 and RAND_MAX. The returned value is cast to a double for
+ * compatibility with the Value type.
+ *
+ * @param argCount The number of arguments passed to the function (ignored).
+ * @param args The arguments passed to the function (ignored).
+ * @return A number value representing a random number.
+ */
+static Value randNative(int argCount, Value* args)
+{
+  auto rand_val = static_cast<double>(random());
+  return NUMBER_VAL(rand_val);
+}
+
+/**
+ * @brief Captures a local variable as an upvalue.
+ *
+ * Creates a new upvalue object for the given local variable if it doesn't
+ * already exist. Updates the open upvalues list accordingly.
+ *
+ * @param local A pointer to the local variable.
+ * @return The created or existing upvalue object.
+ */
 static ObjUpvalue* captureUpvalue(Value* local)
 {
   // note source of failure
   auto vm = VM::getVM();
   ObjUpvalue* prevUpvalue = NULL;
-  ObjUpvalue* upvalue = vm->openUpvalues;
+  auto upvalue = vm->openUpvalues;
   while (upvalue != NULL && upvalue->location > local) {
     prevUpvalue = upvalue;
     upvalue = upvalue->next;
@@ -31,7 +185,7 @@ static ObjUpvalue* captureUpvalue(Value* local)
     return upvalue;
   }
 
-  ObjUpvalue* createdUpvalue = newUpvalue(local);
+  auto createdUpvalue = newUpvalue(local);
   createdUpvalue->next = upvalue;
 
   if (prevUpvalue == NULL) {
@@ -42,19 +196,37 @@ static ObjUpvalue* captureUpvalue(Value* local)
   return createdUpvalue;
 }
 
+/**
+ * @brief Closes upvalues that are no longer in scope.
+ *
+ * Iterates over the open upvalues and closes any that are no longer accessible
+ * by the current stack frame. The closed upvalue's value is captured and stored
+ * in the upvalue itself.
+ *
+ * @param last A pointer to the last active local variable on the stack.
+ */
 static void closeUpvalues(Value* last)
 {
   auto vm = VM::getVM();  // source of failure
   while (vm->openUpvalues != NULL && vm->openUpvalues->location >= last) {
-    ObjUpvalue* upvalue = vm->openUpvalues;
+    auto upvalue = vm->openUpvalues;
     upvalue->closed = *upvalue->location;
     upvalue->location = &upvalue->closed;
     vm->openUpvalues = upvalue->next;
   }
 }
 
+/**
+ * @brief Constructs a new virtual machine instance.
+ */
 VM::VM() {}
 
+/**
+ * @brief Initializes the virtual machine.
+ *
+ * Resets the stack, initializes memory management, object lists, garbage
+ * collection, string and global tables, and defines built-in native functions.
+ */
 void VM::initVM()
 {
   this->resetStack();
@@ -73,55 +245,107 @@ void VM::initVM()
   this->initString = copyString("init", 4);
 
   defineNative("clock", clockNative);
+  defineNative("rand", randNative);
+  defineNative("append", appendNative);
+  defineNative("delete", deleteNative);
+  defineNative("int_input", intInput);
+  defineNative("str_input", strInput);
+  defineNative("char_input", charInput);
+  defineNative("len", objLength);
 }
+
+/**
+ * @brief Frees the resources allocated by the virtual machine.
+ *
+ * Deallocates memory used by global and string tables, and frees all allocated
+ * objects.
+ */
 void VM::freeVM()
 {
   this->globals.freeTable();
   this->strings.freeTable();
   this->initString = NULL;
   freeObjects();
-
 }
 
+/**
+ * @brief Interprets the given source code.
+ *
+ * Compiles the source code into a function, creates a closure for it, and
+ * executes the function.
+ *
+ * @param source The source code to interpret.
+ * @return The interpretation result, indicating success, compile error, or
+ * runtime error.
+ */
 InterpretResult VM::interpret(const char* source)
 {
-  ObjFunction* function = compile(source);
+  auto function = compile(source);
   if (function == NULL)
     return INTERPRET_COMPILE_ERROR;
 
   push(OBJ_VAL(function));
-  ObjClosure* closure = newClosure(function);
+  auto closure = newClosure(function);
   pop();
   push(OBJ_VAL(closure));
   call(closure, 0);
   return run();
 }
 
+/**
+ * @brief Defines a method for a class.
+ *
+ * Takes the current method (at the top of the stack) and the class object
+ * (below it) and adds the method to the class's method table with the given
+ * name.
+ *
+ * @param name The name of the method.
+ */
 void VM::defineMethod(ObjString* name)
 {
-  Value method = peek(0);
-  ObjClass* klass = AS_CLASS(peek(1));
+  auto method = peek(0);
+  auto klass = AS_CLASS(peek(1));
   klass->methods.tableSet(name, method);
   pop();
 }
 
+/**
+ * @brief Concatenates two strings.
+ *
+ * Pops two string objects from the stack, concatenates them, and pushes the
+ * resulting string onto the stack.
+ *
+ * This function assumes that the top two elements on the stack are string
+ * objects.
+ */
 void VM::concatenate()
 {
-  ObjString* b = AS_STRING(peek(0));
-  ObjString* a = AS_STRING(peek(1));
+  auto b = AS_STRING(peek(0));
+  auto a = AS_STRING(peek(1));
 
-  int length = a->length + b->length;
-  char* chars = ALLOCATE(char, length + 1);
+  auto length = a->length + b->length;
+  auto chars = ALLOCATE<char>(length + 1);
   memcpy(chars, a->chars, a->length);
   memcpy(chars + a->length, b->chars, b->length);
   chars[length] = '\0';
 
-  ObjString* result = takeString(chars, length);
+  auto result = takeString(chars, length);
   pop();
   pop();
   push(OBJ_VAL(result));
 }
 
+/**
+ * @brief Binds a method to an object instance.
+ *
+ * Creates a bound method object by taking the current object (receiver) and the
+ * method from the class. If the method is not found in the class, a runtime
+ * error is raised.
+ *
+ * @param klass The class of the object.
+ * @param name The name of the method to bind.
+ * @return `true` if the method was bound successfully, `false` otherwise.
+ */
 bool VM::bindMethod(ObjClass* klass, ObjString* name)
 {
   Value method;
@@ -130,32 +354,117 @@ bool VM::bindMethod(ObjClass* klass, ObjString* name)
     return false;
   }
 
-  ObjBoundMethod* bound = newBoundMethod(peek(0), AS_CLOSURE(method));
+  auto bound = newBoundMethod(peek(0), AS_CLOSURE(method));
   pop();
   push(OBJ_VAL(bound));
   return true;
 }
 
+/**
+ * @brief Executes the bytecode in the current call frame.
+ *
+ * This is the main interpreter loop that fetches and executes instructions
+ * until the end of the function. Handles various opcodes, stack manipulation,
+ * function calls, returns, and error handling.
+ *
+ * @return The interpretation result, indicating success, compile error, or
+ * runtime error.
+ */
 InterpretResult VM::run()
 {
-  CallFrame* frame = &this->frames[this->frameCount - 1];
+  auto frame = &this->frames[this->frameCount - 1];
 
-#define READ_BYTE() (*frame->ip++)
-#define READ_SHORT() \
-  (frame->ip += 2, (uint16_t)((frame->ip[-2] << 8) | frame->ip[-1]))
-#define READ_CONSTANT() \
-  (frame->closure->function->chunk.constants.values[READ_BYTE()])
-#define READ_STRING() AS_STRING(READ_CONSTANT())
-#define BINARY_OP(valueType, op) \
-  do { \
-    if (!IS_NUMBER(peek(0)) || !IS_NUMBER(peek(1))) { \
-      runtimeError("Operands must be numbers."); \
-      return INTERPRET_RUNTIME_ERROR; \
-    } \
-    double b = AS_NUMBER(pop()); \
-    double a = AS_NUMBER(pop()); \
-    push(valueType(a op b)); \
-  } while (false)
+  const auto READ_BYTE = [&frame]() { return *frame->ip++; };
+
+  const auto READ_SHORT = [&frame]()
+  {
+    frame->ip += 2;
+    return (uint16_t)((frame->ip[-2] << 8) | frame->ip[-1]);
+  };
+
+  const auto READ_CONSTANT = [&frame, READ_BYTE]
+  { return frame->closure->function->chunk.constants.values[READ_BYTE()]; };
+
+  const auto READ_STRING = [READ_CONSTANT]
+  { return AS_STRING(READ_CONSTANT()); };
+
+  const auto BINARY_OP = [this](char op)
+  {
+    if (op == '+') {
+      if (IS_STRING(this->peek(0)) && IS_STRING(this->peek(1))) {
+        concatenate();
+      } else if (IS_NUMBER(peek(0)) && IS_NUMBER(peek(1))) {
+        auto b = AS_NUMBER(pop());
+        auto a = AS_NUMBER(pop());
+        push(NUMBER_VAL(a + b));
+      } else {
+        runtimeError("Operands must be two numbers or two strings.");
+        return INTERPRET_RUNTIME_ERROR;
+      }
+    } else if (op == '-') {
+      if (IS_STRING(this->peek(0)) && IS_STRING(this->peek(1))) {
+        auto a = AS_STRING(this->peek(0));
+        auto b = AS_STRING(this->peek(1));
+
+        if (b->length != 1 || a->length != 1) {
+          runtimeError("Operands must be two characters");
+          return INTERPRET_RUNTIME_ERROR;
+        }
+        auto diff = b->chars[0] - a->chars[0];
+        auto double_diff = static_cast<double>(diff);
+        pop();
+        pop();
+        push(NUMBER_VAL(double_diff));
+      } else if (IS_NUMBER(peek(0)) && IS_NUMBER(peek(1))) {
+        auto b = AS_NUMBER(pop());
+        auto a = AS_NUMBER(pop());
+        push(NUMBER_VAL(a - b));
+      } else {
+        runtimeError("Operands must be two numbers or two chars");
+        return INTERPRET_RUNTIME_ERROR;
+      }
+    } else {
+      if (!IS_NUMBER(this->peek(0)) || !IS_NUMBER(this->peek(1))) {
+        runtimeError("Operands must be numbers.");
+        return INTERPRET_RUNTIME_ERROR;
+      }
+      auto b = AS_NUMBER(pop());
+      auto a = AS_NUMBER(pop());
+      switch (op) {
+        case '+':
+          push(NUMBER_VAL(a + b));
+          break;
+        case '-':
+          push(NUMBER_VAL(a - b));
+          break;
+        case '*':
+          push(NUMBER_VAL(a * b));
+          break;
+        case '/': {
+          push(NUMBER_VAL(a / b));
+          break;
+        }
+        case '%': {
+          int i_a = static_cast<int>(a);
+          int i_b = static_cast<int>(b);
+          double response = static_cast<double>(i_a % i_b);
+          push(NUMBER_VAL(response));
+          break;
+        }
+        case '>':
+          push(BOOL_VAL(a > b));
+          break;
+        case '<':
+          push(BOOL_VAL(a < b));
+          break;
+        default:
+          runtimeError("Invalid Binary Operator.");
+          return INTERPRET_RUNTIME_ERROR;
+          break;
+      }
+    }
+    return INTERPRET_CONTINUE;
+  };
 
   for (;;) {
 #ifdef DEBUG_TRACE_EXECUTION
@@ -173,12 +482,12 @@ InterpretResult VM::run()
     uint8_t instruction;
     switch (instruction = READ_BYTE()) {
       case OP_CONSTANT: {
-        Value constant = READ_CONSTANT();
+        auto constant = READ_CONSTANT();
         this->push(constant);
         break;
       }
       case OP_RETURN: {
-        Value result = pop();
+        auto result = pop();
         closeUpvalues(frame->slots);
         this->frameCount--;
         if (this->frameCount == 0) {
@@ -203,8 +512,8 @@ InterpretResult VM::run()
         if (IS_STRING(peek(0)) && IS_STRING(peek(1))) {
           concatenate();
         } else if (IS_NUMBER(peek(0)) && IS_NUMBER(peek(1))) {
-          double b = AS_NUMBER(pop());
-          double a = AS_NUMBER(pop());
+          auto b = AS_NUMBER(pop());
+          auto a = AS_NUMBER(pop());
           push(NUMBER_VAL(a + b));
         } else {
           runtimeError("Operands must be two numbers or two strings.");
@@ -213,15 +522,31 @@ InterpretResult VM::run()
         break;
       }
       case OP_SUBTRACT: {
-        BINARY_OP(NUMBER_VAL, -);
+        auto res = BINARY_OP('-');
+        if (res != INTERPRET_CONTINUE) {
+          return res;
+        }
         break;
       }
       case OP_MULTIPLY: {
-        BINARY_OP(NUMBER_VAL, *);
+        auto res = BINARY_OP('*');
+        if (res != INTERPRET_CONTINUE) {
+          return res;
+        }
         break;
       }
       case OP_DIVIDE: {
-        BINARY_OP(NUMBER_VAL, /);
+        auto res = BINARY_OP('/');
+        if (res != INTERPRET_CONTINUE) {
+          return res;
+        }
+        break;
+      }
+      case OP_MODULUS: {
+        auto res = BINARY_OP('%');
+        if (res != INTERPRET_CONTINUE) {
+          return res;
+        }
         break;
       }
       case OP_NOT: {
@@ -240,15 +565,26 @@ InterpretResult VM::run()
         push(BOOL_VAL(false));
         break;
       }
-      case OP_GREATER:
-        BINARY_OP(BOOL_VAL, >);
+      case OP_GREATER: {
+        auto res = BINARY_OP('>');
+        if (res != INTERPRET_CONTINUE) {
+          return res;
+          break;
+        }
         break;
-      case OP_LESS:
-        BINARY_OP(BOOL_VAL, <);
+      }
+
+      case OP_LESS: {
+        auto res = BINARY_OP('<');
+        if (res != INTERPRET_CONTINUE) {
+          return res;
+        }
         break;
+      }
+
       case OP_EQUAL: {
-        Value b = pop();
-        Value a = pop();
+        auto b = pop();
+        auto a = pop();
         push(BOOL_VAL(valuesEqual(a, b)));
         break;
       }
@@ -259,12 +595,12 @@ InterpretResult VM::run()
         push(OBJ_VAL(newClass(READ_STRING())));
         break;
       case OP_CLOSURE: {
-        ObjFunction* function = AS_FUNCTION(READ_CONSTANT());
-        ObjClosure* closure = newClosure(function);
+        auto function = AS_FUNCTION(READ_CONSTANT());
+        auto closure = newClosure(function);
         push(OBJ_VAL(closure));
         for (int i = 0; i < closure->upvalueCount; i++) {
-          uint8_t isLocal = READ_BYTE();
-          uint8_t index = READ_BYTE();
+          auto isLocal = READ_BYTE();
+          auto index = READ_BYTE();
           if (isLocal) {
             closure->upvalues[i] = captureUpvalue(frame->slots + index);
           } else {
@@ -279,7 +615,7 @@ InterpretResult VM::run()
         break;
       }
       case OP_CALL: {
-        int argCount = READ_BYTE();
+        auto argCount = READ_BYTE();
         if (!callValue(peek(argCount), argCount)) {
           return INTERPRET_RUNTIME_ERROR;
         }
@@ -290,13 +626,13 @@ InterpretResult VM::run()
         pop();
         break;
       case OP_DEFINE_GLOBAL: {
-        ObjString* name = READ_STRING();
+        auto name = READ_STRING();
         this->globals.tableSet(name, peek(0));
         pop();
         break;
       }
       case OP_GET_GLOBAL: {
-        ObjString* name = READ_STRING();
+        auto name = READ_STRING();
         Value value;
         if (!this->globals.tableGet(name, &value)) {
           runtimeError("Undefined variable '%s'.", name->chars);
@@ -306,12 +642,12 @@ InterpretResult VM::run()
         break;
       }
       case OP_GET_UPVALUE: {
-        uint8_t slot = READ_BYTE();
+        auto slot = READ_BYTE();
         push(*frame->closure->upvalues[slot]->location);
         break;
       }
       case OP_SET_UPVALUE: {
-        uint8_t slot = READ_BYTE();
+        auto slot = READ_BYTE();
         *frame->closure->upvalues[slot]->location = peek(0);
         break;
       }
@@ -321,8 +657,8 @@ InterpretResult VM::run()
           return INTERPRET_RUNTIME_ERROR;
         }
 
-        ObjInstance* instance = AS_INSTANCE(peek(0));
-        ObjString* name = READ_STRING();
+        auto instance = AS_INSTANCE(peek(0));
+        auto name = READ_STRING();
 
         Value value;
         if (instance->fields.tableGet(name, &value)) {
@@ -340,9 +676,9 @@ InterpretResult VM::run()
           runtimeError("Only instances have fields.");
           return INTERPRET_RUNTIME_ERROR;
         }
-        ObjInstance* instance = AS_INSTANCE(peek(1));
+        auto instance = AS_INSTANCE(peek(1));
         instance->fields.tableSet(READ_STRING(), peek(0));
-        Value value = pop();
+        auto value = pop();
         pop();
         push(value);
         break;
@@ -352,23 +688,23 @@ InterpretResult VM::run()
         pop();
         break;
       case OP_GET_LOCAL: {
-        uint8_t slot = READ_BYTE();
+        auto slot = READ_BYTE();
         push(frame->slots[slot]);
         break;
       }
       case OP_SET_LOCAL: {
-        uint8_t slot = READ_BYTE();
+        auto slot = READ_BYTE();
         frame->slots[slot] = peek(0);
         break;
       }
       case OP_JUMP_IF_FALSE: {
-        uint16_t offset = READ_SHORT();
+        auto offset = READ_SHORT();
         if (isFalsey(peek(0)))
           frame->ip += offset;
         break;
       }
       case OP_SET_GLOBAL: {
-        ObjString* name = READ_STRING();
+        auto name = READ_STRING();
         if (this->globals.tableSet(name, peek(0))) {
           this->globals.tableDelete(name);
           runtimeError("Undefined variable '%s'.", name->chars);
@@ -377,29 +713,29 @@ InterpretResult VM::run()
         break;
       }
       case OP_LOOP: {
-        uint16_t offset = READ_SHORT();
+        auto offset = READ_SHORT();
         frame->ip -= offset;
         break;
       }
       case OP_JUMP: {
-        uint16_t offset = READ_SHORT();
+        auto offset = READ_SHORT();
         frame->ip += offset;
         break;
       }
       case OP_INHERIT: {
-        Value superclass = peek(1);
+        auto superclass = peek(1);
         if (!IS_CLASS(superclass)) {
           runtimeError("Superclass must be a class.");
           return INTERPRET_RUNTIME_ERROR;
         }
-        ObjClass* subclass = AS_CLASS(peek(0));
+        auto subclass = AS_CLASS(peek(0));
         tableAddAll(&AS_CLASS(superclass)->methods, &subclass->methods);
         pop();  // Subclass.
         break;
       }
       case OP_INVOKE: {
-        ObjString* method = READ_STRING();
-        int argCount = READ_BYTE();
+        auto method = READ_STRING();
+        auto argCount = READ_BYTE();
         if (!invoke(method, argCount)) {
           return INTERPRET_RUNTIME_ERROR;
         }
@@ -407,38 +743,144 @@ InterpretResult VM::run()
         break;
       }
       case OP_GET_SUPER: {
-        ObjString* name = READ_STRING();
-        ObjClass* superclass = AS_CLASS(pop());
+        auto name = READ_STRING();
+        auto superclass = AS_CLASS(pop());
         if (!bindMethod(superclass, name)) {
           return INTERPRET_RUNTIME_ERROR;
         }
         break;
       }
       case OP_SUPER_INVOKE: {
-        ObjString* method = READ_STRING();
-        int argCount = READ_BYTE();
-        ObjClass* superclass = AS_CLASS(pop());
+        auto method = READ_STRING();
+        auto argCount = READ_BYTE();
+        auto superclass = AS_CLASS(pop());
         if (!invokeFromClass(superclass, method, argCount)) {
           return INTERPRET_RUNTIME_ERROR;
         }
         frame = &this->frames[this->frameCount - 1];
         break;
       }
+      case OP_BUILD_LIST: {
+        ObjList* list = newList();
+        uint8_t itemCount = READ_BYTE();
+        push(OBJ_VAL(list));  // So list isn't sweeped by GC in appendToList
+        for (int i = itemCount; i > 0; i--) {
+          appendToList(list, peek(i));
+        }
+        pop();
+        while (itemCount-- > 0) {
+          pop();
+        }
+        push(OBJ_VAL(list));
+        break;
+      }
+      case OP_INDEX_GET: {
+        Value st_index = pop();
+        Value st_obj = pop();
+        Value result;
+
+        if (!IS_LIST(st_obj) && !IS_STRING(st_obj)) {
+          runtimeError("Invalid type to index into.");
+          return INTERPRET_RUNTIME_ERROR;
+        }
+        if (!IS_NUMBER(st_index)) {
+          runtimeError("List index is not a number.");
+          return INTERPRET_RUNTIME_ERROR;
+        }
+        if (IS_LIST(st_obj)) {
+          ObjList* list = AS_LIST(st_obj);
+          int index = AS_NUMBER(st_index);
+          if (!isValidListIndex(list, index)) {
+            runtimeError("List index out of range.");
+            return INTERPRET_RUNTIME_ERROR;
+          }
+
+          result = indexFromList(list, index);
+          push(result);
+        } else if (IS_STRING(st_obj)) {
+          ObjString* string = AS_STRING(st_obj);
+          int index = AS_NUMBER(st_index);
+          if (!isValidStringIndex(string, index)) {
+            runtimeError("String index out of range");
+            return INTERPRET_RUNTIME_ERROR;
+          }
+          result = indexFromString(string, index);
+          push(result);
+        }
+
+        break;
+      }
+      case OP_INDEX_SET: {
+        // Stack before: [list, index, item] and after: [item]
+        Value st_item = pop();
+        Value st_index = pop();
+        Value st_obj = pop();
+
+        if (!IS_LIST(st_obj) && !IS_STRING(st_obj)) {
+          runtimeError("Cannot store value in a non-list.");
+          return INTERPRET_RUNTIME_ERROR;
+        }
+
+        if (!IS_NUMBER(st_index)) {
+          runtimeError("List index is not a number.");
+          return INTERPRET_RUNTIME_ERROR;
+        }
+
+        if (IS_LIST(st_obj)) {
+          ObjList* list = AS_LIST(st_obj);
+          int index = AS_NUMBER(st_index);
+
+          if (!isValidListIndex(list, index)) {
+            runtimeError("Invalid list index.");
+            return INTERPRET_RUNTIME_ERROR;
+          }
+
+          storeToList(list, index, st_item);
+          push(st_item);
+        } else if (IS_STRING(st_obj)) {
+          ObjString* string = AS_STRING(st_obj);
+          int index = AS_NUMBER(st_index);
+
+          if (!isValidStringIndex(string, index)) {
+            runtimeError("Invalid list index.");
+            return INTERPRET_RUNTIME_ERROR;
+          }
+
+          ObjString* item = AS_STRING(st_item);
+
+          if (item->length > 1) {
+            runtimeError("Invalid assignment value");
+            return INTERPRET_RUNTIME_ERROR;
+          }
+
+          storeToString(string, index, item);
+          push(st_item);
+        }
+
+        break;
+      }
     }
   }
-
-#undef READ_BYTE
-#undef READ_CONSTANT
-#undef BINARY_OP
-#undef READ_STRING
-#undef READ_SHORT
 }
 
+/**
+ * @brief Gets the singleton virtual machine instance.
+ *
+ * Returns a pointer to the globally accessible virtual machine object.
+ *
+ * @return A pointer to the virtual machine instance.
+ */
 VM* VM::getVM()
 {
   return vm;
 }
 
+/**
+ * @brief Resets the virtual machine's stack.
+ *
+ * Clears the stack, frame count, and open upvalues, preparing the VM for a new
+ * execution.
+ */
 void VM::resetStack()
 {
   this->stackTop = this->stack;
@@ -446,23 +888,57 @@ void VM::resetStack()
   this->openUpvalues = NULL;
 }
 
+/**
+ * @brief Pushes a value onto the top of the stack.
+ *
+ * Increments the stack pointer and stores the given value at the new top of the
+ * stack.
+ *
+ * @param value The value to be pushed onto the stack.
+ */
 void VM::push(Value value)
 {
   *this->stackTop = value;
   this->stackTop++;
 }
 
+/**
+ * @brief Pops a value from the top of the stack.
+ *
+ * Decrements the stack pointer and returns the value at the previous top of the
+ * stack.
+ *
+ * @return The popped value.
+ */
 Value VM::pop()
 {
   this->stackTop--;
   return *this->stackTop;
 }
 
+/**
+ * @brief Peeks at a value on the stack without removing it.
+ *
+ * Returns the value at a specified offset from the top of the stack.
+ *
+ * @param distance The offset from the top of the stack.
+ * @return The value at the specified offset.
+ */
 Value VM::peek(int distance)
 {
   return this->stackTop[-1 - distance];
 }
 
+/**
+ * @brief Calls a closure.
+ *
+ * Creates a new call frame for the closure, checks the argument count, and
+ * pushes the return address onto the stack.
+ *
+ * @param closure The closure to call.
+ * @param argCount The number of arguments passed to the function.
+ * @return `true` if the call was successful, `false` if an error occurred.
+ */
 bool VM::call(ObjClosure* closure, int argCount)
 {
   if (argCount != closure->function->arity) {
@@ -484,6 +960,17 @@ bool VM::call(ObjClosure* closure, int argCount)
   return true;
 }
 
+/**
+ * @brief Calls a callable value.
+ *
+ * Determines the type of the callable value and dispatches the call
+ * accordingly. Handles bound methods, class constructors, closures, and native
+ * functions.
+ *
+ * @param callee The callable value to be invoked.
+ * @param argCount The number of arguments passed to the function.
+ * @return `true` if the call was successful, `false` if an error occurred.
+ */
 bool VM::callValue(Value callee, int argCount)
 {
   if (IS_OBJ(callee)) {
@@ -523,6 +1010,18 @@ bool VM::callValue(Value callee, int argCount)
   return false;
 }
 
+/**
+ * @brief Invokes a method on a class instance.
+ *
+ * Looks up the specified method in the class's method table and calls it with
+ * the given argument count.
+ *
+ * @param klass The class instance.
+ * @param name The name of the method to invoke.
+ * @param argCount The number of arguments passed to the method.
+ * @return `true` if the method was invoked successfully, `false` if an error
+ * occurred.
+ */
 bool VM::invokeFromClass(ObjClass* klass, ObjString* name, int argCount)
 {
   Value method;
@@ -533,6 +1032,17 @@ bool VM::invokeFromClass(ObjClass* klass, ObjString* name, int argCount)
   return call(AS_CLOSURE(method), argCount);
 }
 
+/**
+ * @brief Invokes a method on an object.
+ *
+ * Looks up the method by name in the object's instance variables or its class's
+ * methods. Calls the method with the given arguments.
+ *
+ * @param name The name of the method to invoke.
+ * @param argCount The number of arguments passed to the method.
+ * @return `true` if the method was invoked successfully, `false` if an error
+ * occurred.
+ */
 bool VM::invoke(ObjString* name, int argCount)
 {
   Value receiver = peek(argCount);
@@ -550,11 +1060,28 @@ bool VM::invoke(ObjString* name, int argCount)
   return invokeFromClass(instance->klass, name, argCount);
 }
 
+/**
+ * @brief Checks if a value is considered falsey.
+ *
+ * Determines whether a given value is considered false in the language's
+ * context. Currently, `nil` and `false` are considered falsey.
+ *LFwise.
+ */
 bool VM::isFalsey(Value value)
 {
   return IS_NIL(value) || (IS_BOOL(value) && !AS_BOOL(value));
 }
 
+/**
+ * @brief Reports a runtime error and terminates execution.
+ *
+ * Prints an error message to stderr, including the error message, the current
+ * line number, and the call stack. Resets the virtual machine's state after
+ * printing the error.
+ *
+ * @param format The format string for the error message.
+ * @param ... Variable arguments for the format string.
+ */
 void VM::runtimeError(const char* format, ...)
 {
   va_list args;
@@ -578,6 +1105,15 @@ void VM::runtimeError(const char* format, ...)
   resetStack();
 }
 
+/**
+ * @brief Defines a native function in the global environment.
+ *
+ * Creates a string for the function name, creates a native function object, and
+ * adds it to the global table.
+ *
+ * @param name The name of the native function.
+ * @param function The native function implementation.
+ */
 void VM::defineNative(const char* name, NativeFn function)
 {
   push(OBJ_VAL(copyString(name, (int)strlen(name))));

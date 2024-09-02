@@ -1,0 +1,34 @@
+class Alice {
+  init() {
+    this.vm = 1;
+    this.stack   = 1;
+    this.bytecode      = 1;
+    this.accumulator   = 1;
+    this.comp = 1;
+    this.int      = 1;
+  }
+  vmc()    { return this.vm; }
+  stackc() { return this.stack; }
+  bytecodec()   { return this.bytecode; }
+  accumulatorc()    { return this.accumulator; }
+  compc()  { return this.comp; }
+  intc()  { return this.int; }
+}
+
+var alice = Alice();
+var sum = 0;
+var start = clock();
+while (sum < 100000000) {
+  sum = sum + alice.vmc()
+            + alice.stackc()
+            + alice.bytecodec()
+            + alice.accumulatorc()
+            + alice.compc()
+            + alice.intc();
+  if (sum % 2 == 0){
+    var temp_alice =  Alice();
+  }
+}
+
+print clock() - start;
+print sum;

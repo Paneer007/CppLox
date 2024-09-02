@@ -1,0 +1,73 @@
+var NMAX = 5000;
+var WMAX = 1000000;
+var MOD = 1000000007;
+
+var trie = [];
+for(var i = 0; i< WMAX; i = i+1){
+    var neigh = [];
+    for(var j = 0; j<26; j = j+1){
+        append(neigh,0);
+    }
+    append(trie, neigh);
+}
+
+var node_count = 0;
+var stop=[];
+
+
+for(var i = 0; i< WMAX; i = i+1){
+    append(stop, false);
+}
+
+fun insert(word){
+    var node = 0;
+    var str_len = len(word);
+    for(var i =0; i< str_len; i = i + 1){
+        var trie_node = trie[node];
+        var c = word[i];
+        var x =  c-"a";
+        if(trie_node[c-"a"] == 0){
+            node_count = node_count +1;
+            trie_node[c-"a"] = node_count;
+            trie[node] = trie_node;
+        }
+        node = trie_node[c-"a"];
+    }
+    stop[node] = true;
+}
+
+var s = str_input();
+var n  = int_input();
+
+for(var i  = 0; i< n;i = i+1){
+    var word = str_input();
+    insert(word);
+}
+
+var dp = [];
+var len_s = len(s);
+for(var i = 0; i<= len(s); i = i+1){
+    append(dp, 0);
+}
+
+dp[len(s)] = 1;
+
+for(var i = len(s) - 1; i >= 0; i = i-1){
+    var node = 0;
+    for(var j = i; j < len(s); j = j+1){
+        var trie_node = trie[node];
+        var idx = s[j] - "a";
+        var trie_node_idx = trie_node[idx];
+        if (trie_node_idx == 0){
+            j = len(s);
+        }else{
+            node = trie_node_idx;
+            if(stop[node]){
+                dp[i] = (dp[i] + dp[j+1]);
+            }
+        }
+    }
+}
+
+print(dp[0]);
+

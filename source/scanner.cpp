@@ -5,6 +5,14 @@
 
 #include "common.hpp"
 
+/**
+ * @brief Initializes the scanner with the given source code.
+ *
+ * This function sets up the scanner by storing the beginning and current
+ * positions of the source code, as well as the initial line number.
+ *
+ * @param source The source code to be scanned.
+ */
 void Scanner::initScanner(const char* source)
 {
   this->start = source;
@@ -12,16 +20,44 @@ void Scanner::initScanner(const char* source)
   this->line = 1;
 }
 
+/**
+ * @brief Retrieves the singleton scanner instance.
+ *
+ * This static method returns a reference to the globally accessible scanner
+ * object.
+ *
+ * @return A pointer to the scanner instance.
+ */
 Scanner* Scanner::getScanner()
 {
   return Scanner::scanner;
 }
 
+/**
+ * @brief Checks if a character is an alphabetic character or an underscore.
+ *
+ * Determines if the given character is considered an alphabetic character or an
+ * underscore. Alphabetic characters include both uppercase and lowercase
+ * letters.
+ *
+ * @param c The character to check.
+ * @return `true` if the character is alphabetic or an underscore, `false`
+ * otherwise.
+ */
 bool Scanner::isAlpha(char c)
 {
   return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_';
 }
 
+/**
+ * @brief Scans an identifier token.
+ *
+ * This function consumes characters as long as they are alphanumeric or
+ * underscores. Once the identifier is complete, it creates a token of the
+ * appropriate type based on keywords.
+ *
+ * @return The token representing the scanned identifier.
+ */
 Token Scanner::identifier()
 {
   while (this->isAlpha(peek()) || this->isDigit(peek()))
@@ -29,6 +65,20 @@ Token Scanner::identifier()
   return this->makeToken(this->identifierType());
 }
 
+/**
+ * @brief Checks if the current token is a keyword.
+ *
+ * Compares the current token with a given keyword and its length.
+ * If they match, returns the corresponding token type.
+ * Otherwise, returns TOKEN_IDENTIFIER.
+ *
+ * @param start The starting index of the potential keyword.
+ * @param length The length of the potential keyword.
+ * @param rest The remaining characters of the keyword.
+ * @param type The token type if the keyword matches.
+ * @return The token type, either the specified type for a match or
+ * TOKEN_IDENTIFIER.
+ */
 TokenType Scanner::checkKeyword(int start,
                                 int length,
                                 const char* rest,
@@ -43,6 +93,15 @@ TokenType Scanner::checkKeyword(int start,
   return TOKEN_IDENTIFIER;
 }
 
+/**
+ * @brief Determines the token type of an identifier.
+ *
+ * Checks if the identifier matches any of the predefined keywords.
+ * If a match is found, returns the corresponding token type.
+ * Otherwise, returns TOKEN_IDENTIFIER.
+ *
+ * @return The token type of the identifier.
+ */
 TokenType Scanner::identifierType()
 {
   switch (this->start[0]) {
@@ -95,17 +154,41 @@ TokenType Scanner::identifierType()
   return TOKEN_IDENTIFIER;
 }
 
+/**
+ * @brief  Checks if the scanner has reached the end of the input.
+ *
+ * Determines whether the current character pointer has reached the null
+ * terminator of the source code.
+ *
+ * @return `true` if the end of the input has been reached, `false` otherwise.
+ */
 bool Scanner::isAtEnd()
 {
   return *(this->current) == '\0';
 }
 
+/**
+ * @brief Advances the scanner to the next character.
+ *
+ * Increments the current character pointer and returns the previous character.
+ *
+ * @return The character that was at the previous position.
+ */
 char Scanner::advance()
 {
   this->current++;
   return this->current[-1];
 }
 
+/**
+ * @brief Peeks at the next character without advancing the scanner.
+ *
+ * Returns the next character in the input stream without moving the current
+ * character pointer. If the end of the input has been reached, returns the null
+ * character.
+ *
+ * @return The next character in the input stream.
+ */
 char Scanner::peekNext()
 {
   if (isAtEnd())
@@ -113,6 +196,15 @@ char Scanner::peekNext()
   return this->current[1];
 }
 
+/**
+ * @brief Scans a string literal.
+ *
+ * Reads characters until a closing double quote is encountered.
+ * Handles newlines within the string by incrementing the line count.
+ * Reports an error if the string is unterminated.
+ *
+ * @return The string token.
+ */
 Token Scanner::string()
 {
   while (peek() != '"' && !isAtEnd()) {
@@ -129,6 +221,14 @@ Token Scanner::string()
   return makeToken(TOKEN_STRING);
 }
 
+/**
+ * @brief Checks if the next character matches the expected character.
+ *
+ * Consumes the next character if it matches the expected character.
+ *
+ * @param expected The expected character.
+ * @return `true` if the next character matches, `false` otherwise.
+ */
 bool Scanner::match(char expected)
 {
   if (isAtEnd())
@@ -139,16 +239,37 @@ bool Scanner::match(char expected)
   return true;
 }
 
+/**
+ * @brief Returns the current character without advancing the scanner.
+ *
+ * @return The current character.
+ */
 char Scanner::peek()
 {
   return *this->current;
 }
 
+/**
+ * @brief Checks if a character is a digit.
+ *
+ * Determines if the given character is a numeric digit between 0 and 9.
+ *
+ * @param c The character to check.
+ * @return `true` if the character is a digit, `false` otherwise.
+ */
 bool Scanner::isDigit(char c)
 {
   return c >= '0' && c <= '9';
 }
 
+/**
+ * @brief Scans a number literal.
+ *
+ * Reads digits until a non-digit character is encountered.
+ * Handles fractional parts by consuming digits after a decimal point.
+ *
+ * @return The number token.
+ */
 Token Scanner::number()
 {
   while (this->isDigit(peek()))
@@ -166,6 +287,14 @@ Token Scanner::number()
   return this->makeToken(TOKEN_NUMBER);
 }
 
+/**
+ * @brief Skips whitespace and comments.
+ *
+ * Consumes whitespace characters (spaces, tabs, newlines, and carriage returns)
+ * and single-line comments. Increments the line number when encountering
+ * newlines.
+ *
+ */
 void Scanner::skipWhitespace()
 {
   for (;;) {
@@ -195,6 +324,15 @@ void Scanner::skipWhitespace()
   }
 }
 
+/**
+ * @brief Scans the next token from the input stream.
+ *
+ * Advances the input pointer and identifies the next token based on the
+ * character encountered. Handles single-character tokens, numbers, identifiers,
+ * strings, and two-character tokens.
+ *
+ * @return The next token in the input stream.
+ */
 Token Scanner::scanToken()
 {
   this->skipWhitespace();
@@ -234,6 +372,8 @@ Token Scanner::scanToken()
       return makeToken(TOKEN_SLASH);
     case '*':
       return makeToken(TOKEN_STAR);
+    case '%':
+      return makeToken(TOKEN_MODULUS);
     case '!':
       return makeToken(match('=') ? TOKEN_BANG_EQUAL : TOKEN_BANG);
     case '=':
@@ -244,11 +384,24 @@ Token Scanner::scanToken()
       return makeToken(match('=') ? TOKEN_GREATER_EQUAL : TOKEN_GREATER);
     case '"':
       return string();
+    case '[':
+      return makeToken(TOKEN_LEFT_BRACKET);
+    case ']':
+      return makeToken(TOKEN_RIGHT_BRACKET);
   }
 
   return this->errorToken("Unexpected character.");
 }
 
+/**
+ * @brief Creates a new token with the given type.
+ *
+ * Constructs a token object with the specified type, starting position, length,
+ * and line number.
+ *
+ * @param type The type of the token to be created.
+ * @return The newly created token.
+ */
 Token Scanner::makeToken(TokenType type)
 {
   Token token;
@@ -259,6 +412,15 @@ Token Scanner::makeToken(TokenType type)
   return token;
 }
 
+/**
+ * @brief Creates an error token with the given message.
+ *
+ * Constructs a token object indicating an error with the specified error
+ * message.
+ *
+ * @param message The error message to be included in the token.
+ * @return The error token.
+ */
 Token Scanner::errorToken(const char* message)
 {
   Token token;

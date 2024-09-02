@@ -51,6 +51,17 @@ static inline double valueToNum(Value value)
 
 #else
 
+/**
+ * @brief Enumeration representing the type of a value.
+ *
+ * This enum defines the possible types a value can hold within the system.
+ *
+ * @enum ValueType
+ * @value VAL_BOOL Represents a boolean value (true or false).
+ * @value VAL_NIL Represents a null or nil value.
+ * @value VAL_NUMBER Represents a numeric value.
+ * @value VAL_OBJ Represents an object value.
+ */
 typedef enum
 {
   VAL_BOOL,
@@ -59,10 +70,23 @@ typedef enum
   VAL_OBJ
 } ValueType;
 
+/**
+ * @brief Represents a value in the virtual machine.
+ *
+ * This union stores a value of different types: boolean, number, or object.
+ * The `type` member indicates the actual type of the stored value.
+ */
 class Value
 {
 public:
+  /**
+   * @brief The type of the value.
+   */
   ValueType type;
+
+  /**
+   * @brief Union to hold the value based on its type.
+   */
   union
   {
     bool boolean;
@@ -87,21 +111,76 @@ public:
 
 #endif
 
+/**
+ * @brief Represents a dynamic array of values.
+ *
+ * This class provides a flexible way to store a growing collection of values.
+ */
 class ValueArray
 {
 public:
+  /**
+   * @brief The maximum capacity of the array.
+   */
   int capacity;
+
+  /**
+   * @brief The number of elements currently stored in the array.
+   */
   int count;
+
+  /**
+   * @brief The array of values.
+   */
   Value* values;
 
+  /**
+   * @brief Constructs a new, empty ValueArray.
+   */
   ValueArray();
 
+  /**
+   * @brief Initializes an empty ValueArray.
+   *
+   */
   void initValueArray();
+
+  /**
+   * @brief  Appends a value to the ValueArray.
+   *
+   * @param value The value to be appended.
+   */
   void writeValueArray(Value value);
+
+  /**
+   * @brief Frees the memory allocated for the ValueArray.
+   *
+   * Deallocates the memory used by the `values` array and resets the array to
+   * an empty state.
+   */
   void freeValueArray();
 };
 
+/**
+ * @brief Prints a human-readable representation of a value.
+ *
+ * This function determines the type of the value and prints an appropriate
+ * representation. It handles boolean, nil, number, and object values.
+ *
+ * @param value The value to be printed.
+ */
 void printValue(Value value);
+
+/**
+ * @brief Compares two values for equality.
+ *
+ * Determines if two values are equal based on their types and values.
+ * Handles different value types, including numbers, booleans, nil, and objects.
+ *
+ * @param a The first value to compare.
+ * @param b The second value to compare.
+ * @return `true` if the values are equal, `false` otherwise.
+ */
 bool valuesEqual(Value a, Value b);
 
 #endif

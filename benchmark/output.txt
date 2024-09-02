@@ -1,0 +1,1435 @@
+Flat profile:
+
+Each sample counts as 0.01 seconds.
+  %   cumulative   self              self     total           
+ time   seconds   seconds    calls   s/call   s/call  name    
+ 18.64      4.33     4.33        1     4.33    22.30  VM::run()
+ 12.63      7.25     2.93 633333386     0.00     0.00  VM::run()::{lambda()#3}::operator()() const
+  9.74      9.52     2.26 2333333496     0.00     0.00  VM::run()::{lambda()#1}::operator()() const
+  8.02     11.38     1.86 650000095     0.00     0.00  findEntry(Entry*, int, ObjString*)
+  6.12     12.79     1.42 1000000150     0.00     0.00  VM::push(Value)
+  5.86     14.15     1.36 883333478     0.00     0.00  VM::pop()
+  5.80     15.50     1.34 1033333398     0.00     0.00  VM::peek(int)
+  4.14     16.46     0.96 33333344     0.00     0.00  Table::adjustCapacity(int)
+  3.73     17.32     0.86 483333351     0.00     0.00  Table::tableGet(ObjString*, Value*)
+  3.02     18.02     0.70 116666707     0.00     0.00  Table::tableSet(ObjString*, Value)
+  2.48     18.60     0.57 116666671     0.00     0.00  VM::call(ObjClosure*, int)
+  2.07     19.08     0.48                             VM::bindMethod(ObjClass*, ObjString*)
+  1.94     19.53     0.45 483333368     0.00     0.00  VM::run()::{lambda()#4}::operator()() const
+  1.90     19.97     0.44 400000014     0.00     0.00  isObjType(Value, ObjType)
+  1.25     20.26     0.29        1     0.29     0.29  VM::resetStack()
+  1.21     20.54     0.28 100000002     0.00     0.00  VM::invoke(ObjString*, int)
+  1.21     20.82     0.28 33333336     0.00     0.00  VM::run()::{lambda(char)#5}::operator()(char) const
+  1.12     21.08     0.26 33333342     0.00     0.00  Table::initTable()
+  0.97     21.30     0.23 116666893     0.00     0.00  reallocate(void*, unsigned long, unsigned long)
+  0.82     21.50     0.19 100000002     0.00     0.00  VM::invokeFromClass(ObjClass*, ObjString*, int)
+  0.75     21.67     0.17 93168195     0.00     0.00  markValue(Value)
+  0.65     21.82     0.15   757465     0.00     0.00  sweep()
+  0.50     21.93     0.12 109832425     0.00     0.00  markObject(Obj*)
+  0.47     22.05     0.11 50000015     0.00     0.00  void* FREE_ARRAY<Entry>(void*, int)
+  0.43     22.14     0.10   757465     0.00     0.00  Table::tableRemoveWhite()
+  0.41     22.24     0.10 283328871     0.00     0.00  VM::getVM()
+  0.41     22.34     0.10 116666671     0.00     0.00  closeUpvalues(Value*)
+  0.41     22.43     0.10 16666706     0.00     0.00  freeObject(Obj*)
+  0.34     22.51     0.08 16666670     0.00     0.00  VM::callValue(Value, int)
+  0.34     22.59     0.08        2     0.04     0.04  clockNative(int, Value*)
+  0.30     22.66     0.07 66666669     0.00     0.00  VM::run()::{lambda()#2}::operator()() const
+  0.30     22.73     0.07   757465     0.00     0.00  traceReferences()
+  0.22     22.78     0.05 33333375     0.00     0.00  GROW_CAPACITY(int)
+  0.22     22.83     0.05  3029860     0.00     0.00  Table::markTable()
+  0.19     22.88     0.04 16666671     0.00     0.00  Table::freeTable()
+  0.17     22.91     0.04  6059720     0.00     0.00  markArray(ValueArray*)
+  0.15     22.95     0.04 33333335     0.00     0.00  VM::isFalsey(Value)
+  0.15     22.98     0.04 16666706     0.00     0.00  allocateObject(unsigned long, ObjType)
+  0.13     23.02     0.03                             _init
+  0.11     23.04     0.03        1     0.03    22.63  CppLox::execute(int, char const**)
+  0.11     23.07     0.03                             captureUpvalue(Value*)
+  0.09     23.09     0.02 16666667     0.00     0.00  valuesEqual(Value, Value)
+  0.09     23.11     0.02                             ObjBoundMethod* ALLOCATE_OBJ<ObjBoundMethod>(ObjType)
+  0.06     23.12     0.01 33333344     0.00     0.00  Entry* ALLOCATE<Entry>(int)
+  0.06     23.14     0.01 30298600     0.00     0.00  blackenObject(Obj*)
+  0.04     23.14     0.01 16666668     0.00     0.00  newInstance(ObjClass*)
+  0.04     23.16     0.01 16666668     0.00     0.00  ObjInstance* ALLOCATE_OBJ<ObjInstance>(ObjType)
+  0.04     23.16     0.01       16     0.00     0.00  unsigned char* GROW_ARRAY<unsigned char>(void*, int, int)
+  0.04     23.18     0.01        8     0.00     0.00  ObjClosure* ALLOCATE_OBJ<ObjClosure>(ObjType)
+  0.02     23.18     0.01 16666668     0.00     0.00  void* FREE<ObjInstance>(void*)
+  0.02     23.18     0.01        1     0.01     0.01  void* FREE<ObjClass>(void*)
+  0.02     23.19     0.01                             tableAddAll(Table*, Table*)
+  0.02     23.20     0.01                             printFunction(ObjFunction*)
+  0.02     23.20     0.01                             VM::runtimeError(char const*, ...)
+  0.00     23.20     0.00   757465     0.00     0.00  collectGarbage()
+  0.00     23.20     0.00   757465     0.00     0.00  markCompilerRoots()
+  0.00     23.20     0.00   757465     0.00     0.00  markRoots()
+  0.00     23.20     0.00      907     0.00     0.00  Scanner::peek()
+  0.00     23.20     0.00      739     0.00     0.00  Scanner::advance()
+  0.00     23.20     0.00      553     0.00     0.00  Scanner::isAlpha(char)
+  0.00     23.20     0.00      303     0.00     0.00  currentChunk()
+  0.00     23.20     0.00      294     0.00     0.00  check(TokenType)
+  0.00     23.20     0.00      290     0.00     0.00  Scanner::isDigit(char)
+  0.00     23.20     0.00      226     0.00     0.00  emitByte(unsigned char)
+  0.00     23.20     0.00      226     0.00     0.00  Chunk::writeChunk(unsigned char, int)
+  0.00     23.20     0.00      223     0.00     0.00  match(TokenType)
+  0.00     23.20     0.00      214     0.00     0.00  Scanner::isAtEnd()
+  0.00     23.20     0.00      202     0.00     0.00  Scanner::getScanner()
+  0.00     23.20     0.00      201     0.00     0.00  advance()
+  0.00     23.20     0.00      201     0.00     0.00  Scanner::skipWhitespace()
+  0.00     23.20     0.00      201     0.00     0.00  Scanner::makeToken(TokenType)
+  0.00     23.20     0.00      201     0.00     0.00  Scanner::scanToken()
+  0.00     23.20     0.00      150     0.00     0.00  getRule(TokenType)
+  0.00     23.20     0.00       95     0.00     0.00  consume(TokenType, char const*)
+  0.00     23.20     0.00       81     0.00     0.00  emitBytes(unsigned char, unsigned char)
+  0.00     23.20     0.00       73     0.00     0.00  Scanner::identifier()
+  0.00     23.20     0.00       73     0.00     0.00  Scanner::identifierType()
+  0.00     23.20     0.00       65     0.00     0.00  Scanner::checkKeyword(int, int, char const*, TokenType)
+  0.00     23.20     0.00       63     0.00     0.00  makeConstant(Value)
+  0.00     23.20     0.00       63     0.00     0.00  ValueArray::writeValueArray(Value)
+  0.00     23.20     0.00       63     0.00     0.00  Chunk::addConstant(Value)
+  0.00     23.20     0.00       56     0.00     0.00  copyString(char const*, int)
+  0.00     23.20     0.00       56     0.00     0.00  hashString(char const*, int)
+  0.00     23.20     0.00       56     0.00     0.00  Table::tableFindString(char const*, int, unsigned int)
+  0.00     23.20     0.00       46     0.00     0.00  identifierConstant(Token*)
+  0.00     23.20     0.00       38     0.00     0.00  parsePrecedence(Precedence)
+  0.00     23.20     0.00       30     0.00     0.00  identifiersEqual(Token*, Token*)
+  0.00     23.20     0.00       29     0.00     0.00  resolveLocal(Compiler*, Token*)
+  0.00     23.20     0.00       29     0.00     0.00  namedVariable(Token, bool)
+  0.00     23.20     0.00       28     0.00     0.00  expression()
+  0.00     23.20     0.00       28     0.00     0.00  variable(bool)
+  0.00     23.20     0.00       26     0.00     0.00  ValueArray::initValueArray()
+  0.00     23.20     0.00       22     0.00     0.00  declaration()
+  0.00     23.20     0.00       19     0.00     0.00  void* FREE_ARRAY<char>(void*, int)
+  0.00     23.20     0.00       19     0.00     0.00  ObjString* ALLOCATE_OBJ<ObjString>(ObjType)
+  0.00     23.20     0.00       19     0.00     0.00  void* FREE<ObjString>(void*)
+  0.00     23.20     0.00       19     0.00     0.00  char* ALLOCATE<char>(int)
+  0.00     23.20     0.00       19     0.00     0.00  allocateString(char*, int, unsigned int)
+  0.00     23.20     0.00       19     0.00     0.00  statement()
+  0.00     23.20     0.00       18     0.00     0.00  dot(bool)
+  0.00     23.20     0.00       17     0.00     0.00  resolveUpvalue(Compiler*, Token*)
+  0.00     23.20     0.00       17     0.00     0.00  Chunk::initChunk()
+  0.00     23.20     0.00       16     0.00     0.00  int* GROW_ARRAY<int>(void*, int, int)
+  0.00     23.20     0.00       13     0.00     0.00  Scanner::match(char)
+  0.00     23.20     0.00       12     0.00     0.00  Value* GROW_ARRAY<Value>(void*, int, int)
+  0.00     23.20     0.00       12     0.00     0.00  this_(bool)
+  0.00     23.20     0.00       10     0.00     0.00  argumentList()
+  0.00     23.20     0.00       10     0.00     0.00  emitConstant(Value)
+  0.00     23.20     0.00       10     0.00     0.00  binary(bool)
+  0.00     23.20     0.00       10     0.00     0.00  number(bool)
+  0.00     23.20     0.00       10     0.00     0.00  Scanner::number()
+  0.00     23.20     0.00        9     0.00     0.00  beginScope()
+  0.00     23.20     0.00        9     0.00     0.00  block()
+  0.00     23.20     0.00        8     0.00     0.00  void* FREE_ARRAY<Value>(void*, int)
+  0.00     23.20     0.00        8     0.00     0.00  void* FREE_ARRAY<ObjUpvalue*>(void*, int)
+  0.00     23.20     0.00        8     0.00     0.00  void* FREE_ARRAY<unsigned char>(void*, int)
+  0.00     23.20     0.00        8     0.00     0.00  void* FREE_ARRAY<int>(void*, int)
+  0.00     23.20     0.00        8     0.00     0.00  newClosure(ObjFunction*)
+  0.00     23.20     0.00        8     0.00     0.00  newFunction()
+  0.00     23.20     0.00        8     0.00     0.00  ObjFunction* ALLOCATE_OBJ<ObjFunction>(ObjType)
+  0.00     23.20     0.00        8     0.00     0.00  void* FREE<ObjClosure>(void*)
+  0.00     23.20     0.00        8     0.00     0.00  void* FREE<ObjFunction>(void*)
+  0.00     23.20     0.00        8     0.00     0.00  ObjUpvalue** ALLOCATE<ObjUpvalue*>(int)
+  0.00     23.20     0.00        8     0.00     0.00  emitReturn()
+  0.00     23.20     0.00        8     0.00     0.00  endCompiler()
+  0.00     23.20     0.00        8     0.00     0.00  initCompiler(Compiler*, FunctionType)
+  0.00     23.20     0.00        8     0.00     0.00  ValueArray::freeValueArray()
+  0.00     23.20     0.00        8     0.00     0.00  Chunk::freeChunk()
+  0.00     23.20     0.00        7     0.00     0.00  expressionStatement()
+  0.00     23.20     0.00        7     0.00     0.00  method()
+  0.00     23.20     0.00        7     0.00     0.00  function(FunctionType)
+  0.00     23.20     0.00        7     0.00     0.00  VM::defineMethod(ObjString*)
+  0.00     23.20     0.00        6     0.00     0.00  returnStatement()
+  0.00     23.20     0.00        5     0.00     0.00  defineVariable(unsigned char)
+  0.00     23.20     0.00        5     0.00     0.00  declareVariable()
+  0.00     23.20     0.00        4     0.00     0.00  parseVariable(char const*)
+  0.00     23.20     0.00        4     0.00     0.00  varDeclaration()
+  0.00     23.20     0.00        4     0.00     0.00  call(bool)
+  0.00     23.20     0.00        3     0.00     0.00  emitJump(unsigned char)
+  0.00     23.20     0.00        3     0.00     0.00  patchJump(int)
+  0.00     23.20     0.00        2     0.00     0.00  printValue(Value)
+  0.00     23.20     0.00        2     0.00     0.00  ObjNative* ALLOCATE_OBJ<ObjNative>(ObjType)
+  0.00     23.20     0.00        2     0.00     0.00  void* FREE<ObjNative>(void*)
+  0.00     23.20     0.00        2     0.00     0.00  newNative(Value (*)(int, Value*))
+  0.00     23.20     0.00        2     0.00     0.00  printStatement()
+  0.00     23.20     0.00        2     0.00     0.00  endScope()
+  0.00     23.20     0.00        2     0.00     0.00  VM::defineNative(char const*, Value (*)(int, Value*))
+  0.00     23.20     0.00        1     0.00     0.00  freeObjects()
+  0.00     23.20     0.00        1     0.00     0.00  ObjClass* ALLOCATE_OBJ<ObjClass>(ObjType)
+  0.00     23.20     0.00        1     0.00     0.00  __static_initialization_and_destruction_0(int, int)
+  0.00     23.20     0.00        1     0.00     0.00  __static_initialization_and_destruction_0(int, int)
+  0.00     23.20     0.00        1     0.00     0.01  compile(char const*)
+  0.00     23.20     0.00        1     0.00     0.00  newClass(ObjString*)
+  0.00     23.20     0.00        1     0.00     0.00  ifStatement()
+  0.00     23.20     0.00        1     0.00     0.00  whileStatement()
+  0.00     23.20     0.00        1     0.00     0.00  markInitialized()
+  0.00     23.20     0.00        1     0.00     0.00  classDeclaration()
+  0.00     23.20     0.00        1     0.00     0.00  addLocal(Token)
+  0.00     23.20     0.00        1     0.00     0.00  emitLoop(int)
+  0.00     23.20     0.00        1     0.00     0.00  ValueArray::ValueArray()
+  0.00     23.20     0.00        1     0.00     0.00  VM::freeVM()
+  0.00     23.20     0.00        1     0.00     0.29  VM::initVM()
+  0.00     23.20     0.00        1     0.00    22.31  VM::interpret(char const*)
+  0.00     23.20     0.00        1     0.00     0.00  VM::VM()
+  0.00     23.20     0.00        1     0.00     0.00  Chunk::Chunk()
+  0.00     23.20     0.00        1     0.00    22.31  CppLox::runFile(char const*)
+  0.00     23.20     0.00        1     0.00     0.00  CppLox::readFile(char const*)
+  0.00     23.20     0.00        1     0.00     0.00  Scanner::initScanner(char const*)
+  0.00     23.20     0.00        1     0.00     0.00  Scanner::Scanner()
+
+ %         the percentage of the total running time of the
+time       program used by this function.
+
+cumulative a running sum of the number of seconds accounted
+ seconds   for by this function and those listed above it.
+
+ self      the number of seconds accounted for by this
+seconds    function alone.  This is the major sort for this
+           listing.
+
+calls      the number of times this function was invoked, if
+           this function is profiled, else blank.
+
+ self      the average number of milliseconds spent in this
+ms/call    function per call, if this function is profiled,
+	   else blank.
+
+ total     the average number of milliseconds spent in this
+ms/call    function and its descendents per call, if this
+	   function is profiled, else blank.
+
+name       the name of the function.  This is the minor sort
+           for this listing. The index shows the location of
+	   the function in the gprof listing. If the index is
+	   in parenthesis it shows where it would appear in
+	   the gprof listing if it were to be printed.
+
+Copyright (C) 2012-2022 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.
+
+		     Call graph (explanation follows)
+
+
+granularity: each sample hit covers 4 byte(s) for 0.04% of 23.20 seconds
+
+index % time    self  children    called     name
+                                                 <spontaneous>
+[1]     97.5    0.00   22.63                 main [1]
+                0.03   22.61       1/1           CppLox::execute(int, char const**) [2]
+-----------------------------------------------
+                0.03   22.61       1/1           main [1]
+[2]     97.5    0.03   22.61       1         CppLox::execute(int, char const**) [2]
+                0.00   22.31       1/1           CppLox::runFile(char const*) [3]
+                0.00    0.29       1/1           VM::initVM() [31]
+                0.00    0.00       1/1           VM::freeVM() [96]
+                0.00    0.00       1/283328871     VM::getVM() [45]
+                0.00    0.00       1/1           Chunk::Chunk() [176]
+-----------------------------------------------
+                0.00   22.31       1/1           CppLox::execute(int, char const**) [2]
+[3]     96.2    0.00   22.31       1         CppLox::runFile(char const*) [3]
+                0.00   22.31       1/1           VM::interpret(char const*) [4]
+                0.00    0.00       1/283328871     VM::getVM() [45]
+                0.00    0.00       1/1           CppLox::readFile(char const*) [177]
+-----------------------------------------------
+                0.00   22.31       1/1           CppLox::runFile(char const*) [3]
+[4]     96.2    0.00   22.31       1         VM::interpret(char const*) [4]
+                4.33   17.98       1/1           VM::run() [5]
+                0.00    0.01       1/1           compile(char const*) [55]
+                0.00    0.00       1/8           newClosure(ObjFunction*) [58]
+                0.00    0.00       1/116666671     VM::call(ObjClosure*, int) [21]
+                0.00    0.00       2/1000000150     VM::push(Value) [14]
+                0.00    0.00       1/883333478     VM::pop() [16]
+-----------------------------------------------
+                4.33   17.98       1/1           VM::interpret(char const*) [4]
+[5]     96.1    4.33   17.98       1         VM::run() [5]
+                0.70    2.61 116666679/116666707     Table::tableSet(ObjString*, Value) [7]
+                0.45    2.70 483333368/483333368     VM::run()::{lambda()#4}::operator()() const [8]
+                0.28    1.85 100000002/100000002     VM::invoke(ObjString*, int) [12]
+                1.65    0.00 1700000110/2333333496     VM::run()::{lambda()#1}::operator()() const [9]
+                1.37    0.00 966666724/1000000150     VM::push(Value) [14]
+                1.26    0.00 816666712/883333478     VM::pop() [16]
+                0.48    0.76 266666679/483333351     Table::tableGet(ObjString*, Value*) [10]
+                1.13    0.00 866666710/1033333398     VM::peek(int) [17]
+                0.69    0.15 150000018/633333386     VM::run()::{lambda()#3}::operator()() const [6]
+                0.08    0.71 16666670/16666670     VM::callValue(Value, int) [19]
+                0.28    0.24 33333336/33333336     VM::run()::{lambda(char)#5}::operator()(char) const [23]
+                0.33    0.00 300000012/400000014     isObjType(Value, ObjType) [26]
+                0.10    0.04 116666671/116666671     closeUpvalues(Value*) [40]
+                0.07    0.00 66666669/66666669     VM::run()::{lambda()#2}::operator()() const [47]
+                0.04    0.00 33333335/33333335     VM::isFalsey(Value) [50]
+                0.02    0.00 16666667/16666667     valuesEqual(Value, Value) [53]
+                0.00    0.01       7/8           newClosure(ObjFunction*) [58]
+                0.00    0.00       7/7           VM::defineMethod(ObjString*) [104]
+                0.00    0.00       1/1           newClass(ObjString*) [114]
+                0.00    0.00       2/2           printValue(Value) [168]
+-----------------------------------------------
+                0.69    0.15 150000018/633333386     VM::run() [5]
+                2.24    0.47 483333368/633333386     VM::run()::{lambda()#4}::operator()() const [8]
+[6]     15.3    2.93    0.61 633333386         VM::run()::{lambda()#3}::operator()() const [6]
+                0.61    0.00 633333386/2333333496     VM::run()::{lambda()#1}::operator()() const [9]
+-----------------------------------------------
+                0.00    0.00       2/116666707     VM::defineNative(char const*, Value (*)(int, Value*)) [107]
+                0.00    0.00       7/116666707     VM::defineMethod(ObjString*) [104]
+                0.00    0.00      19/116666707     allocateString(char*, int, unsigned int) [95]
+                0.70    2.61 116666679/116666707     VM::run() [5]
+[7]     14.3    0.70    2.61 116666707         Table::tableSet(ObjString*, Value) [7]
+                0.96    1.26 33333344/33333344     Table::adjustCapacity(int) [11]
+                0.33    0.00 116666707/650000095     findEntry(Entry*, int, ObjString*) [13]
+                0.05    0.00 33333344/33333375     GROW_CAPACITY(int) [49]
+-----------------------------------------------
+                0.45    2.70 483333368/483333368     VM::run() [5]
+[8]     13.6    0.45    2.70 483333368         VM::run()::{lambda()#4}::operator()() const [8]
+                2.24    0.47 483333368/633333386     VM::run()::{lambda()#3}::operator()() const [6]
+-----------------------------------------------
+                0.61    0.00 633333386/2333333496     VM::run()::{lambda()#3}::operator()() const [6]
+                1.65    0.00 1700000110/2333333496     VM::run() [5]
+[9]      9.7    2.26    0.00 2333333496         VM::run()::{lambda()#1}::operator()() const [9]
+-----------------------------------------------
+                0.03    0.05 16666668/483333351     VM::callValue(Value, int) [19]
+                0.18    0.29 100000002/483333351     VM::invokeFromClass(ObjClass*, ObjString*, int) [18]
+                0.18    0.29 100000002/483333351     VM::invoke(ObjString*, int) [12]
+                0.48    0.76 266666679/483333351     VM::run() [5]
+[10]     9.7    0.86    1.38 483333351         Table::tableGet(ObjString*, Value*) [10]
+                1.38    0.00 483333351/650000095     findEntry(Entry*, int, ObjString*) [13]
+-----------------------------------------------
+                0.96    1.26 33333344/33333344     Table::tableSet(ObjString*, Value) [7]
+[11]     9.6    0.96    1.26 33333344         Table::adjustCapacity(int) [11]
+                0.01    0.55 33333344/33333344     Entry* ALLOCATE<Entry>(int) [22]
+                0.25    0.30 33333344/83333513     void* FREE_ARRAY<Entry>(void*, int) <cycle 3> [42]
+                0.14    0.00 50000037/650000095     findEntry(Entry*, int, ObjString*) [13]
+-----------------------------------------------
+                0.28    1.85 100000002/100000002     VM::run() [5]
+[12]     9.2    0.28    1.85 100000002         VM::invoke(ObjString*, int) [12]
+                0.19    0.96 100000002/100000002     VM::invokeFromClass(ObjClass*, ObjString*, int) [18]
+                0.18    0.29 100000002/483333351     Table::tableGet(ObjString*, Value*) [10]
+                0.13    0.00 100000002/1033333398     VM::peek(int) [17]
+                0.11    0.00 100000002/400000014     isObjType(Value, ObjType) [26]
+-----------------------------------------------
+                0.14    0.00 50000037/650000095     Table::adjustCapacity(int) [11]
+                0.33    0.00 116666707/650000095     Table::tableSet(ObjString*, Value) [7]
+                1.38    0.00 483333351/650000095     Table::tableGet(ObjString*, Value*) [10]
+[13]     8.0    1.86    0.00 650000095         findEntry(Entry*, int, ObjString*) [13]
+-----------------------------------------------
+                0.00    0.00       2/1000000150     VM::interpret(char const*) [4]
+                0.00    0.00       2/1000000150     VM::callValue(Value, int) [19]
+                0.00    0.00       4/1000000150     VM::defineNative(char const*, Value (*)(int, Value*)) [107]
+                0.00    0.00      19/1000000150     allocateString(char*, int, unsigned int) [95]
+                0.00    0.00      63/1000000150     Chunk::addConstant(Value) [99]
+                0.05    0.00 33333336/1000000150     VM::run()::{lambda(char)#5}::operator()(char) const [23]
+                1.37    0.00 966666724/1000000150     VM::run() [5]
+[14]     6.1    1.42    0.00 1000000150         VM::push(Value) [14]
+-----------------------------------------------
+[15]     5.9    0.64    0.75 83333513+134848475 <cycle 3 as a whole> [15]
+                0.00    0.58  757465             collectGarbage() <cycle 3> [20]
+                0.23    0.04 116666893             reallocate(void*, unsigned long, unsigned long) <cycle 3> [33]
+                0.04    0.13 16666671             Table::freeTable() <cycle 3> [37]
+                0.15    0.00  757465             sweep() <cycle 3> [39]
+                0.11    0.00 50000015             void* FREE_ARRAY<Entry>(void*, int) <cycle 3> [42]
+                0.10    0.00 16666706             freeObject(Obj*) <cycle 3> [44]
+                0.01    0.00 16666668             void* FREE<ObjInstance>(void*) <cycle 3> [64]
+                0.01    0.00       1             void* FREE<ObjClass>(void*) <cycle 3> [65]
+                0.00    0.00      19             void* FREE<ObjString>(void*) <cycle 3> [149]
+                0.00    0.00      19             void* FREE_ARRAY<char>(void*, int) <cycle 3> [148]
+                0.00    0.00       8             void* FREE<ObjFunction>(void*) <cycle 3> [163]
+                0.00    0.00       8             Chunk::freeChunk() <cycle 3> [165]
+                0.00    0.00       8             ValueArray::freeValueArray() <cycle 3> [164]
+                0.00    0.00       8             void* FREE_ARRAY<Value>(void*, int) <cycle 3> [158]
+                0.00    0.00       8             void* FREE_ARRAY<int>(void*, int) <cycle 3> [161]
+                0.00    0.00       8             void* FREE_ARRAY<unsigned char>(void*, int) <cycle 3> [160]
+                0.00    0.00       8             void* FREE<ObjClosure>(void*) <cycle 3> [162]
+                0.00    0.00       8             void* FREE_ARRAY<ObjUpvalue*>(void*, int) <cycle 3> [159]
+                0.00    0.00       2             void* FREE<ObjNative>(void*) <cycle 3> [169]
+-----------------------------------------------
+                0.00    0.00       1/883333478     VM::interpret(char const*) [4]
+                0.00    0.00       4/883333478     VM::defineNative(char const*, Value (*)(int, Value*)) [107]
+                0.00    0.00       7/883333478     VM::defineMethod(ObjString*) [104]
+                0.00    0.00      19/883333478     allocateString(char*, int, unsigned int) [95]
+                0.00    0.00      63/883333478     Chunk::addConstant(Value) [99]
+                0.10    0.00 66666672/883333478     VM::run()::{lambda(char)#5}::operator()(char) const [23]
+                1.26    0.00 816666712/883333478     VM::run() [5]
+[16]     5.9    1.36    0.00 883333478         VM::pop() [16]
+-----------------------------------------------
+                0.00    0.00      14/1033333398     VM::defineMethod(ObjString*) [104]
+                0.09    0.00 66666672/1033333398     VM::run()::{lambda(char)#5}::operator()(char) const [23]
+                0.13    0.00 100000002/1033333398     VM::invoke(ObjString*, int) [12]
+                1.13    0.00 866666710/1033333398     VM::run() [5]
+[17]     5.8    1.34    0.00 1033333398         VM::peek(int) [17]
+-----------------------------------------------
+                0.19    0.96 100000002/100000002     VM::invoke(ObjString*, int) [12]
+[18]     4.9    0.19    0.96 100000002         VM::invokeFromClass(ObjClass*, ObjString*, int) [18]
+                0.49    0.00 100000002/116666671     VM::call(ObjClosure*, int) [21]
+                0.18    0.29 100000002/483333351     Table::tableGet(ObjString*, Value*) [10]
+-----------------------------------------------
+                0.08    0.71 16666670/16666670     VM::run() [5]
+[19]     3.4    0.08    0.71 16666670         VM::callValue(Value, int) [19]
+                0.01    0.46 16666668/16666668     newInstance(ObjClass*) [25]
+                0.08    0.00 16666668/116666671     VM::call(ObjClosure*, int) [21]
+                0.08    0.00       2/2           clockNative(int, Value*) [46]
+                0.03    0.05 16666668/483333351     Table::tableGet(ObjString*, Value*) [10]
+                0.00    0.00       2/1000000150     VM::push(Value) [14]
+-----------------------------------------------
+                              757465             reallocate(void*, unsigned long, unsigned long) <cycle 3> [33]
+[20]     2.5    0.00    0.58  757465         collectGarbage() <cycle 3> [20]
+                0.07    0.34  757465/757465      traceReferences() [27]
+                0.10    0.00  757465/757465      Table::tableRemoveWhite() [43]
+                0.00    0.06  757465/757465      markRoots() [48]
+                0.00    0.00  757465/283328871     VM::getVM() [45]
+                              757465             sweep() <cycle 3> [39]
+-----------------------------------------------
+                0.00    0.00       1/116666671     VM::interpret(char const*) [4]
+                0.08    0.00 16666668/116666671     VM::callValue(Value, int) [19]
+                0.49    0.00 100000002/116666671     VM::invokeFromClass(ObjClass*, ObjString*, int) [18]
+[21]     2.5    0.57    0.00 116666671         VM::call(ObjClosure*, int) [21]
+-----------------------------------------------
+                0.01    0.55 33333344/33333344     Table::adjustCapacity(int) [11]
+[22]     2.4    0.01    0.55 33333344         Entry* ALLOCATE<Entry>(int) [22]
+                0.25    0.30 33333344/83333513     reallocate(void*, unsigned long, unsigned long) <cycle 3> [33]
+-----------------------------------------------
+                0.28    0.24 33333336/33333336     VM::run() [5]
+[23]     2.2    0.28    0.24 33333336         VM::run()::{lambda(char)#5}::operator()(char) const [23]
+                0.10    0.00 66666672/883333478     VM::pop() [16]
+                0.09    0.00 66666672/1033333398     VM::peek(int) [17]
+                0.05    0.00 33333336/1000000150     VM::push(Value) [14]
+-----------------------------------------------
+                                                 <spontaneous>
+[24]     2.1    0.48    0.00                 VM::bindMethod(ObjClass*, ObjString*) [24]
+-----------------------------------------------
+                0.01    0.46 16666668/16666668     VM::callValue(Value, int) [19]
+[25]     2.0    0.01    0.46 16666668         newInstance(ObjClass*) [25]
+                0.01    0.32 16666668/16666668     ObjInstance* ALLOCATE_OBJ<ObjInstance>(ObjType) [29]
+                0.13    0.00 16666668/33333342     Table::initTable() [34]
+-----------------------------------------------
+                0.11    0.00 100000002/400000014     VM::invoke(ObjString*, int) [12]
+                0.33    0.00 300000012/400000014     VM::run() [5]
+[26]     1.9    0.44    0.00 400000014         isObjType(Value, ObjType) [26]
+-----------------------------------------------
+                0.07    0.34  757465/757465      collectGarbage() <cycle 3> [20]
+[27]     1.8    0.07    0.34  757465         traceReferences() [27]
+                0.01    0.33 30298600/30298600     blackenObject(Obj*) [28]
+                0.00    0.00  757465/283328871     VM::getVM() [45]
+-----------------------------------------------
+                0.01    0.33 30298600/30298600     traceReferences() [27]
+[28]     1.5    0.01    0.33 30298600         blackenObject(Obj*) [28]
+                0.04    0.12 6059720/6059720     markArray(ValueArray*) [38]
+                0.04    0.12 2272395/3029860     Table::markTable() [36]
+                0.02    0.00 14391835/109832425     markObject(Obj*) [41]
+-----------------------------------------------
+                0.01    0.32 16666668/16666668     newInstance(ObjClass*) [25]
+[29]     1.4    0.01    0.32 16666668         ObjInstance* ALLOCATE_OBJ<ObjInstance>(ObjType) [29]
+                0.03    0.28 16666668/16666706     allocateObject(unsigned long, ObjType) [30]
+-----------------------------------------------
+                0.00    0.00       1/16666706     ObjClass* ALLOCATE_OBJ<ObjClass>(ObjType) [115]
+                0.00    0.00       2/16666706     ObjNative* ALLOCATE_OBJ<ObjNative>(ObjType) [112]
+                0.00    0.00       8/16666706     ObjFunction* ALLOCATE_OBJ<ObjFunction>(ObjType) [109]
+                0.00    0.00       8/16666706     ObjClosure* ALLOCATE_OBJ<ObjClosure>(ObjType) [60]
+                0.00    0.00      19/16666706     ObjString* ALLOCATE_OBJ<ObjString>(ObjType) [100]
+                0.03    0.28 16666668/16666706     ObjInstance* ALLOCATE_OBJ<ObjInstance>(ObjType) [29]
+[30]     1.4    0.04    0.28 16666706         allocateObject(unsigned long, ObjType) [30]
+                0.13    0.15 16666706/83333513     reallocate(void*, unsigned long, unsigned long) <cycle 3> [33]
+                0.01    0.00 16666706/283328871     VM::getVM() [45]
+-----------------------------------------------
+                0.00    0.29       1/1           CppLox::execute(int, char const**) [2]
+[31]     1.3    0.00    0.29       1         VM::initVM() [31]
+                0.29    0.00       1/1           VM::resetStack() [32]
+                0.00    0.00       2/2           VM::defineNative(char const*, Value (*)(int, Value*)) [107]
+                0.00    0.00       1/56          copyString(char const*, int) [94]
+                0.00    0.00       2/33333342     Table::initTable() [34]
+-----------------------------------------------
+                0.29    0.00       1/1           VM::initVM() [31]
+[32]     1.2    0.29    0.00       1         VM::resetStack() [32]
+-----------------------------------------------
+                                   1             void* FREE<ObjClass>(void*) <cycle 3> [65]
+                                   2             void* FREE<ObjNative>(void*) <cycle 3> [169]
+                                   8             void* FREE_ARRAY<unsigned char>(void*, int) <cycle 3> [160]
+                                   8             void* FREE_ARRAY<int>(void*, int) <cycle 3> [161]
+                                   8             void* FREE_ARRAY<ObjUpvalue*>(void*, int) <cycle 3> [159]
+                                   8             void* FREE<ObjClosure>(void*) <cycle 3> [162]
+                                   8             void* FREE<ObjFunction>(void*) <cycle 3> [163]
+                                   8             void* FREE_ARRAY<Value>(void*, int) <cycle 3> [158]
+                                  19             void* FREE_ARRAY<char>(void*, int) <cycle 3> [148]
+                                  19             void* FREE<ObjString>(void*) <cycle 3> [149]
+                             16666668             void* FREE<ObjInstance>(void*) <cycle 3> [64]
+                             50000015             void* FREE_ARRAY<Entry>(void*, int) <cycle 3> [42]
+                0.00    0.00       8/83333513     ObjUpvalue** ALLOCATE<ObjUpvalue*>(int) [110]
+                0.00    0.00      12/83333513     Value* GROW_ARRAY<Value>(void*, int, int) [106]
+                0.00    0.00      16/83333513     unsigned char* GROW_ARRAY<unsigned char>(void*, int, int) [59]
+                0.00    0.00      16/83333513     int* GROW_ARRAY<int>(void*, int, int) [103]
+                0.00    0.00      19/83333513     char* ALLOCATE<char>(int) [101]
+                0.13    0.15 16666706/83333513     allocateObject(unsigned long, ObjType) [30]
+                0.25    0.30 33333344/83333513     Entry* ALLOCATE<Entry>(int) [22]
+[33]     1.1    0.23    0.04 116666893         reallocate(void*, unsigned long, unsigned long) <cycle 3> [33]
+                0.04    0.00 116666893/283328871     VM::getVM() [45]
+                              757465             collectGarbage() <cycle 3> [20]
+-----------------------------------------------
+                0.00    0.00       1/33333342     newClass(ObjString*) [114]
+                0.00    0.00       2/33333342     VM::initVM() [31]
+                0.13    0.00 16666668/33333342     newInstance(ObjClass*) [25]
+                0.13    0.00 16666671/33333342     Table::freeTable() <cycle 3> [37]
+[34]     1.1    0.26    0.00 33333342         Table::initTable() [34]
+-----------------------------------------------
+                0.01    0.00 3029860/93168195     markRoots() [48]
+                0.08    0.03 42418040/93168195     Table::markTable() [36]
+                0.09    0.03 47720295/93168195     markArray(ValueArray*) [38]
+[35]     1.0    0.17    0.06 93168195         markValue(Value) [35]
+                0.05    0.00 50750155/109832425     markObject(Obj*) [41]
+-----------------------------------------------
+                0.01    0.04  757465/3029860     markRoots() [48]
+                0.04    0.12 2272395/3029860     blackenObject(Obj*) [28]
+[36]     0.9    0.05    0.15 3029860         Table::markTable() [36]
+                0.08    0.03 42418040/93168195     markValue(Value) [35]
+                0.04    0.00 42418040/109832425     markObject(Obj*) [41]
+-----------------------------------------------
+                             16666669             freeObject(Obj*) <cycle 3> [44]
+                0.00    0.00       2/83333513     VM::freeVM() [96]
+[37]     0.8    0.04    0.13 16666671         Table::freeTable() <cycle 3> [37]
+                0.13    0.00 16666671/33333342     Table::initTable() [34]
+                             16666671             void* FREE_ARRAY<Entry>(void*, int) <cycle 3> [42]
+-----------------------------------------------
+                0.04    0.12 6059720/6059720     blackenObject(Obj*) [28]
+[38]     0.7    0.04    0.12 6059720         markArray(ValueArray*) [38]
+                0.09    0.03 47720295/93168195     markValue(Value) [35]
+-----------------------------------------------
+                              757465             collectGarbage() <cycle 3> [20]
+[39]     0.6    0.15    0.00  757465         sweep() <cycle 3> [39]
+                0.00    0.00  757465/283328871     VM::getVM() [45]
+                             16666660             freeObject(Obj*) <cycle 3> [44]
+-----------------------------------------------
+                0.10    0.04 116666671/116666671     VM::run() [5]
+[40]     0.6    0.10    0.04 116666671         closeUpvalues(Value*) [40]
+                0.04    0.00 116666671/283328871     VM::getVM() [45]
+-----------------------------------------------
+                0.00    0.00 2272395/109832425     markRoots() [48]
+                0.02    0.00 14391835/109832425     blackenObject(Obj*) [28]
+                0.04    0.00 42418040/109832425     Table::markTable() [36]
+                0.05    0.00 50750155/109832425     markValue(Value) [35]
+[41]     0.5    0.12    0.01 109832425         markObject(Obj*) [41]
+                0.01    0.00 30298600/283328871     VM::getVM() [45]
+                0.00    0.00       3/33333375     GROW_CAPACITY(int) [49]
+-----------------------------------------------
+                             16666671             Table::freeTable() <cycle 3> [37]
+                0.25    0.30 33333344/83333513     Table::adjustCapacity(int) [11]
+[42]     0.5    0.11    0.00 50000015         void* FREE_ARRAY<Entry>(void*, int) <cycle 3> [42]
+                             50000015             reallocate(void*, unsigned long, unsigned long) <cycle 3> [33]
+-----------------------------------------------
+                0.10    0.00  757465/757465      collectGarbage() <cycle 3> [20]
+[43]     0.4    0.10    0.00  757465         Table::tableRemoveWhite() [43]
+-----------------------------------------------
+                             16666660             sweep() <cycle 3> [39]
+                0.00    0.00      46/83333513     freeObjects() [97]
+[44]     0.4    0.10    0.00 16666706         freeObject(Obj*) <cycle 3> [44]
+                             16666669             Table::freeTable() <cycle 3> [37]
+                             16666668             void* FREE<ObjInstance>(void*) <cycle 3> [64]
+                                  19             void* FREE_ARRAY<char>(void*, int) <cycle 3> [148]
+                                  19             void* FREE<ObjString>(void*) <cycle 3> [149]
+                                   8             void* FREE_ARRAY<ObjUpvalue*>(void*, int) <cycle 3> [159]
+                                   8             void* FREE<ObjClosure>(void*) <cycle 3> [162]
+                                   8             Chunk::freeChunk() <cycle 3> [165]
+                                   8             void* FREE<ObjFunction>(void*) <cycle 3> [163]
+                                   2             void* FREE<ObjNative>(void*) <cycle 3> [169]
+                                   1             void* FREE<ObjClass>(void*) <cycle 3> [65]
+-----------------------------------------------
+                0.00    0.00       1/283328871     CppLox::runFile(char const*) [3]
+                0.00    0.00       1/283328871     CppLox::execute(int, char const**) [2]
+                0.00    0.00       1/283328871     freeObjects() [97]
+                0.00    0.00      19/283328871     allocateString(char*, int, unsigned int) [95]
+                0.00    0.00      56/283328871     copyString(char const*, int) [94]
+                0.00    0.00      63/283328871     Chunk::addConstant(Value) [99]
+                0.00    0.00  757465/283328871     markRoots() [48]
+                0.00    0.00  757465/283328871     traceReferences() [27]
+                0.00    0.00  757465/283328871     sweep() <cycle 3> [39]
+                0.00    0.00  757465/283328871     collectGarbage() <cycle 3> [20]
+                0.01    0.00 16666706/283328871     allocateObject(unsigned long, ObjType) [30]
+                0.01    0.00 30298600/283328871     markObject(Obj*) [41]
+                0.04    0.00 116666671/283328871     closeUpvalues(Value*) [40]
+                0.04    0.00 116666893/283328871     reallocate(void*, unsigned long, unsigned long) <cycle 3> [33]
+[45]     0.4    0.09    0.00 283328871         VM::getVM() [45]
+-----------------------------------------------
+                0.08    0.00       2/2           VM::callValue(Value, int) [19]
+[46]     0.3    0.08    0.00       2         clockNative(int, Value*) [46]
+-----------------------------------------------
+                0.07    0.00 66666669/66666669     VM::run() [5]
+[47]     0.3    0.07    0.00 66666669         VM::run()::{lambda()#2}::operator()() const [47]
+-----------------------------------------------
+                0.00    0.06  757465/757465      collectGarbage() <cycle 3> [20]
+[48]     0.3    0.00    0.06  757465         markRoots() [48]
+                0.01    0.04  757465/3029860     Table::markTable() [36]
+                0.01    0.00 3029860/93168195     markValue(Value) [35]
+                0.00    0.00 2272395/109832425     markObject(Obj*) [41]
+                0.00    0.00  757465/283328871     VM::getVM() [45]
+                0.00    0.00  757465/757465      markCompilerRoots() [122]
+-----------------------------------------------
+                0.00    0.00       3/33333375     markObject(Obj*) [41]
+                0.00    0.00      12/33333375     ValueArray::writeValueArray(Value) [105]
+                0.00    0.00      16/33333375     Chunk::writeChunk(unsigned char, int) [57]
+                0.05    0.00 33333344/33333375     Table::tableSet(ObjString*, Value) [7]
+[49]     0.2    0.05    0.00 33333375         GROW_CAPACITY(int) [49]
+-----------------------------------------------
+                0.04    0.00 33333335/33333335     VM::run() [5]
+[50]     0.2    0.04    0.00 33333335         VM::isFalsey(Value) [50]
+-----------------------------------------------
+                                                 <spontaneous>
+[51]     0.1    0.03    0.00                 _init [51]
+-----------------------------------------------
+                                                 <spontaneous>
+[52]     0.1    0.03    0.00                 captureUpvalue(Value*) [52]
+-----------------------------------------------
+                0.02    0.00 16666667/16666667     VM::run() [5]
+[53]     0.1    0.02    0.00 16666667         valuesEqual(Value, Value) [53]
+-----------------------------------------------
+                                                 <spontaneous>
+[54]     0.1    0.02    0.00                 ObjBoundMethod* ALLOCATE_OBJ<ObjBoundMethod>(ObjType) [54]
+-----------------------------------------------
+                0.00    0.01       1/1           VM::interpret(char const*) [4]
+[55]     0.0    0.00    0.01       1         compile(char const*) [55]
+                0.00    0.01       7/7           declaration() <cycle 2> [74]
+                0.00    0.00       1/8           endCompiler() [81]
+                0.00    0.00       1/8           initCompiler(Compiler*, FunctionType) [102]
+                0.00    0.00       8/223         match(TokenType) [129]
+                0.00    0.00       1/202         Scanner::getScanner() [131]
+                0.00    0.00       1/1           Scanner::initScanner(char const*) [178]
+                0.00    0.00       1/201         advance() [132]
+-----------------------------------------------
+                0.00    0.00       1/226         endScope() [92]
+                0.00    0.00       1/226         classDeclaration() <cycle 2> [86]
+                0.00    0.00       2/226         ifStatement() <cycle 2> [83]
+                0.00    0.00       2/226         printStatement() [82]
+                0.00    0.00       2/226         whileStatement() <cycle 2> [84]
+                0.00    0.00       3/226         emitLoop(int) [91]
+                0.00    0.00       6/226         dot(bool) <cycle 1> [73]
+                0.00    0.00       6/226         returnStatement() [72]
+                0.00    0.00       7/226         expressionStatement() [71]
+                0.00    0.00       9/226         emitJump(unsigned char) [88]
+                0.00    0.00      10/226         binary(bool) <cycle 1> [87]
+                0.00    0.00      15/226         emitReturn() [80]
+                0.00    0.01     162/226         emitBytes(unsigned char, unsigned char) [62]
+[56]     0.0    0.00    0.01     226         emitByte(unsigned char) [56]
+                0.00    0.01     226/226         Chunk::writeChunk(unsigned char, int) [57]
+                0.00    0.00     226/303         currentChunk() [126]
+-----------------------------------------------
+                0.00    0.01     226/226         emitByte(unsigned char) [56]
+[57]     0.0    0.00    0.01     226         Chunk::writeChunk(unsigned char, int) [57]
+                0.01    0.00      16/16          unsigned char* GROW_ARRAY<unsigned char>(void*, int, int) [59]
+                0.00    0.00      16/16          int* GROW_ARRAY<int>(void*, int, int) [103]
+                0.00    0.00      16/33333375     GROW_CAPACITY(int) [49]
+-----------------------------------------------
+                0.00    0.00       1/8           VM::interpret(char const*) [4]
+                0.00    0.01       7/8           VM::run() [5]
+[58]     0.0    0.00    0.01       8         newClosure(ObjFunction*) [58]
+                0.01    0.00       8/8           ObjClosure* ALLOCATE_OBJ<ObjClosure>(ObjType) [60]
+                0.00    0.00       8/8           ObjUpvalue** ALLOCATE<ObjUpvalue*>(int) [110]
+-----------------------------------------------
+                0.01    0.00      16/16          Chunk::writeChunk(unsigned char, int) [57]
+[59]     0.0    0.01    0.00      16         unsigned char* GROW_ARRAY<unsigned char>(void*, int, int) [59]
+                0.00    0.00      16/83333513     reallocate(void*, unsigned long, unsigned long) <cycle 3> [33]
+-----------------------------------------------
+                0.01    0.00       8/8           newClosure(ObjFunction*) [58]
+[60]     0.0    0.01    0.00       8         ObjClosure* ALLOCATE_OBJ<ObjClosure>(ObjType) [60]
+                0.00    0.00       8/16666706     allocateObject(unsigned long, ObjType) [30]
+-----------------------------------------------
+[61]     0.0    0.00    0.01       7+60      <cycle 2 as a whole> [61]
+                0.00    0.00      19             statement() <cycle 2> [69]
+                0.00    0.00      22             declaration() <cycle 2> [74]
+                0.00    0.00       7             function(FunctionType) <cycle 2> [76]
+                0.00    0.00       1             whileStatement() <cycle 2> [84]
+                0.00    0.00       1             ifStatement() <cycle 2> [83]
+                0.00    0.00       7             method() <cycle 2> [85]
+                0.00    0.00       1             classDeclaration() <cycle 2> [86]
+                0.00    0.00       9             block() <cycle 2> [157]
+-----------------------------------------------
+                0.00    0.00       1/81          emitReturn() [80]
+                0.00    0.00       1/81          classDeclaration() <cycle 2> [86]
+                0.00    0.00       4/81          defineVariable(unsigned char) [89]
+                0.00    0.00       4/81          call(bool) [90]
+                0.00    0.00       7/81          function(FunctionType) <cycle 2> [76]
+                0.00    0.00       7/81          method() <cycle 2> [85]
+                0.00    0.00      10/81          emitConstant(Value) [78]
+                0.00    0.00      18/81          dot(bool) <cycle 1> [73]
+                0.00    0.00      29/81          namedVariable(Token, bool) <cycle 1> [70]
+[62]     0.0    0.00    0.01      81         emitBytes(unsigned char, unsigned char) [62]
+                0.00    0.01     162/226         emitByte(unsigned char) [56]
+-----------------------------------------------
+[63]     0.0    0.00    0.01      22+141     <cycle 1 as a whole> [63]
+                0.00    0.00      29             namedVariable(Token, bool) <cycle 1> [70]
+                0.00    0.00      18             dot(bool) <cycle 1> [73]
+                0.00    0.00      38             parsePrecedence(Precedence) <cycle 1> [77]
+                0.00    0.00      10             binary(bool) <cycle 1> [87]
+                0.00    0.00      28             expression() <cycle 1> [145]
+                0.00    0.00      28             variable(bool) <cycle 1> [146]
+                0.00    0.00      12             this_(bool) <cycle 1> [153]
+-----------------------------------------------
+                             16666668             freeObject(Obj*) <cycle 3> [44]
+[64]     0.0    0.01    0.00 16666668         void* FREE<ObjInstance>(void*) <cycle 3> [64]
+                             16666668             reallocate(void*, unsigned long, unsigned long) <cycle 3> [33]
+-----------------------------------------------
+                                   1             freeObject(Obj*) <cycle 3> [44]
+[65]     0.0    0.01    0.00       1         void* FREE<ObjClass>(void*) <cycle 3> [65]
+                                   1             reallocate(void*, unsigned long, unsigned long) <cycle 3> [33]
+-----------------------------------------------
+                                                 <spontaneous>
+[66]     0.0    0.01    0.00                 tableAddAll(Table*, Table*) [66]
+-----------------------------------------------
+                                                 <spontaneous>
+[67]     0.0    0.01    0.00                 printFunction(ObjFunction*) [67]
+-----------------------------------------------
+                                                 <spontaneous>
+[68]     0.0    0.01    0.00                 VM::runtimeError(char const*, ...) [68]
+-----------------------------------------------
+                                   1             ifStatement() <cycle 2> [83]
+                                   1             whileStatement() <cycle 2> [84]
+                                  17             declaration() <cycle 2> [74]
+[69]     0.0    0.00    0.00      19         statement() <cycle 2> [69]
+                0.00    0.00       7/7           expressionStatement() [71]
+                0.00    0.00       6/6           returnStatement() [72]
+                0.00    0.00       2/2           printStatement() [82]
+                0.00    0.00       2/2           endScope() [92]
+                0.00    0.00      78/223         match(TokenType) [129]
+                0.00    0.00       2/9           beginScope() [156]
+                                   2             block() <cycle 2> [157]
+                                   1             ifStatement() <cycle 2> [83]
+                                   1             whileStatement() <cycle 2> [84]
+-----------------------------------------------
+                                  28             variable(bool) <cycle 1> [146]
+                0.00    0.00       1/22          classDeclaration() <cycle 2> [86]
+[70]     0.0    0.00    0.00      29         namedVariable(Token, bool) <cycle 1> [70]
+                0.00    0.00      29/81          emitBytes(unsigned char, unsigned char) [62]
+                0.00    0.00      17/46          identifierConstant(Token*) [93]
+                0.00    0.00      29/29          resolveLocal(Compiler*, Token*) [144]
+                0.00    0.00      17/17          resolveUpvalue(Compiler*, Token*) [150]
+                0.00    0.00       9/223         match(TokenType) [129]
+                                   1             expression() <cycle 1> [145]
+-----------------------------------------------
+                0.00    0.00       7/7           statement() <cycle 2> [69]
+[71]     0.0    0.00    0.00       7         expressionStatement() [71]
+                0.00    0.00       7/22          expression() <cycle 1> [145]
+                0.00    0.00       7/226         emitByte(unsigned char) [56]
+                0.00    0.00       7/95          consume(TokenType, char const*) [137]
+-----------------------------------------------
+                0.00    0.00       6/6           statement() <cycle 2> [69]
+[72]     0.0    0.00    0.00       6         returnStatement() [72]
+                0.00    0.00       6/22          expression() <cycle 1> [145]
+                0.00    0.00       6/226         emitByte(unsigned char) [56]
+                0.00    0.00       6/223         match(TokenType) [129]
+                0.00    0.00       6/95          consume(TokenType, char const*) [137]
+-----------------------------------------------
+                                  18             parsePrecedence(Precedence) <cycle 1> [77]
+[73]     0.0    0.00    0.00      18         dot(bool) <cycle 1> [73]
+                0.00    0.00      18/81          emitBytes(unsigned char, unsigned char) [62]
+                0.00    0.00       6/226         emitByte(unsigned char) [56]
+                0.00    0.00      18/46          identifierConstant(Token*) [93]
+                0.00    0.00      24/223         match(TokenType) [129]
+                0.00    0.00      18/95          consume(TokenType, char const*) [137]
+                0.00    0.00       6/10          argumentList() [154]
+                                   6             expression() <cycle 1> [145]
+-----------------------------------------------
+                                  15             block() <cycle 2> [157]
+                0.00    0.01       7/7           compile(char const*) [55]
+[74]     0.0    0.00    0.00      22         declaration() <cycle 2> [74]
+                0.00    0.00       4/4           varDeclaration() [75]
+                0.00    0.00      64/223         match(TokenType) [129]
+                                  17             statement() <cycle 2> [69]
+                                   1             classDeclaration() <cycle 2> [86]
+-----------------------------------------------
+                0.00    0.00       4/4           declaration() <cycle 2> [74]
+[75]     0.0    0.00    0.00       4         varDeclaration() [75]
+                0.00    0.00       4/22          expression() <cycle 1> [145]
+                0.00    0.00       4/5           defineVariable(unsigned char) [89]
+                0.00    0.00       4/4           parseVariable(char const*) [111]
+                0.00    0.00       4/223         match(TokenType) [129]
+                0.00    0.00       4/95          consume(TokenType, char const*) [137]
+-----------------------------------------------
+                                   7             method() <cycle 2> [85]
+[76]     0.0    0.00    0.00       7         function(FunctionType) <cycle 2> [76]
+                0.00    0.00       7/8           endCompiler() [81]
+                0.00    0.00       7/81          emitBytes(unsigned char, unsigned char) [62]
+                0.00    0.00       7/8           initCompiler(Compiler*, FunctionType) [102]
+                0.00    0.00       7/63          makeConstant(Value) [98]
+                0.00    0.00      21/95          consume(TokenType, char const*) [137]
+                0.00    0.00       7/9           beginScope() [156]
+                0.00    0.00       7/294         check(TokenType) [127]
+                                   7             block() <cycle 2> [157]
+-----------------------------------------------
+                                  10             binary(bool) <cycle 1> [87]
+                                  28             expression() <cycle 1> [145]
+[77]     0.0    0.00    0.00      38         parsePrecedence(Precedence) <cycle 1> [77]
+                0.00    0.00      10/10          number(bool) [79]
+                0.00    0.00       4/4           call(bool) [90]
+                0.00    0.00     140/150         getRule(TokenType) [136]
+                0.00    0.00      70/201         advance() [132]
+                0.00    0.00      28/223         match(TokenType) [129]
+                                  18             dot(bool) <cycle 1> [73]
+                                  16             variable(bool) <cycle 1> [146]
+                                  12             this_(bool) <cycle 1> [153]
+                                  10             binary(bool) <cycle 1> [87]
+-----------------------------------------------
+                0.00    0.00      10/10          number(bool) [79]
+[78]     0.0    0.00    0.00      10         emitConstant(Value) [78]
+                0.00    0.00      10/81          emitBytes(unsigned char, unsigned char) [62]
+                0.00    0.00      10/63          makeConstant(Value) [98]
+-----------------------------------------------
+                0.00    0.00      10/10          parsePrecedence(Precedence) <cycle 1> [77]
+[79]     0.0    0.00    0.00      10         number(bool) [79]
+                0.00    0.00      10/10          emitConstant(Value) [78]
+-----------------------------------------------
+                0.00    0.00       8/8           endCompiler() [81]
+[80]     0.0    0.00    0.00       8         emitReturn() [80]
+                0.00    0.00      15/226         emitByte(unsigned char) [56]
+                0.00    0.00       1/81          emitBytes(unsigned char, unsigned char) [62]
+-----------------------------------------------
+                0.00    0.00       1/8           compile(char const*) [55]
+                0.00    0.00       7/8           function(FunctionType) <cycle 2> [76]
+[81]     0.0    0.00    0.00       8         endCompiler() [81]
+                0.00    0.00       8/8           emitReturn() [80]
+-----------------------------------------------
+                0.00    0.00       2/2           statement() <cycle 2> [69]
+[82]     0.0    0.00    0.00       2         printStatement() [82]
+                0.00    0.00       2/22          expression() <cycle 1> [145]
+                0.00    0.00       2/226         emitByte(unsigned char) [56]
+                0.00    0.00       2/95          consume(TokenType, char const*) [137]
+-----------------------------------------------
+                                   1             statement() <cycle 2> [69]
+[83]     0.0    0.00    0.00       1         ifStatement() <cycle 2> [83]
+                0.00    0.00       1/22          expression() <cycle 1> [145]
+                0.00    0.00       2/3           emitJump(unsigned char) [88]
+                0.00    0.00       2/226         emitByte(unsigned char) [56]
+                0.00    0.00       2/95          consume(TokenType, char const*) [137]
+                0.00    0.00       2/3           patchJump(int) [167]
+                0.00    0.00       1/223         match(TokenType) [129]
+                                   1             statement() <cycle 2> [69]
+-----------------------------------------------
+                                   1             statement() <cycle 2> [69]
+[84]     0.0    0.00    0.00       1         whileStatement() <cycle 2> [84]
+                0.00    0.00       1/22          expression() <cycle 1> [145]
+                0.00    0.00       1/3           emitJump(unsigned char) [88]
+                0.00    0.00       1/1           emitLoop(int) [91]
+                0.00    0.00       2/226         emitByte(unsigned char) [56]
+                0.00    0.00       2/95          consume(TokenType, char const*) [137]
+                0.00    0.00       1/303         currentChunk() [126]
+                0.00    0.00       1/3           patchJump(int) [167]
+                                   1             statement() <cycle 2> [69]
+-----------------------------------------------
+                                   7             classDeclaration() <cycle 2> [86]
+[85]     0.0    0.00    0.00       7         method() <cycle 2> [85]
+                0.00    0.00       7/81          emitBytes(unsigned char, unsigned char) [62]
+                0.00    0.00       7/46          identifierConstant(Token*) [93]
+                0.00    0.00       7/95          consume(TokenType, char const*) [137]
+                                   7             function(FunctionType) <cycle 2> [76]
+-----------------------------------------------
+                                   1             declaration() <cycle 2> [74]
+[86]     0.0    0.00    0.00       1         classDeclaration() <cycle 2> [86]
+                0.00    0.00       1/22          namedVariable(Token, bool) <cycle 1> [70]
+                0.00    0.00       1/81          emitBytes(unsigned char, unsigned char) [62]
+                0.00    0.00       1/5           defineVariable(unsigned char) [89]
+                0.00    0.00       1/226         emitByte(unsigned char) [56]
+                0.00    0.00       1/46          identifierConstant(Token*) [93]
+                0.00    0.00      15/294         check(TokenType) [127]
+                0.00    0.00       3/95          consume(TokenType, char const*) [137]
+                0.00    0.00       1/5           declareVariable() [166]
+                0.00    0.00       1/223         match(TokenType) [129]
+                                   7             method() <cycle 2> [85]
+-----------------------------------------------
+                                  10             parsePrecedence(Precedence) <cycle 1> [77]
+[87]     0.0    0.00    0.00      10         binary(bool) <cycle 1> [87]
+                0.00    0.00      10/226         emitByte(unsigned char) [56]
+                0.00    0.00      10/150         getRule(TokenType) [136]
+                                  10             parsePrecedence(Precedence) <cycle 1> [77]
+-----------------------------------------------
+                0.00    0.00       1/3           whileStatement() <cycle 2> [84]
+                0.00    0.00       2/3           ifStatement() <cycle 2> [83]
+[88]     0.0    0.00    0.00       3         emitJump(unsigned char) [88]
+                0.00    0.00       9/226         emitByte(unsigned char) [56]
+                0.00    0.00       3/303         currentChunk() [126]
+-----------------------------------------------
+                0.00    0.00       1/5           classDeclaration() <cycle 2> [86]
+                0.00    0.00       4/5           varDeclaration() [75]
+[89]     0.0    0.00    0.00       5         defineVariable(unsigned char) [89]
+                0.00    0.00       4/81          emitBytes(unsigned char, unsigned char) [62]
+                0.00    0.00       1/1           markInitialized() [172]
+-----------------------------------------------
+                0.00    0.00       4/4           parsePrecedence(Precedence) <cycle 1> [77]
+[90]     0.0    0.00    0.00       4         call(bool) [90]
+                0.00    0.00       4/81          emitBytes(unsigned char, unsigned char) [62]
+                0.00    0.00       4/10          argumentList() [154]
+-----------------------------------------------
+                0.00    0.00       1/1           whileStatement() <cycle 2> [84]
+[91]     0.0    0.00    0.00       1         emitLoop(int) [91]
+                0.00    0.00       3/226         emitByte(unsigned char) [56]
+                0.00    0.00       1/303         currentChunk() [126]
+-----------------------------------------------
+                0.00    0.00       2/2           statement() <cycle 2> [69]
+[92]     0.0    0.00    0.00       2         endScope() [92]
+                0.00    0.00       1/226         emitByte(unsigned char) [56]
+-----------------------------------------------
+                0.00    0.00       1/46          classDeclaration() <cycle 2> [86]
+                0.00    0.00       3/46          parseVariable(char const*) [111]
+                0.00    0.00       7/46          method() <cycle 2> [85]
+                0.00    0.00      17/46          namedVariable(Token, bool) <cycle 1> [70]
+                0.00    0.00      18/46          dot(bool) <cycle 1> [73]
+[93]     0.0    0.00    0.00      46         identifierConstant(Token*) [93]
+                0.00    0.00      46/56          copyString(char const*, int) [94]
+                0.00    0.00      46/63          makeConstant(Value) [98]
+-----------------------------------------------
+                0.00    0.00       1/56          VM::initVM() [31]
+                0.00    0.00       2/56          VM::defineNative(char const*, Value (*)(int, Value*)) [107]
+                0.00    0.00       7/56          initCompiler(Compiler*, FunctionType) [102]
+                0.00    0.00      46/56          identifierConstant(Token*) [93]
+[94]     0.0    0.00    0.00      56         copyString(char const*, int) [94]
+                0.00    0.00      19/19          allocateString(char*, int, unsigned int) [95]
+                0.00    0.00      19/19          char* ALLOCATE<char>(int) [101]
+                0.00    0.00      56/283328871     VM::getVM() [45]
+                0.00    0.00      56/56          hashString(char const*, int) [141]
+                0.00    0.00      56/56          Table::tableFindString(char const*, int, unsigned int) [142]
+-----------------------------------------------
+                0.00    0.00      19/19          copyString(char const*, int) [94]
+[95]     0.0    0.00    0.00      19         allocateString(char*, int, unsigned int) [95]
+                0.00    0.00      19/116666707     Table::tableSet(ObjString*, Value) [7]
+                0.00    0.00      19/19          ObjString* ALLOCATE_OBJ<ObjString>(ObjType) [100]
+                0.00    0.00      19/883333478     VM::pop() [16]
+                0.00    0.00      19/1000000150     VM::push(Value) [14]
+                0.00    0.00      19/283328871     VM::getVM() [45]
+-----------------------------------------------
+                0.00    0.00       1/1           CppLox::execute(int, char const**) [2]
+[96]     0.0    0.00    0.00       1         VM::freeVM() [96]
+                0.00    0.00       1/1           freeObjects() [97]
+                0.00    0.00       2/83333513     Table::freeTable() <cycle 3> [37]
+-----------------------------------------------
+                0.00    0.00       1/1           VM::freeVM() [96]
+[97]     0.0    0.00    0.00       1         freeObjects() [97]
+                0.00    0.00      46/83333513     freeObject(Obj*) <cycle 3> [44]
+                0.00    0.00       1/283328871     VM::getVM() [45]
+-----------------------------------------------
+                0.00    0.00       7/63          function(FunctionType) <cycle 2> [76]
+                0.00    0.00      10/63          emitConstant(Value) [78]
+                0.00    0.00      46/63          identifierConstant(Token*) [93]
+[98]     0.0    0.00    0.00      63         makeConstant(Value) [98]
+                0.00    0.00      63/63          Chunk::addConstant(Value) [99]
+                0.00    0.00      63/303         currentChunk() [126]
+-----------------------------------------------
+                0.00    0.00      63/63          makeConstant(Value) [98]
+[99]     0.0    0.00    0.00      63         Chunk::addConstant(Value) [99]
+                0.00    0.00      63/63          ValueArray::writeValueArray(Value) [105]
+                0.00    0.00      63/883333478     VM::pop() [16]
+                0.00    0.00      63/1000000150     VM::push(Value) [14]
+                0.00    0.00      63/283328871     VM::getVM() [45]
+-----------------------------------------------
+                0.00    0.00      19/19          allocateString(char*, int, unsigned int) [95]
+[100]    0.0    0.00    0.00      19         ObjString* ALLOCATE_OBJ<ObjString>(ObjType) [100]
+                0.00    0.00      19/16666706     allocateObject(unsigned long, ObjType) [30]
+-----------------------------------------------
+                0.00    0.00      19/19          copyString(char const*, int) [94]
+[101]    0.0    0.00    0.00      19         char* ALLOCATE<char>(int) [101]
+                0.00    0.00      19/83333513     reallocate(void*, unsigned long, unsigned long) <cycle 3> [33]
+-----------------------------------------------
+                0.00    0.00       1/8           compile(char const*) [55]
+                0.00    0.00       7/8           function(FunctionType) <cycle 2> [76]
+[102]    0.0    0.00    0.00       8         initCompiler(Compiler*, FunctionType) [102]
+                0.00    0.00       7/56          copyString(char const*, int) [94]
+                0.00    0.00       8/8           newFunction() [108]
+-----------------------------------------------
+                0.00    0.00      16/16          Chunk::writeChunk(unsigned char, int) [57]
+[103]    0.0    0.00    0.00      16         int* GROW_ARRAY<int>(void*, int, int) [103]
+                0.00    0.00      16/83333513     reallocate(void*, unsigned long, unsigned long) <cycle 3> [33]
+-----------------------------------------------
+                0.00    0.00       7/7           VM::run() [5]
+[104]    0.0    0.00    0.00       7         VM::defineMethod(ObjString*) [104]
+                0.00    0.00       7/116666707     Table::tableSet(ObjString*, Value) [7]
+                0.00    0.00      14/1033333398     VM::peek(int) [17]
+                0.00    0.00       7/883333478     VM::pop() [16]
+-----------------------------------------------
+                0.00    0.00      63/63          Chunk::addConstant(Value) [99]
+[105]    0.0    0.00    0.00      63         ValueArray::writeValueArray(Value) [105]
+                0.00    0.00      12/12          Value* GROW_ARRAY<Value>(void*, int, int) [106]
+                0.00    0.00      12/33333375     GROW_CAPACITY(int) [49]
+-----------------------------------------------
+                0.00    0.00      12/12          ValueArray::writeValueArray(Value) [105]
+[106]    0.0    0.00    0.00      12         Value* GROW_ARRAY<Value>(void*, int, int) [106]
+                0.00    0.00      12/83333513     reallocate(void*, unsigned long, unsigned long) <cycle 3> [33]
+-----------------------------------------------
+                0.00    0.00       2/2           VM::initVM() [31]
+[107]    0.0    0.00    0.00       2         VM::defineNative(char const*, Value (*)(int, Value*)) [107]
+                0.00    0.00       2/116666707     Table::tableSet(ObjString*, Value) [7]
+                0.00    0.00       2/56          copyString(char const*, int) [94]
+                0.00    0.00       2/2           newNative(Value (*)(int, Value*)) [113]
+                0.00    0.00       4/883333478     VM::pop() [16]
+                0.00    0.00       4/1000000150     VM::push(Value) [14]
+-----------------------------------------------
+                0.00    0.00       8/8           initCompiler(Compiler*, FunctionType) [102]
+[108]    0.0    0.00    0.00       8         newFunction() [108]
+                0.00    0.00       8/8           ObjFunction* ALLOCATE_OBJ<ObjFunction>(ObjType) [109]
+                0.00    0.00       8/17          Chunk::initChunk() [151]
+-----------------------------------------------
+                0.00    0.00       8/8           newFunction() [108]
+[109]    0.0    0.00    0.00       8         ObjFunction* ALLOCATE_OBJ<ObjFunction>(ObjType) [109]
+                0.00    0.00       8/16666706     allocateObject(unsigned long, ObjType) [30]
+-----------------------------------------------
+                0.00    0.00       8/8           newClosure(ObjFunction*) [58]
+[110]    0.0    0.00    0.00       8         ObjUpvalue** ALLOCATE<ObjUpvalue*>(int) [110]
+                0.00    0.00       8/83333513     reallocate(void*, unsigned long, unsigned long) <cycle 3> [33]
+-----------------------------------------------
+                0.00    0.00       4/4           varDeclaration() [75]
+[111]    0.0    0.00    0.00       4         parseVariable(char const*) [111]
+                0.00    0.00       3/46          identifierConstant(Token*) [93]
+                0.00    0.00       4/95          consume(TokenType, char const*) [137]
+                0.00    0.00       4/5           declareVariable() [166]
+-----------------------------------------------
+                0.00    0.00       2/2           newNative(Value (*)(int, Value*)) [113]
+[112]    0.0    0.00    0.00       2         ObjNative* ALLOCATE_OBJ<ObjNative>(ObjType) [112]
+                0.00    0.00       2/16666706     allocateObject(unsigned long, ObjType) [30]
+-----------------------------------------------
+                0.00    0.00       2/2           VM::defineNative(char const*, Value (*)(int, Value*)) [107]
+[113]    0.0    0.00    0.00       2         newNative(Value (*)(int, Value*)) [113]
+                0.00    0.00       2/2           ObjNative* ALLOCATE_OBJ<ObjNative>(ObjType) [112]
+-----------------------------------------------
+                0.00    0.00       1/1           VM::run() [5]
+[114]    0.0    0.00    0.00       1         newClass(ObjString*) [114]
+                0.00    0.00       1/1           ObjClass* ALLOCATE_OBJ<ObjClass>(ObjType) [115]
+                0.00    0.00       1/33333342     Table::initTable() [34]
+-----------------------------------------------
+                0.00    0.00       1/1           newClass(ObjString*) [114]
+[115]    0.0    0.00    0.00       1         ObjClass* ALLOCATE_OBJ<ObjClass>(ObjType) [115]
+                0.00    0.00       1/16666706     allocateObject(unsigned long, ObjType) [30]
+-----------------------------------------------
+                0.00    0.00  757465/757465      markRoots() [48]
+[122]    0.0    0.00    0.00  757465         markCompilerRoots() [122]
+-----------------------------------------------
+                0.00    0.00      28/907         Scanner::number() [155]
+                0.00    0.00     437/907         Scanner::identifier() [138]
+                0.00    0.00     442/907         Scanner::skipWhitespace() [133]
+[123]    0.0    0.00    0.00     907         Scanner::peek() [123]
+-----------------------------------------------
+                0.00    0.00       8/739         Scanner::number() [155]
+                0.00    0.00     199/739         Scanner::scanToken() [135]
+                0.00    0.00     241/739         Scanner::skipWhitespace() [133]
+                0.00    0.00     291/739         Scanner::identifier() [138]
+[124]    0.0    0.00    0.00     739         Scanner::advance() [124]
+-----------------------------------------------
+                0.00    0.00     189/553         Scanner::scanToken() [135]
+                0.00    0.00     364/553         Scanner::identifier() [138]
+[125]    0.0    0.00    0.00     553         Scanner::isAlpha(char) [125]
+-----------------------------------------------
+                0.00    0.00       1/303         emitLoop(int) [91]
+                0.00    0.00       1/303         whileStatement() <cycle 2> [84]
+                0.00    0.00       3/303         emitJump(unsigned char) [88]
+                0.00    0.00       9/303         patchJump(int) [167]
+                0.00    0.00      63/303         makeConstant(Value) [98]
+                0.00    0.00     226/303         emitByte(unsigned char) [56]
+[126]    0.0    0.00    0.00     303         currentChunk() [126]
+-----------------------------------------------
+                0.00    0.00       7/294         function(FunctionType) <cycle 2> [76]
+                0.00    0.00      10/294         argumentList() [154]
+                0.00    0.00      15/294         classDeclaration() <cycle 2> [86]
+                0.00    0.00      39/294         block() <cycle 2> [157]
+                0.00    0.00     223/294         match(TokenType) [129]
+[127]    0.0    0.00    0.00     294         check(TokenType) [127]
+-----------------------------------------------
+                0.00    0.00      18/290         Scanner::number() [155]
+                0.00    0.00      73/290         Scanner::identifier() [138]
+                0.00    0.00     199/290         Scanner::scanToken() [135]
+[128]    0.0    0.00    0.00     290         Scanner::isDigit(char) [128]
+-----------------------------------------------
+                0.00    0.00       1/223         classDeclaration() <cycle 2> [86]
+                0.00    0.00       1/223         ifStatement() <cycle 2> [83]
+                0.00    0.00       4/223         varDeclaration() [75]
+                0.00    0.00       6/223         returnStatement() [72]
+                0.00    0.00       8/223         compile(char const*) [55]
+                0.00    0.00       9/223         namedVariable(Token, bool) <cycle 1> [70]
+                0.00    0.00      24/223         dot(bool) <cycle 1> [73]
+                0.00    0.00      28/223         parsePrecedence(Precedence) <cycle 1> [77]
+                0.00    0.00      64/223         declaration() <cycle 2> [74]
+                0.00    0.00      78/223         statement() <cycle 2> [69]
+[129]    0.0    0.00    0.00     223         match(TokenType) [129]
+                0.00    0.00     223/294         check(TokenType) [127]
+                0.00    0.00      35/201         advance() [132]
+-----------------------------------------------
+                0.00    0.00      13/214         Scanner::match(char) [152]
+                0.00    0.00     201/214         Scanner::scanToken() [135]
+[130]    0.0    0.00    0.00     214         Scanner::isAtEnd() [130]
+-----------------------------------------------
+                0.00    0.00       1/202         compile(char const*) [55]
+                0.00    0.00     201/202         advance() [132]
+[131]    0.0    0.00    0.00     202         Scanner::getScanner() [131]
+-----------------------------------------------
+                0.00    0.00       1/201         compile(char const*) [55]
+                0.00    0.00      35/201         match(TokenType) [129]
+                0.00    0.00      70/201         parsePrecedence(Precedence) <cycle 1> [77]
+                0.00    0.00      95/201         consume(TokenType, char const*) [137]
+[132]    0.0    0.00    0.00     201         advance() [132]
+                0.00    0.00     201/202         Scanner::getScanner() [131]
+                0.00    0.00     201/201         Scanner::scanToken() [135]
+-----------------------------------------------
+                0.00    0.00     201/201         Scanner::scanToken() [135]
+[133]    0.0    0.00    0.00     201         Scanner::skipWhitespace() [133]
+                0.00    0.00     442/907         Scanner::peek() [123]
+                0.00    0.00     241/739         Scanner::advance() [124]
+-----------------------------------------------
+                0.00    0.00      10/201         Scanner::number() [155]
+                0.00    0.00      73/201         Scanner::identifier() [138]
+                0.00    0.00     118/201         Scanner::scanToken() [135]
+[134]    0.0    0.00    0.00     201         Scanner::makeToken(TokenType) [134]
+-----------------------------------------------
+                0.00    0.00     201/201         advance() [132]
+[135]    0.0    0.00    0.00     201         Scanner::scanToken() [135]
+                0.00    0.00     201/201         Scanner::skipWhitespace() [133]
+                0.00    0.00     201/214         Scanner::isAtEnd() [130]
+                0.00    0.00     199/739         Scanner::advance() [124]
+                0.00    0.00     199/290         Scanner::isDigit(char) [128]
+                0.00    0.00     189/553         Scanner::isAlpha(char) [125]
+                0.00    0.00     118/201         Scanner::makeToken(TokenType) [134]
+                0.00    0.00      73/73          Scanner::identifier() [138]
+                0.00    0.00      13/13          Scanner::match(char) [152]
+                0.00    0.00      10/10          Scanner::number() [155]
+-----------------------------------------------
+                0.00    0.00      10/150         binary(bool) <cycle 1> [87]
+                0.00    0.00     140/150         parsePrecedence(Precedence) <cycle 1> [77]
+[136]    0.0    0.00    0.00     150         getRule(TokenType) [136]
+-----------------------------------------------
+                0.00    0.00       2/95          ifStatement() <cycle 2> [83]
+                0.00    0.00       2/95          printStatement() [82]
+                0.00    0.00       2/95          whileStatement() <cycle 2> [84]
+                0.00    0.00       3/95          classDeclaration() <cycle 2> [86]
+                0.00    0.00       4/95          parseVariable(char const*) [111]
+                0.00    0.00       4/95          varDeclaration() [75]
+                0.00    0.00       6/95          returnStatement() [72]
+                0.00    0.00       7/95          method() <cycle 2> [85]
+                0.00    0.00       7/95          expressionStatement() [71]
+                0.00    0.00       9/95          block() <cycle 2> [157]
+                0.00    0.00      10/95          argumentList() [154]
+                0.00    0.00      18/95          dot(bool) <cycle 1> [73]
+                0.00    0.00      21/95          function(FunctionType) <cycle 2> [76]
+[137]    0.0    0.00    0.00      95         consume(TokenType, char const*) [137]
+                0.00    0.00      95/201         advance() [132]
+-----------------------------------------------
+                0.00    0.00      73/73          Scanner::scanToken() [135]
+[138]    0.0    0.00    0.00      73         Scanner::identifier() [138]
+                0.00    0.00     437/907         Scanner::peek() [123]
+                0.00    0.00     364/553         Scanner::isAlpha(char) [125]
+                0.00    0.00     291/739         Scanner::advance() [124]
+                0.00    0.00      73/290         Scanner::isDigit(char) [128]
+                0.00    0.00      73/73          Scanner::identifierType() [139]
+                0.00    0.00      73/201         Scanner::makeToken(TokenType) [134]
+-----------------------------------------------
+                0.00    0.00      73/73          Scanner::identifier() [138]
+[139]    0.0    0.00    0.00      73         Scanner::identifierType() [139]
+                0.00    0.00      65/65          Scanner::checkKeyword(int, int, char const*, TokenType) [140]
+-----------------------------------------------
+                0.00    0.00      65/65          Scanner::identifierType() [139]
+[140]    0.0    0.00    0.00      65         Scanner::checkKeyword(int, int, char const*, TokenType) [140]
+-----------------------------------------------
+                0.00    0.00      56/56          copyString(char const*, int) [94]
+[141]    0.0    0.00    0.00      56         hashString(char const*, int) [141]
+-----------------------------------------------
+                0.00    0.00      56/56          copyString(char const*, int) [94]
+[142]    0.0    0.00    0.00      56         Table::tableFindString(char const*, int, unsigned int) [142]
+-----------------------------------------------
+                0.00    0.00      30/30          resolveLocal(Compiler*, Token*) [144]
+[143]    0.0    0.00    0.00      30         identifiersEqual(Token*, Token*) [143]
+-----------------------------------------------
+                0.00    0.00      29/29          namedVariable(Token, bool) <cycle 1> [70]
+[144]    0.0    0.00    0.00      29         resolveLocal(Compiler*, Token*) [144]
+                0.00    0.00      30/30          identifiersEqual(Token*, Token*) [143]
+-----------------------------------------------
+                                   1             namedVariable(Token, bool) <cycle 1> [70]
+                                   6             dot(bool) <cycle 1> [73]
+                0.00    0.00       1/22          ifStatement() <cycle 2> [83]
+                0.00    0.00       1/22          whileStatement() <cycle 2> [84]
+                0.00    0.00       2/22          printStatement() [82]
+                0.00    0.00       4/22          varDeclaration() [75]
+                0.00    0.00       6/22          returnStatement() [72]
+                0.00    0.00       7/22          expressionStatement() [71]
+[145]    0.0    0.00    0.00      28         expression() <cycle 1> [145]
+                                  28             parsePrecedence(Precedence) <cycle 1> [77]
+-----------------------------------------------
+                                  12             this_(bool) <cycle 1> [153]
+                                  16             parsePrecedence(Precedence) <cycle 1> [77]
+[146]    0.0    0.00    0.00      28         variable(bool) <cycle 1> [146]
+                                  28             namedVariable(Token, bool) <cycle 1> [70]
+-----------------------------------------------
+                0.00    0.00       1/26          ValueArray::ValueArray() [174]
+                0.00    0.00       8/26          ValueArray::freeValueArray() <cycle 3> [164]
+                0.00    0.00      17/26          Chunk::initChunk() [151]
+[147]    0.0    0.00    0.00      26         ValueArray::initValueArray() [147]
+-----------------------------------------------
+                                  19             freeObject(Obj*) <cycle 3> [44]
+[148]    0.0    0.00    0.00      19         void* FREE_ARRAY<char>(void*, int) <cycle 3> [148]
+                                  19             reallocate(void*, unsigned long, unsigned long) <cycle 3> [33]
+-----------------------------------------------
+                                  19             freeObject(Obj*) <cycle 3> [44]
+[149]    0.0    0.00    0.00      19         void* FREE<ObjString>(void*) <cycle 3> [149]
+                                  19             reallocate(void*, unsigned long, unsigned long) <cycle 3> [33]
+-----------------------------------------------
+                0.00    0.00      17/17          namedVariable(Token, bool) <cycle 1> [70]
+[150]    0.0    0.00    0.00      17         resolveUpvalue(Compiler*, Token*) [150]
+-----------------------------------------------
+                0.00    0.00       1/17          Chunk::Chunk() [176]
+                0.00    0.00       8/17          Chunk::freeChunk() <cycle 3> [165]
+                0.00    0.00       8/17          newFunction() [108]
+[151]    0.0    0.00    0.00      17         Chunk::initChunk() [151]
+                0.00    0.00      17/26          ValueArray::initValueArray() [147]
+-----------------------------------------------
+                0.00    0.00      13/13          Scanner::scanToken() [135]
+[152]    0.0    0.00    0.00      13         Scanner::match(char) [152]
+                0.00    0.00      13/214         Scanner::isAtEnd() [130]
+-----------------------------------------------
+                                  12             parsePrecedence(Precedence) <cycle 1> [77]
+[153]    0.0    0.00    0.00      12         this_(bool) <cycle 1> [153]
+                                  12             variable(bool) <cycle 1> [146]
+-----------------------------------------------
+                0.00    0.00       4/10          call(bool) [90]
+                0.00    0.00       6/10          dot(bool) <cycle 1> [73]
+[154]    0.0    0.00    0.00      10         argumentList() [154]
+                0.00    0.00      10/294         check(TokenType) [127]
+                0.00    0.00      10/95          consume(TokenType, char const*) [137]
+-----------------------------------------------
+                0.00    0.00      10/10          Scanner::scanToken() [135]
+[155]    0.0    0.00    0.00      10         Scanner::number() [155]
+                0.00    0.00      28/907         Scanner::peek() [123]
+                0.00    0.00      18/290         Scanner::isDigit(char) [128]
+                0.00    0.00      10/201         Scanner::makeToken(TokenType) [134]
+                0.00    0.00       8/739         Scanner::advance() [124]
+-----------------------------------------------
+                0.00    0.00       2/9           statement() <cycle 2> [69]
+                0.00    0.00       7/9           function(FunctionType) <cycle 2> [76]
+[156]    0.0    0.00    0.00       9         beginScope() [156]
+-----------------------------------------------
+                                   2             statement() <cycle 2> [69]
+                                   7             function(FunctionType) <cycle 2> [76]
+[157]    0.0    0.00    0.00       9         block() <cycle 2> [157]
+                0.00    0.00      39/294         check(TokenType) [127]
+                0.00    0.00       9/95          consume(TokenType, char const*) [137]
+                                  15             declaration() <cycle 2> [74]
+-----------------------------------------------
+                                   8             ValueArray::freeValueArray() <cycle 3> [164]
+[158]    0.0    0.00    0.00       8         void* FREE_ARRAY<Value>(void*, int) <cycle 3> [158]
+                                   8             reallocate(void*, unsigned long, unsigned long) <cycle 3> [33]
+-----------------------------------------------
+                                   8             freeObject(Obj*) <cycle 3> [44]
+[159]    0.0    0.00    0.00       8         void* FREE_ARRAY<ObjUpvalue*>(void*, int) <cycle 3> [159]
+                                   8             reallocate(void*, unsigned long, unsigned long) <cycle 3> [33]
+-----------------------------------------------
+                                   8             Chunk::freeChunk() <cycle 3> [165]
+[160]    0.0    0.00    0.00       8         void* FREE_ARRAY<unsigned char>(void*, int) <cycle 3> [160]
+                                   8             reallocate(void*, unsigned long, unsigned long) <cycle 3> [33]
+-----------------------------------------------
+                                   8             Chunk::freeChunk() <cycle 3> [165]
+[161]    0.0    0.00    0.00       8         void* FREE_ARRAY<int>(void*, int) <cycle 3> [161]
+                                   8             reallocate(void*, unsigned long, unsigned long) <cycle 3> [33]
+-----------------------------------------------
+                                   8             freeObject(Obj*) <cycle 3> [44]
+[162]    0.0    0.00    0.00       8         void* FREE<ObjClosure>(void*) <cycle 3> [162]
+                                   8             reallocate(void*, unsigned long, unsigned long) <cycle 3> [33]
+-----------------------------------------------
+                                   8             freeObject(Obj*) <cycle 3> [44]
+[163]    0.0    0.00    0.00       8         void* FREE<ObjFunction>(void*) <cycle 3> [163]
+                                   8             reallocate(void*, unsigned long, unsigned long) <cycle 3> [33]
+-----------------------------------------------
+                                   8             Chunk::freeChunk() <cycle 3> [165]
+[164]    0.0    0.00    0.00       8         ValueArray::freeValueArray() <cycle 3> [164]
+                0.00    0.00       8/26          ValueArray::initValueArray() [147]
+                                   8             void* FREE_ARRAY<Value>(void*, int) <cycle 3> [158]
+-----------------------------------------------
+                                   8             freeObject(Obj*) <cycle 3> [44]
+[165]    0.0    0.00    0.00       8         Chunk::freeChunk() <cycle 3> [165]
+                0.00    0.00       8/17          Chunk::initChunk() [151]
+                                   8             void* FREE_ARRAY<unsigned char>(void*, int) <cycle 3> [160]
+                                   8             void* FREE_ARRAY<int>(void*, int) <cycle 3> [161]
+                                   8             ValueArray::freeValueArray() <cycle 3> [164]
+-----------------------------------------------
+                0.00    0.00       1/5           classDeclaration() <cycle 2> [86]
+                0.00    0.00       4/5           parseVariable(char const*) [111]
+[166]    0.0    0.00    0.00       5         declareVariable() [166]
+                0.00    0.00       1/1           addLocal(Token) [173]
+-----------------------------------------------
+                0.00    0.00       1/3           whileStatement() <cycle 2> [84]
+                0.00    0.00       2/3           ifStatement() <cycle 2> [83]
+[167]    0.0    0.00    0.00       3         patchJump(int) [167]
+                0.00    0.00       9/303         currentChunk() [126]
+-----------------------------------------------
+                0.00    0.00       2/2           VM::run() [5]
+[168]    0.0    0.00    0.00       2         printValue(Value) [168]
+-----------------------------------------------
+                                   2             freeObject(Obj*) <cycle 3> [44]
+[169]    0.0    0.00    0.00       2         void* FREE<ObjNative>(void*) <cycle 3> [169]
+                                   2             reallocate(void*, unsigned long, unsigned long) <cycle 3> [33]
+-----------------------------------------------
+                0.00    0.00       1/1           _GLOBAL__sub_I__ZN7Scanner11initScannerEPKc [181]
+[170]    0.0    0.00    0.00       1         __static_initialization_and_destruction_0(int, int) [170]
+                0.00    0.00       1/1           Scanner::Scanner() [179]
+-----------------------------------------------
+                0.00    0.00       1/1           _GLOBAL__sub_I__ZN2VMC2Ev [180]
+[171]    0.0    0.00    0.00       1         __static_initialization_and_destruction_0(int, int) [171]
+                0.00    0.00       1/1           VM::VM() [175]
+-----------------------------------------------
+                0.00    0.00       1/1           defineVariable(unsigned char) [89]
+[172]    0.0    0.00    0.00       1         markInitialized() [172]
+-----------------------------------------------
+                0.00    0.00       1/1           declareVariable() [166]
+[173]    0.0    0.00    0.00       1         addLocal(Token) [173]
+-----------------------------------------------
+                0.00    0.00       1/1           Chunk::Chunk() [176]
+[174]    0.0    0.00    0.00       1         ValueArray::ValueArray() [174]
+                0.00    0.00       1/26          ValueArray::initValueArray() [147]
+-----------------------------------------------
+                0.00    0.00       1/1           __static_initialization_and_destruction_0(int, int) [171]
+[175]    0.0    0.00    0.00       1         VM::VM() [175]
+-----------------------------------------------
+                0.00    0.00       1/1           CppLox::execute(int, char const**) [2]
+[176]    0.0    0.00    0.00       1         Chunk::Chunk() [176]
+                0.00    0.00       1/17          Chunk::initChunk() [151]
+                0.00    0.00       1/1           ValueArray::ValueArray() [174]
+-----------------------------------------------
+                0.00    0.00       1/1           CppLox::runFile(char const*) [3]
+[177]    0.0    0.00    0.00       1         CppLox::readFile(char const*) [177]
+-----------------------------------------------
+                0.00    0.00       1/1           compile(char const*) [55]
+[178]    0.0    0.00    0.00       1         Scanner::initScanner(char const*) [178]
+-----------------------------------------------
+                0.00    0.00       1/1           __static_initialization_and_destruction_0(int, int) [170]
+[179]    0.0    0.00    0.00       1         Scanner::Scanner() [179]
+-----------------------------------------------
+
+ This table describes the call tree of the program, and was sorted by
+ the total amount of time spent in each function and its children.
+
+ Each entry in this table consists of several lines.  The line with the
+ index number at the left hand margin lists the current function.
+ The lines above it list the functions that called this function,
+ and the lines below it list the functions this one called.
+ This line lists:
+     index	A unique number given to each element of the table.
+		Index numbers are sorted numerically.
+		The index number is printed next to every function name so
+		it is easier to look up where the function is in the table.
+
+     % time	This is the percentage of the `total' time that was spent
+		in this function and its children.  Note that due to
+		different viewpoints, functions excluded by options, etc,
+		these numbers will NOT add up to 100%.
+
+     self	This is the total amount of time spent in this function.
+
+     children	This is the total amount of time propagated into this
+		function by its children.
+
+     called	This is the number of times the function was called.
+		If the function called itself recursively, the number
+		only includes non-recursive calls, and is followed by
+		a `+' and the number of recursive calls.
+
+     name	The name of the current function.  The index number is
+		printed after it.  If the function is a member of a
+		cycle, the cycle number is printed between the
+		function's name and the index number.
+
+
+ For the function's parents, the fields have the following meanings:
+
+     self	This is the amount of time that was propagated directly
+		from the function into this parent.
+
+     children	This is the amount of time that was propagated from
+		the function's children into this parent.
+
+     called	This is the number of times this parent called the
+		function `/' the total number of times the function
+		was called.  Recursive calls to the function are not
+		included in the number after the `/'.
+
+     name	This is the name of the parent.  The parent's index
+		number is printed after it.  If the parent is a
+		member of a cycle, the cycle number is printed between
+		the name and the index number.
+
+ If the parents of the function cannot be determined, the word
+ `<spontaneous>' is printed in the `name' field, and all the other
+ fields are blank.
+
+ For the function's children, the fields have the following meanings:
+
+     self	This is the amount of time that was propagated directly
+		from the child into the function.
+
+     children	This is the amount of time that was propagated from the
+		child's children to the function.
+
+     called	This is the number of times the function called
+		this child `/' the total number of times the child
+		was called.  Recursive calls by the child are not
+		listed in the number after the `/'.
+
+     name	This is the name of the child.  The child's index
+		number is printed after it.  If the child is a
+		member of a cycle, the cycle number is printed
+		between the name and the index number.
+
+ If there are any cycles (circles) in the call graph, there is an
+ entry for the cycle-as-a-whole.  This entry shows who called the
+ cycle (as parents) and the members of the cycle (as children.)
+ The `+' recursive calls entry shows the number of function calls that
+ were internal to the cycle, and the calls entry for each member shows,
+ for that member, how many times it was called from other members of
+ the cycle.
+
+Copyright (C) 2012-2022 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.
+
+Index by function name
+
+  [42] void* FREE_ARRAY<Entry>(void*, int) [144] resolveLocal(Compiler*, Token*) (compiler.cpp) [68] VM::runtimeError(char const*, ...)
+ [158] void* FREE_ARRAY<Value>(void*, int) [28] blackenObject(Obj*) (memory.cpp) [18] VM::invokeFromClass(ObjClass*, ObjString*, int)
+ [159] void* FREE_ARRAY<ObjUpvalue*>(void*, int) [40] closeUpvalues(Value*) (vm.cpp) [16] VM::pop()
+ [148] void* FREE_ARRAY<char>(void*, int) [70] namedVariable(Token, bool) (compiler.cpp) [5] VM::run()
+ [160] void* FREE_ARRAY<unsigned char>(void*, int) [111] parseVariable(char const*) (compiler.cpp) [21] VM::call(ObjClosure*, int)
+ [161] void* FREE_ARRAY<int>(void*, int) [67] printFunction(ObjFunction*) (object.cpp) [17] VM::peek(int)
+ [106] Value* GROW_ARRAY<Value>(void*, int, int) [30] allocateObject(unsigned long, ObjType) (object.cpp) [14] VM::push(Value)
+  [59] unsigned char* GROW_ARRAY<unsigned char>(void*, int, int) [95] allocateString(char*, int, unsigned int) (object.cpp) [45] VM::getVM()
+ [103] int* GROW_ARRAY<int>(void*, int, int) [52] captureUpvalue(Value*) (vm.cpp) [96] VM::freeVM()
+  [94] copyString(char const*, int) [89] defineVariable(unsigned char) (compiler.cpp) [31] VM::initVM()
+  [41] markObject(Obj*)       [82] printStatement() (compiler.cpp) [12] VM::invoke(ObjString*, int)
+  [58] newClosure(ObjFunction*) [150] resolveUpvalue(Compiler*, Token*) (compiler.cpp) [50] VM::isFalsey(Value)
+ [168] printValue(Value)      [75] varDeclaration() (compiler.cpp) [19] VM::callValue(Value, int)
+  [33] reallocate(void*, unsigned long, unsigned long) [84] whileStatement() (compiler.cpp) [4] VM::interpret(char const*)
+  [97] freeObjects()         [166] declareVariable() (compiler.cpp) [175] VM::VM()
+ [108] newFunction()         [172] markInitialized() (compiler.cpp) [57] Chunk::writeChunk(unsigned char, int)
+  [25] newInstance(ObjClass*) [77] parsePrecedence(Precedence) (compiler.cpp) [99] Chunk::addConstant(Value)
+  [66] tableAddAll(Table*, Table*) [72] returnStatement() (compiler.cpp) [165] Chunk::freeChunk()
+  [53] valuesEqual(Value, Value) [27] traceReferences() (memory.cpp) [151] Chunk::initChunk()
+  [60] ObjClosure* ALLOCATE_OBJ<ObjClosure>(ObjType) [86] classDeclaration() (compiler.cpp) [176] Chunk::Chunk()
+ [109] ObjFunction* ALLOCATE_OBJ<ObjFunction>(ObjType) [143] identifiersEqual(Token*, Token*) (compiler.cpp) [11] Table::adjustCapacity(int)
+  [29] ObjInstance* ALLOCATE_OBJ<ObjInstance>(ObjType) [93] identifierConstant(Token*) (compiler.cpp) [142] Table::tableFindString(char const*, int, unsigned int)
+  [54] ObjBoundMethod* ALLOCATE_OBJ<ObjBoundMethod>(ObjType) [71] expressionStatement() (compiler.cpp) [43] Table::tableRemoveWhite()
+ [115] ObjClass* ALLOCATE_OBJ<ObjClass>(ObjType) [73] dot(bool) (compiler.cpp) [10] Table::tableGet(ObjString*, Value*)
+ [112] ObjNative* ALLOCATE_OBJ<ObjNative>(ObjType) [90] call(bool) (compiler.cpp) [7] Table::tableSet(ObjString*, Value)
+ [100] ObjString* ALLOCATE_OBJ<ObjString>(ObjType) [157] block() (compiler.cpp) [37] Table::freeTable()
+  [49] GROW_CAPACITY(int)    [127] check(TokenType) (compiler.cpp) [34] Table::initTable()
+  [20] collectGarbage()      [129] match(TokenType) (compiler.cpp) [36] Table::markTable()
+ [122] markCompilerRoots()    [39] sweep() (memory.cpp)    [2] CppLox::execute(int, char const**)
+ [170] __static_initialization_and_destruction_0(int, int) (scanner.cpp) [153] this_(bool) (compiler.cpp) [3] CppLox::runFile(char const*)
+ [171] __static_initialization_and_destruction_0(int, int) (vm.cpp) [87] binary(bool) (compiler.cpp) [177] CppLox::readFile(char const*)
+ [162] void* FREE<ObjClosure>(void*) [85] method() (compiler.cpp) [131] Scanner::getScanner()
+ [163] void* FREE<ObjFunction>(void*) [79] number(bool) (compiler.cpp) [138] Scanner::identifier()
+  [64] void* FREE<ObjInstance>(void*) [132] advance() (compiler.cpp) [178] Scanner::initScanner(char const*)
+  [65] void* FREE<ObjClass>(void*) [137] consume(TokenType, char const*) (compiler.cpp) [140] Scanner::checkKeyword(int, int, char const*, TokenType)
+ [169] void* FREE<ObjNative>(void*) [136] getRule(TokenType) (compiler.cpp) [139] Scanner::identifierType()
+ [149] void* FREE<ObjString>(void*) [173] addLocal(Token) (compiler.cpp) [133] Scanner::skipWhitespace()
+  [55] compile(char const*)   [56] emitByte(unsigned char) (compiler.cpp) [123] Scanner::peek()
+  [22] Entry* ALLOCATE<Entry>(int) [88] emitJump(unsigned char) (compiler.cpp) [152] Scanner::match(char)
+ [110] ObjUpvalue** ALLOCATE<ObjUpvalue*>(int) [91] emitLoop(int) (compiler.cpp) [155] Scanner::number()
+ [101] char* ALLOCATE<char>(int) [92] endScope() (compiler.cpp) [124] Scanner::advance()
+ [114] newClass(ObjString*)   [76] function(FunctionType) (compiler.cpp) [125] Scanner::isAlpha(char)
+  [35] markValue(Value)      [146] variable(bool) (compiler.cpp) [130] Scanner::isAtEnd()
+ [113] newNative(Value (*)(int, Value*)) [62] emitBytes(unsigned char, unsigned char) (compiler.cpp) [128] Scanner::isDigit(char)
+ [156] beginScope() (compiler.cpp) [13] findEntry(Entry*, int, ObjString*) (table.cpp) [134] Scanner::makeToken(TokenType)
+  [80] emitReturn() (compiler.cpp) [26] isObjType(Value, ObjType) (object.hpp) [135] Scanner::scanToken()
+ [145] expression() (compiler.cpp) [38] markArray(ValueArray*) (memory.cpp) [179] Scanner::Scanner()
+  [44] freeObject(Obj*) (memory.cpp) [48] markRoots() (memory.cpp) [23] VM::run()::{lambda(char)#5}::operator()(char) const (vm.cpp)
+ [141] hashString(char const*, int) (object.cpp) [167] patchJump(int) (compiler.cpp) [47] VM::run()::{lambda()#2}::operator()() const (vm.cpp)
+  [46] clockNative(int, Value*) (vm.cpp) [69] statement() (compiler.cpp) [6] VM::run()::{lambda()#3}::operator()() const (vm.cpp)
+  [74] declaration() (compiler.cpp) [164] ValueArray::freeValueArray() [8] VM::run()::{lambda()#4}::operator()() const (vm.cpp)
+  [81] endCompiler() (compiler.cpp) [147] ValueArray::initValueArray() [9] VM::run()::{lambda()#1}::operator()() const (vm.cpp)
+  [83] ifStatement() (compiler.cpp) [105] ValueArray::writeValueArray(Value) [51] _init
+ [154] argumentList() (compiler.cpp) [174] ValueArray::ValueArray() [63] <cycle 1>
+ [126] currentChunk() (compiler.cpp) [24] VM::bindMethod(ObjClass*, ObjString*) [61] <cycle 2>
+  [78] emitConstant(Value) (compiler.cpp) [32] VM::resetStack() [15] <cycle 3>
+ [102] initCompiler(Compiler*, FunctionType) (compiler.cpp) [104] VM::defineMethod(ObjString*)
+  [98] makeConstant(Value) (compiler.cpp) [107] VM::defineNative(char const*, Value (*)(int, Value*))

@@ -5,12 +5,32 @@
 #include "object.hpp"
 #include "value.hpp"
 
+/**
+ * @brief Prints a simple instruction and returns the next offset.
+
+ * This function is primarily for debugging purposes.
+
+ * @param name The name of the instruction.
+ * @param offset The current offset in the code.
+ * @return The next offset in the code.
+ */
 static int simpleInstruction(const char* name, int offset)
 {
   printf("%s\n", name);
   return offset + 1;
 }
 
+/**
+ * @brief Prints a jump instruction with its target address.
+
+ * This function is primarily for debugging purposes.
+
+ * @param name The name of the instruction.
+ * @param sign The sign of the jump offset (-1 for backward, 1 for forward).
+ * @param chunk The chunk containing the instruction.
+ * @param offset The offset of the jump instruction in the chunk.
+ * @return The next offset in the chunk.
+ */
 static int jumpInstruction(const char* name, int sign, Chunk* chunk, int offset)
 {
   uint16_t jump = (uint16_t)(chunk->code[offset + 1] << 8);
@@ -19,6 +39,15 @@ static int jumpInstruction(const char* name, int sign, Chunk* chunk, int offset)
   return offset + 3;
 }
 
+/**
+ * @brief Disassembles a chunk of bytecode.
+ *
+ * Prints a human-readable representation of the bytecode instructions to
+ stdout.
+
+ * @param chunk The chunk to disassemble.
+ * @param name The name of the chunk (for display purposes).
+ */
 void disassembleChunk(Chunk* chunk, const char* name)
 {
   printf("== %s ==\n", name);
@@ -28,6 +57,16 @@ void disassembleChunk(Chunk* chunk, const char* name)
   }
 }
 
+/**
+ * @brief Disassembles a constant instruction.
+
+ * Prints the instruction name, constant index, and the corresponding value.
+
+ * @param name The name of the instruction.
+ * @param chunk The chunk containing the instruction.
+ * @param offset The offset of the instruction in the chunk.
+ * @return The next offset in the chunk.
+ */
 static int constantInstruction(const char* name, Chunk* chunk, int offset)
 {
   uint8_t constant = chunk->code[offset + 1];
@@ -37,6 +76,16 @@ static int constantInstruction(const char* name, Chunk* chunk, int offset)
   return offset + 2;
 }
 
+/**
+ * @brief Disassembles a byte instruction.
+
+ * Prints the instruction name and the operand value.
+
+ * @param name The name of the instruction.
+ * @param chunk The chunk containing the instruction.
+ * @param offset The offset of the instruction in the chunk.
+ * @return The next offset in the chunk.
+ */
 static int byteInstruction(const char* name, Chunk* chunk, int offset)
 {
   uint8_t slot = chunk->code[offset + 1];
@@ -44,6 +93,16 @@ static int byteInstruction(const char* name, Chunk* chunk, int offset)
   return offset + 2;
 }
 
+/**
+ * @brief Disassembles an invoke instruction.
+
+ * Prints the instruction name, argument count, and the invoked function's name.
+
+ * @param name The name of the instruction.
+ * @param chunk The chunk containing the instruction.
+ * @param offset The offset of the instruction in the chunk.
+ * @return The next offset in the chunk.
+ */
 static int invokeInstruction(const char* name, Chunk* chunk, int offset)
 {
   uint8_t constant = chunk->code[offset + 1];
@@ -54,6 +113,17 @@ static int invokeInstruction(const char* name, Chunk* chunk, int offset)
   return offset + 3;
 }
 
+/**
+ * @brief Disassembles a single instruction from the given chunk at the
+ * specified offset.
+ *
+ * Prints the disassembled instruction to stdout in a human-readable format.
+ *
+ * @param chunk The chunk containing the bytecode.
+ * @param offset The offset within the chunk to disassemble.
+ *
+ * @return The offset of the next instruction after the disassembled one.
+ */
 int disassembleInstruction(Chunk* chunk, int offset)
 {
   printf("%04d ", offset);
@@ -157,6 +227,13 @@ int disassembleInstruction(Chunk* chunk, int offset)
       return constantInstruction("OP_SET_PROPERTY", chunk, offset);
     case OP_INVOKE:
       return invokeInstruction("OP_INVOKE", chunk, offset);
+      // TODO: fix debugging of this instructions
+    case OP_BUILD_LIST:
+      return simpleInstruction("OP_BUILD_LIST", offset);
+    case OP_INDEX_GET:
+      return simpleInstruction("OP_INDEX_GET", offset);
+    case OP_INDEX_SET:
+      return simpleInstruction("OP_INDEX_SET", offset);
     default:
       printf("Unknown opcode %d\n", instruction);
       return offset + 1;

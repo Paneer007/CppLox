@@ -1,0 +1,40 @@
+var t = int_input();
+var n = int_input();
+var arr = [];
+
+for(var i = 0; i < n; i= i +1){
+    var x = int_input();
+    append(arr, x);
+}
+
+print arr;
+
+var hi =  1000000;
+var lo = 0;
+var ans = 0;
+
+while(lo <= hi){
+    var mid = lo +hi;
+    mid = mid /2;
+
+    var count = 0;
+
+    for(var i =0; i < n; i= i+1){
+        var x = arr[i];
+        var temp = mid/x;
+        count = count + temp;
+
+        if(count >= t){
+            i = n+1;
+        }
+    }
+
+    if (count >= t){
+        ans = mid;
+        hi = mid - 1;
+    }else{
+        lo = mid +1;
+    }
+}
+
+print ans;

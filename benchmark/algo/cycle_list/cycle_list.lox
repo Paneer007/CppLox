@@ -1,0 +1,72 @@
+class LinkedList{
+    init(){
+        this.val = 100005;
+        this.next = 100005;
+    }
+}
+
+var n = int_input();
+
+var dummy = LinkedList(); 
+dummy.val = -100005;
+dummy.next = LinkedList();
+
+fun searchNode(dummy, val){
+    var curr =  dummy;
+    while(curr.val != 100005 and curr.val != val){
+        curr = curr.next;
+    }
+    return curr;
+}
+
+var head = dummy;
+
+for(var i = 0; i< n; i = i+1){
+    var x = int_input();
+    head.val =  x;
+    head.next = LinkedList();
+    var temp = n-1;
+    if(i != temp){
+        head = head.next;
+    }
+}
+
+var temp = dummy;
+
+var pos = int_input();
+
+if(pos == -1){
+    print("Condition: No Loop");
+}else{
+    for(var i=0;i<pos;i = i+1){
+       temp = temp.next;
+       print(temp.val);
+    }
+}
+
+head.next = temp;
+
+var slow = dummy;
+var fast = dummy;
+var flag = false;
+var count = 0;
+
+while(flag == false and fast.val != 100005 and fast.next.val != 100005 ){
+    slow = slow.next;
+    count = count + 1;
+    fast = fast.next.next;
+    if (slow == fast){
+        flag = true;
+    }
+}
+
+if (flag == false){
+    print("Print No Loop");
+}else{
+    print("Loop found");
+    while(dummy != slow){
+        slow = slow.next;
+        dummy = dummy.next;
+    }
+    print(dummy.val);
+}

@@ -1,0 +1,28 @@
+class Tree {
+  init(item, depth) {
+    this.item = item;
+    this.depth = depth;
+    if (depth > 0) {
+      depth = depth - 1;
+      this.left = Tree(rand(), depth);
+      this.right = Tree(rand(), depth);
+    } else {
+      this.left = nil;
+      this.right = nil;
+    }
+  }
+
+  check() {
+    if (this.left == nil) {
+      return this.item;
+    }
+
+    return this.item + this.left.check() - this.right.check();
+  }
+}
+
+var Depth = 10;
+
+var start = clock();
+
+print Tree(0, Depth).check();
