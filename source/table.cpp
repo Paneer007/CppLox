@@ -49,6 +49,7 @@ void Table::initTable()
  * @return A pointer to the found entry, or an empty or tombstone entry if not
  * found.
  */
+
 static Entry* findEntry(Entry* entries, int capacity, ObjString* key)
 {
   uint32_t index = key->hash & (capacity - 1);
@@ -71,7 +72,6 @@ static Entry* findEntry(Entry* entries, int capacity, ObjString* key)
         } else {
           res = entry;
         }
-        // printf("Look here \n");
 #  pragma omp cancel parallel
       } else {
         // We found a tombstone
@@ -81,10 +81,8 @@ static Entry* findEntry(Entry* entries, int capacity, ObjString* key)
     } else if (entry->key == key) {
       // We found the key.
       res = entry;
-      // printf("Look here \n");
 #  pragma omp cancel parallel
     }
-
 #  pragma omp cancellation point parallel
   }
   return res;
