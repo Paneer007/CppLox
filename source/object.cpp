@@ -265,7 +265,7 @@ ObjString* copyString(const char* chars, int length)
 #ifdef ENABLE_MP
   auto interned = vm->strings.tableFindString(chars, length, hash, hash2);
 #else
-  auto interned = vm->strings.tableFindString(chars, length, hash);
+  auto interned = vm->strings.tableFindString(chars, length, hash, 0);
 #endif
 
   if (interned != NULL)

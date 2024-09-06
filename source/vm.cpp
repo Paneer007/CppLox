@@ -79,8 +79,7 @@ static Value charInput(int argCount, Value* args)
     printf("%s", AS_CSTRING(args[0]));
   }
   char s[1];
-  scanf("%c", &s[0]);
-
+  scanf("%c", &s[0]);  // TODO: Handle Errors
   return OBJ_VAL(copyString(s, 1));
 }
 
@@ -99,7 +98,7 @@ static Value intInput(int argCount, Value* args)
   }
 
   double x;
-  scanf("%lf", &x);
+  scanf("%lf", &x);  // TODO: Handle Errors
   return NUMBER_VAL(x);
 }
 
@@ -374,7 +373,48 @@ InterpretResult VM::run()
 {
   auto frame = &this->frames[this->frameCount - 1];
 
+  void* targets[] = {&&OP_CONSTANT_INSTRCTN,      &&OP_NIL_INSTRCTN,
+                     &&OP_TRUE_INSTRCTN,          &&OP_FALSE_INSTRCTN,
+                     &&OP_EQUAL_INSTRCTN,         &&OP_GREATER_INSTRCTN,
+                     &&OP_LESS_INSTRCTN,          &&OP_RETURN_INSTRCTN,
+                     &&OP_NEGATE_INSTRCTN,        &&OP_ADD_INSTRCTN,
+                     &&OP_SUBTRACT_INSTRCTN,      &&OP_MULTIPLY_INSTRCTN,
+                     &&OP_DIVIDE_INSTRCTN,        &&OP_MODULUS_INSTRCTN,
+                     &&OP_NOT_INSTRCTN,           &&OP_PRINT_INSTRCTN,
+                     &&OP_JUMP_INSTRCTN,          &&OP_JUMP_IF_FALSE_INSTRCTN,
+                     &&OP_LOOP_INSTRCTN,          &&OP_CALL_INSTRCTN,
+                     &&OP_INVOKE_INSTRCTN,        &&OP_SUPER_INVOKE_INSTRCTN,
+                     &&OP_CLOSURE_INSTRCTN,       &&OP_GET_UPVALUE_INSTRCTN,
+                     &&OP_SET_UPVALUE_INSTRCTN,   &&OP_GET_PROPERTY_INSTRCTN,
+                     &&OP_SET_PROPERTY_INSTRCTN,  &&OP_POP_INSTRCTN,
+                     &&OP_GET_LOCAL_INSTRCTN,     &&OP_SET_LOCAL_INSTRCTN,
+                     &&OP_DEFINE_GLOBAL_INSTRCTN, &&OP_CLOSE_UPVALUE_INSTRCTN,
+                     &&OP_CLASS_INSTRCTN,         &&OP_INHERIT_INSTRCTN,
+                     &&OP_GET_SUPER_INSTRCTN,     &&OP_METHOD_INSTRCTN,
+                     &&OP_GET_GLOBAL_INSTRCTN,    &&OP_SET_GLOBAL_INSTRCTN,
+                     &&OP_BUILD_LIST_INSTRCTN,    &&OP_INDEX_GET_INSTRCTN,
+                     &&OP_INDEX_SET_INSTRCTN};
+
   const auto READ_BYTE = [&frame]() { return *frame->ip++; };
+#ifdef DEBUG_TRACE_EXECUTION
+#  define NEXT_INSTRCTN() \
+    do { \
+      printf("          "); \
+      for (Value* slot = this->stack; slot < this->stackTop; slot++) { \
+        printf("[ "); \
+        printValue(*slot); \
+        printf(" ]"); \
+      } \
+      printf("\n"); \
+      disassembleInstruction( \
+          &frame->closure->function->chunk, \
+          (int)(frame->ip - frame->closure->function->chunk.code)); \
+      goto* targets[READ_BYTE()]; \
+    } while (0)
+
+#else
+#  define NEXT_INSTRCTN() goto* targets[READ_BYTE()];
+#endif
 
   const auto READ_SHORT = [&frame]()
   {
@@ -466,401 +506,427 @@ InterpretResult VM::run()
     return INTERPRET_CONTINUE;
   };
 
-  for (;;) {
-#ifdef DEBUG_TRACE_EXECUTION
-    printf("          ");
-    for (Value* slot = this->stack; slot < this->stackTop; slot++) {
-      printf("[ ");
-      printValue(*slot);
-      printf(" ]");
-    }
-    printf("\n");
-    disassembleInstruction(
-        &frame->closure->function->chunk,
-        (int)(frame->ip - frame->closure->function->chunk.code));
-#endif
-    uint8_t instruction;
-    switch (instruction = READ_BYTE()) {
-      case OP_CONSTANT: {
-        auto constant = READ_CONSTANT();
-        this->push(constant);
-        break;
-      }
-      case OP_RETURN: {
-        auto result = pop();
-        closeUpvalues(frame->slots);
-        this->frameCount--;
-        if (this->frameCount == 0) {
-          pop();
-          return INTERPRET_OK;
-        }
+  NEXT_INSTRCTN();
 
-        this->stackTop = frame->slots;
-        push(result);
-        frame = &this->frames[this->frameCount - 1];
-        break;
-      }
-      case OP_NEGATE: {
-        if (!IS_NUMBER(this->peek(0))) {
-          runtimeError("Operand must be a number.");
-          return INTERPRET_RUNTIME_ERROR;
-        }
-        push(NUMBER_VAL(-AS_NUMBER(pop())));
-        break;
-      }
-      case OP_ADD: {
-        if (IS_STRING(peek(0)) && IS_STRING(peek(1))) {
-          concatenate();
-        } else if (IS_NUMBER(peek(0)) && IS_NUMBER(peek(1))) {
-          auto b = AS_NUMBER(pop());
-          auto a = AS_NUMBER(pop());
-          push(NUMBER_VAL(a + b));
-        } else {
-          runtimeError("Operands must be two numbers or two strings.");
-          return INTERPRET_RUNTIME_ERROR;
-        }
-        break;
-      }
-      case OP_SUBTRACT: {
-        auto res = BINARY_OP('-');
-        if (res != INTERPRET_CONTINUE) {
-          return res;
-        }
-        break;
-      }
-      case OP_MULTIPLY: {
-        auto res = BINARY_OP('*');
-        if (res != INTERPRET_CONTINUE) {
-          return res;
-        }
-        break;
-      }
-      case OP_DIVIDE: {
-        auto res = BINARY_OP('/');
-        if (res != INTERPRET_CONTINUE) {
-          return res;
-        }
-        break;
-      }
-      case OP_MODULUS: {
-        auto res = BINARY_OP('%');
-        if (res != INTERPRET_CONTINUE) {
-          return res;
-        }
-        break;
-      }
-      case OP_NOT: {
-        push(BOOL_VAL(isFalsey(pop())));
-        break;
-      }
-      case OP_NIL: {
-        push(NIL_VAL);
-        break;
-      }
-      case OP_TRUE: {
-        push(BOOL_VAL(true));
-        break;
-      }
-      case OP_FALSE: {
-        push(BOOL_VAL(false));
-        break;
-      }
-      case OP_GREATER: {
-        auto res = BINARY_OP('>');
-        if (res != INTERPRET_CONTINUE) {
-          return res;
-          break;
-        }
-        break;
-      }
+OP_CONSTANT_INSTRCTN : {
+  auto constant = READ_CONSTANT();
+  this->push(constant);
+  NEXT_INSTRCTN();
+}
 
-      case OP_LESS: {
-        auto res = BINARY_OP('<');
-        if (res != INTERPRET_CONTINUE) {
-          return res;
-        }
-        break;
-      }
+OP_RETURN_INSTRCTN : {
+  auto result = pop();
+  closeUpvalues(frame->slots);
+  this->frameCount--;
+  if (this->frameCount == 0) {
+    pop();
+    return INTERPRET_OK;
+  }
 
-      case OP_EQUAL: {
-        auto b = pop();
-        auto a = pop();
-        push(BOOL_VAL(valuesEqual(a, b)));
-        break;
-      }
-      case OP_METHOD:
-        defineMethod(READ_STRING());
-        break;
-      case OP_CLASS:
-        push(OBJ_VAL(newClass(READ_STRING())));
-        break;
-      case OP_CLOSURE: {
-        auto function = AS_FUNCTION(READ_CONSTANT());
-        auto closure = newClosure(function);
-        push(OBJ_VAL(closure));
-        for (int i = 0; i < closure->upvalueCount; i++) {
-          auto isLocal = READ_BYTE();
-          auto index = READ_BYTE();
-          if (isLocal) {
-            closure->upvalues[i] = captureUpvalue(frame->slots + index);
-          } else {
-            closure->upvalues[i] = frame->closure->upvalues[index];
-          }
-        }
-        break;
-      }
-      case OP_PRINT: {
-        printValue(pop());
-        printf("\n");
-        break;
-      }
-      case OP_CALL: {
-        auto argCount = READ_BYTE();
-        if (!callValue(peek(argCount), argCount)) {
-          return INTERPRET_RUNTIME_ERROR;
-        }
-        frame = &this->frames[this->frameCount - 1];
-        break;
-      }
-      case OP_POP:
-        pop();
-        break;
-      case OP_DEFINE_GLOBAL: {
-        auto name = READ_STRING();
-        this->globals.tableSet(name, peek(0));
-        pop();
-        break;
-      }
-      case OP_GET_GLOBAL: {
-        auto name = READ_STRING();
-        Value value;
-        if (!this->globals.tableGet(name, &value)) {
-          runtimeError("Undefined variable '%s'.", name->chars);
-          return INTERPRET_RUNTIME_ERROR;
-        }
-        push(value);
-        break;
-      }
-      case OP_GET_UPVALUE: {
-        auto slot = READ_BYTE();
-        push(*frame->closure->upvalues[slot]->location);
-        break;
-      }
-      case OP_SET_UPVALUE: {
-        auto slot = READ_BYTE();
-        *frame->closure->upvalues[slot]->location = peek(0);
-        break;
-      }
-      case OP_GET_PROPERTY: {
-        if (!IS_INSTANCE(peek(0))) {
-          runtimeError("Only instances have properties.");
-          return INTERPRET_RUNTIME_ERROR;
-        }
+  this->stackTop = frame->slots;
+  push(result);
+  frame = &this->frames[this->frameCount - 1];
+  NEXT_INSTRCTN();
+}
 
-        auto instance = AS_INSTANCE(peek(0));
-        auto name = READ_STRING();
+OP_NEGATE_INSTRCTN : {
+  if (!IS_NUMBER(this->peek(0))) {
+    runtimeError("Operand must be a number.");
+    return INTERPRET_RUNTIME_ERROR;
+  }
+  push(NUMBER_VAL(-AS_NUMBER(pop())));
+  NEXT_INSTRCTN();
+}
 
-        Value value;
-        if (instance->fields.tableGet(name, &value)) {
-          pop();  // Instance.
-          push(value);
-          break;
-        }
-        if (!bindMethod(instance->klass, name)) {
-          return INTERPRET_RUNTIME_ERROR;
-        }
-        break;
-      }
-      case OP_SET_PROPERTY: {
-        if (!IS_INSTANCE(peek(1))) {
-          runtimeError("Only instances have fields.");
-          return INTERPRET_RUNTIME_ERROR;
-        }
-        auto instance = AS_INSTANCE(peek(1));
-        instance->fields.tableSet(READ_STRING(), peek(0));
-        auto value = pop();
-        pop();
-        push(value);
-        break;
-      }
-      case OP_CLOSE_UPVALUE:
-        closeUpvalues(this->stackTop - 1);
-        pop();
-        break;
-      case OP_GET_LOCAL: {
-        auto slot = READ_BYTE();
-        push(frame->slots[slot]);
-        break;
-      }
-      case OP_SET_LOCAL: {
-        auto slot = READ_BYTE();
-        frame->slots[slot] = peek(0);
-        break;
-      }
-      case OP_JUMP_IF_FALSE: {
-        auto offset = READ_SHORT();
-        if (isFalsey(peek(0)))
-          frame->ip += offset;
-        break;
-      }
-      case OP_SET_GLOBAL: {
-        auto name = READ_STRING();
-        if (this->globals.tableSet(name, peek(0))) {
-          this->globals.tableDelete(name);
-          runtimeError("Undefined variable '%s'.", name->chars);
-          return INTERPRET_RUNTIME_ERROR;
-        }
-        break;
-      }
-      case OP_LOOP: {
-        auto offset = READ_SHORT();
-        frame->ip -= offset;
-        break;
-      }
-      case OP_JUMP: {
-        auto offset = READ_SHORT();
-        frame->ip += offset;
-        break;
-      }
-      case OP_INHERIT: {
-        auto superclass = peek(1);
-        if (!IS_CLASS(superclass)) {
-          runtimeError("Superclass must be a class.");
-          return INTERPRET_RUNTIME_ERROR;
-        }
-        auto subclass = AS_CLASS(peek(0));
-        tableAddAll(&AS_CLASS(superclass)->methods, &subclass->methods);
-        pop();  // Subclass.
-        break;
-      }
-      case OP_INVOKE: {
-        auto method = READ_STRING();
-        auto argCount = READ_BYTE();
-        if (!invoke(method, argCount)) {
-          return INTERPRET_RUNTIME_ERROR;
-        }
-        frame = &this->frames[this->frameCount - 1];
-        break;
-      }
-      case OP_GET_SUPER: {
-        auto name = READ_STRING();
-        auto superclass = AS_CLASS(pop());
-        if (!bindMethod(superclass, name)) {
-          return INTERPRET_RUNTIME_ERROR;
-        }
-        break;
-      }
-      case OP_SUPER_INVOKE: {
-        auto method = READ_STRING();
-        auto argCount = READ_BYTE();
-        auto superclass = AS_CLASS(pop());
-        if (!invokeFromClass(superclass, method, argCount)) {
-          return INTERPRET_RUNTIME_ERROR;
-        }
-        frame = &this->frames[this->frameCount - 1];
-        break;
-      }
-      case OP_BUILD_LIST: {
-        ObjList* list = newList();
-        uint8_t itemCount = READ_BYTE();
-        push(OBJ_VAL(list));  // So list isn't sweeped by GC in appendToList
-        for (int i = itemCount; i > 0; i--) {
-          appendToList(list, peek(i));
-        }
-        pop();
-        while (itemCount-- > 0) {
-          pop();
-        }
-        push(OBJ_VAL(list));
-        break;
-      }
-      case OP_INDEX_GET: {
-        Value st_index = pop();
-        Value st_obj = pop();
-        Value result;
+OP_ADD_INSTRCTN : {
+  if (IS_STRING(peek(0)) && IS_STRING(peek(1))) {
+    concatenate();
+  } else if (IS_NUMBER(peek(0)) && IS_NUMBER(peek(1))) {
+    auto b = AS_NUMBER(pop());
+    auto a = AS_NUMBER(pop());
+    push(NUMBER_VAL(a + b));
+  } else {
+    runtimeError("Operands must be two numbers or two strings.");
+    return INTERPRET_RUNTIME_ERROR;
+  }
+  NEXT_INSTRCTN();
+}
 
-        if (!IS_LIST(st_obj) && !IS_STRING(st_obj)) {
-          runtimeError("Invalid type to index into.");
-          return INTERPRET_RUNTIME_ERROR;
-        }
-        if (!IS_NUMBER(st_index)) {
-          runtimeError("List index is not a number.");
-          return INTERPRET_RUNTIME_ERROR;
-        }
-        if (IS_LIST(st_obj)) {
-          ObjList* list = AS_LIST(st_obj);
-          int index = AS_NUMBER(st_index);
-          if (!isValidListIndex(list, index)) {
-            runtimeError("List index out of range.");
-            return INTERPRET_RUNTIME_ERROR;
-          }
+OP_SUBTRACT_INSTRCTN : {
+  auto res = BINARY_OP('-');
+  if (res != INTERPRET_CONTINUE) {
+    return res;
+  }
+  NEXT_INSTRCTN();
+}
 
-          result = indexFromList(list, index);
-          push(result);
-        } else if (IS_STRING(st_obj)) {
-          ObjString* string = AS_STRING(st_obj);
-          int index = AS_NUMBER(st_index);
-          if (!isValidStringIndex(string, index)) {
-            runtimeError("String index out of range");
-            return INTERPRET_RUNTIME_ERROR;
-          }
-          result = indexFromString(string, index);
-          push(result);
-        }
+OP_MULTIPLY_INSTRCTN : {
+  auto res = BINARY_OP('*');
+  if (res != INTERPRET_CONTINUE) {
+    return res;
+  }
+  NEXT_INSTRCTN();
+}
 
-        break;
-      }
-      case OP_INDEX_SET: {
-        // Stack before: [list, index, item] and after: [item]
-        Value st_item = pop();
-        Value st_index = pop();
-        Value st_obj = pop();
+OP_DIVIDE_INSTRCTN : {
+  auto res = BINARY_OP('/');
+  if (res != INTERPRET_CONTINUE) {
+    return res;
+  }
+  NEXT_INSTRCTN();
+}
 
-        if (!IS_LIST(st_obj) && !IS_STRING(st_obj)) {
-          runtimeError("Cannot store value in a non-list.");
-          return INTERPRET_RUNTIME_ERROR;
-        }
+OP_MODULUS_INSTRCTN : {
+  auto res = BINARY_OP('%');
+  if (res != INTERPRET_CONTINUE) {
+    return res;
+  }
+  NEXT_INSTRCTN();
+}
 
-        if (!IS_NUMBER(st_index)) {
-          runtimeError("List index is not a number.");
-          return INTERPRET_RUNTIME_ERROR;
-        }
+OP_NOT_INSTRCTN : {
+  push(BOOL_VAL(isFalsey(pop())));
+  NEXT_INSTRCTN();
+}
 
-        if (IS_LIST(st_obj)) {
-          ObjList* list = AS_LIST(st_obj);
-          int index = AS_NUMBER(st_index);
+OP_NIL_INSTRCTN : {
+  push(NIL_VAL);
+  NEXT_INSTRCTN();
+}
 
-          if (!isValidListIndex(list, index)) {
-            runtimeError("Invalid list index.");
-            return INTERPRET_RUNTIME_ERROR;
-          }
+OP_TRUE_INSTRCTN : {
+  push(BOOL_VAL(true));
+  NEXT_INSTRCTN();
+}
 
-          storeToList(list, index, st_item);
-          push(st_item);
-        } else if (IS_STRING(st_obj)) {
-          ObjString* string = AS_STRING(st_obj);
-          int index = AS_NUMBER(st_index);
+OP_FALSE_INSTRCTN : {
+  push(BOOL_VAL(false));
+  NEXT_INSTRCTN();
+}
 
-          if (!isValidStringIndex(string, index)) {
-            runtimeError("Invalid list index.");
-            return INTERPRET_RUNTIME_ERROR;
-          }
+OP_GREATER_INSTRCTN : {
+  auto res = BINARY_OP('>');
+  if (res != INTERPRET_CONTINUE) {
+    return res;
+    NEXT_INSTRCTN();
+  }
+  NEXT_INSTRCTN();
+}
 
-          ObjString* item = AS_STRING(st_item);
+OP_LESS_INSTRCTN : {
+  auto res = BINARY_OP('<');
+  if (res != INTERPRET_CONTINUE) {
+    return res;
+  }
+  NEXT_INSTRCTN();
+}
 
-          if (item->length > 1) {
-            runtimeError("Invalid assignment value");
-            return INTERPRET_RUNTIME_ERROR;
-          }
+OP_EQUAL_INSTRCTN : {
+  auto b = pop();
+  auto a = pop();
+  push(BOOL_VAL(valuesEqual(a, b)));
+  NEXT_INSTRCTN();
+}
 
-          storeToString(string, index, item);
-          push(st_item);
-        }
+OP_METHOD_INSTRCTN : {
+  defineMethod(READ_STRING());
+  NEXT_INSTRCTN();
+}
 
-        break;
-      }
+OP_CLASS_INSTRCTN : {
+  push(OBJ_VAL(newClass(READ_STRING())));
+  NEXT_INSTRCTN();
+}
+
+OP_CLOSURE_INSTRCTN : {
+  auto function = AS_FUNCTION(READ_CONSTANT());
+  auto closure = newClosure(function);
+  push(OBJ_VAL(closure));
+  for (int i = 0; i < closure->upvalueCount; i++) {
+    auto isLocal = READ_BYTE();
+    auto index = READ_BYTE();
+    if (isLocal) {
+      closure->upvalues[i] = captureUpvalue(frame->slots + index);
+    } else {
+      closure->upvalues[i] = frame->closure->upvalues[index];
     }
   }
+  NEXT_INSTRCTN();
+}
+
+OP_PRINT_INSTRCTN : {
+  printValue(pop());
+  printf("\n");
+  NEXT_INSTRCTN();
+}
+
+OP_CALL_INSTRCTN : {
+  auto argCount = READ_BYTE();
+  if (!callValue(peek(argCount), argCount)) {
+    return INTERPRET_RUNTIME_ERROR;
+  }
+  frame = &this->frames[this->frameCount - 1];
+  NEXT_INSTRCTN();
+}
+
+OP_POP_INSTRCTN : {
+  pop();
+  NEXT_INSTRCTN();
+}
+OP_DEFINE_GLOBAL_INSTRCTN : {
+  auto name = READ_STRING();
+  this->globals.tableSet(name, peek(0));
+  pop();
+  NEXT_INSTRCTN();
+}
+
+OP_GET_GLOBAL_INSTRCTN : {
+  auto name = READ_STRING();
+  Value value;
+  if (!this->globals.tableGet(name, &value)) {
+    runtimeError("Undefined variable '%s'.", name->chars);
+    return INTERPRET_RUNTIME_ERROR;
+  }
+  push(value);
+  NEXT_INSTRCTN();
+}
+
+OP_GET_UPVALUE_INSTRCTN : {
+  auto slot = READ_BYTE();
+  push(*frame->closure->upvalues[slot]->location);
+  NEXT_INSTRCTN();
+}
+
+OP_SET_UPVALUE_INSTRCTN : {
+  auto slot = READ_BYTE();
+  *frame->closure->upvalues[slot]->location = peek(0);
+  NEXT_INSTRCTN();
+}
+
+OP_GET_PROPERTY_INSTRCTN : {
+  if (!IS_INSTANCE(peek(0))) {
+    runtimeError("Only instances have properties.");
+    return INTERPRET_RUNTIME_ERROR;
+  }
+
+  auto instance = AS_INSTANCE(peek(0));
+  auto name = READ_STRING();
+
+  Value value;
+  if (instance->fields.tableGet(name, &value)) {
+    pop();  // Instance.
+    push(value);
+    NEXT_INSTRCTN();
+  }
+  if (!bindMethod(instance->klass, name)) {
+    return INTERPRET_RUNTIME_ERROR;
+  }
+  NEXT_INSTRCTN();
+}
+
+OP_SET_PROPERTY_INSTRCTN : {
+  if (!IS_INSTANCE(peek(1))) {
+    runtimeError("Only instances have fields.");
+    return INTERPRET_RUNTIME_ERROR;
+  }
+  auto instance = AS_INSTANCE(peek(1));
+  instance->fields.tableSet(READ_STRING(), peek(0));
+  auto value = pop();
+  pop();
+  push(value);
+  NEXT_INSTRCTN();
+}
+
+OP_CLOSE_UPVALUE_INSTRCTN : {
+  closeUpvalues(this->stackTop - 1);
+  pop();
+  NEXT_INSTRCTN();
+}
+OP_GET_LOCAL_INSTRCTN : {
+  auto slot = READ_BYTE();
+  push(frame->slots[slot]);
+  NEXT_INSTRCTN();
+}
+
+OP_SET_LOCAL_INSTRCTN : {
+  auto slot = READ_BYTE();
+  frame->slots[slot] = peek(0);
+  NEXT_INSTRCTN();
+}
+
+OP_JUMP_IF_FALSE_INSTRCTN : {
+  auto offset = READ_SHORT();
+  if (isFalsey(peek(0)))
+    frame->ip += offset;
+  NEXT_INSTRCTN();
+}
+
+OP_SET_GLOBAL_INSTRCTN : {
+  auto name = READ_STRING();
+  if (this->globals.tableSet(name, peek(0))) {
+    this->globals.tableDelete(name);
+    runtimeError("Undefined variable '%s'.", name->chars);
+    return INTERPRET_RUNTIME_ERROR;
+  }
+  NEXT_INSTRCTN();
+}
+
+OP_LOOP_INSTRCTN : {
+  auto offset = READ_SHORT();
+  frame->ip -= offset;
+  NEXT_INSTRCTN();
+}
+
+OP_JUMP_INSTRCTN : {
+  auto offset = READ_SHORT();
+  frame->ip += offset;
+  NEXT_INSTRCTN();
+}
+
+OP_INHERIT_INSTRCTN : {
+  auto superclass = peek(1);
+  if (!IS_CLASS(superclass)) {
+    runtimeError("Superclass must be a class.");
+    return INTERPRET_RUNTIME_ERROR;
+  }
+  auto subclass = AS_CLASS(peek(0));
+  tableAddAll(&AS_CLASS(superclass)->methods, &subclass->methods);
+  pop();  // Subclass.
+  NEXT_INSTRCTN();
+}
+
+OP_INVOKE_INSTRCTN : {
+  auto method = READ_STRING();
+  auto argCount = READ_BYTE();
+  if (!invoke(method, argCount)) {
+    return INTERPRET_RUNTIME_ERROR;
+  }
+  frame = &this->frames[this->frameCount - 1];
+  NEXT_INSTRCTN();
+}
+
+OP_GET_SUPER_INSTRCTN : {
+  auto name = READ_STRING();
+  auto superclass = AS_CLASS(pop());
+  if (!bindMethod(superclass, name)) {
+    return INTERPRET_RUNTIME_ERROR;
+  }
+  NEXT_INSTRCTN();
+}
+
+OP_SUPER_INVOKE_INSTRCTN : {
+  auto method = READ_STRING();
+  auto argCount = READ_BYTE();
+  auto superclass = AS_CLASS(pop());
+  if (!invokeFromClass(superclass, method, argCount)) {
+    return INTERPRET_RUNTIME_ERROR;
+  }
+  frame = &this->frames[this->frameCount - 1];
+  NEXT_INSTRCTN();
+}
+
+OP_BUILD_LIST_INSTRCTN : {
+  ObjList* list = newList();
+  uint8_t itemCount = READ_BYTE();
+  push(OBJ_VAL(list));  // So list isn't sweeped by GC in appendToList
+  for (int i = itemCount; i > 0; i--) {
+    appendToList(list, peek(i));
+  }
+  pop();
+  while (itemCount-- > 0) {
+    pop();
+  }
+  push(OBJ_VAL(list));
+  NEXT_INSTRCTN();
+}
+
+OP_INDEX_GET_INSTRCTN : {
+  Value st_index = pop();
+  Value st_obj = pop();
+  Value result;
+
+  if (!IS_LIST(st_obj) && !IS_STRING(st_obj)) {
+    runtimeError("Invalid type to index into.");
+    return INTERPRET_RUNTIME_ERROR;
+  }
+  if (!IS_NUMBER(st_index)) {
+    runtimeError("List index is not a number.");
+    return INTERPRET_RUNTIME_ERROR;
+  }
+  if (IS_LIST(st_obj)) {
+    ObjList* list = AS_LIST(st_obj);
+    int index = AS_NUMBER(st_index);
+    if (!isValidListIndex(list, index)) {
+      runtimeError("List index out of range.");
+      return INTERPRET_RUNTIME_ERROR;
+    }
+
+    result = indexFromList(list, index);
+    push(result);
+  } else if (IS_STRING(st_obj)) {
+    ObjString* string = AS_STRING(st_obj);
+    int index = AS_NUMBER(st_index);
+    if (!isValidStringIndex(string, index)) {
+      runtimeError("String index out of range");
+      return INTERPRET_RUNTIME_ERROR;
+    }
+    result = indexFromString(string, index);
+    push(result);
+  }
+
+  NEXT_INSTRCTN();
+}
+
+OP_INDEX_SET_INSTRCTN : {
+  // Stack before: [list, index, item] and after: [item]
+  Value st_item = pop();
+  Value st_index = pop();
+  Value st_obj = pop();
+
+  if (!IS_LIST(st_obj) && !IS_STRING(st_obj)) {
+    runtimeError("Cannot store value in a non-list.");
+    return INTERPRET_RUNTIME_ERROR;
+  }
+
+  if (!IS_NUMBER(st_index)) {
+    runtimeError("List index is not a number.");
+    return INTERPRET_RUNTIME_ERROR;
+  }
+
+  if (IS_LIST(st_obj)) {
+    ObjList* list = AS_LIST(st_obj);
+    int index = AS_NUMBER(st_index);
+
+    if (!isValidListIndex(list, index)) {
+      runtimeError("Invalid list index.");
+      return INTERPRET_RUNTIME_ERROR;
+    }
+
+    storeToList(list, index, st_item);
+    push(st_item);
+  } else if (IS_STRING(st_obj)) {
+    ObjString* string = AS_STRING(st_obj);
+    int index = AS_NUMBER(st_index);
+
+    if (!isValidStringIndex(string, index)) {
+      runtimeError("Invalid list index.");
+      return INTERPRET_RUNTIME_ERROR;
+    }
+
+    ObjString* item = AS_STRING(st_item);
+
+    if (item->length > 1) {
+      runtimeError("Invalid assignment value");
+      return INTERPRET_RUNTIME_ERROR;
+    }
+
+    storeToString(string, index, item);
+    push(st_item);
+  }
+
+  NEXT_INSTRCTN();
+}
+#undef NEXT_INSTRCTN
 }
 
 /**

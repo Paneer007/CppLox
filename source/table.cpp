@@ -194,6 +194,7 @@ void Table::freeTable()
   this->initTable();
 }
 
+#ifdef ENABLE_MP
 void Table::applyWorklist()
 {
   int n_items = worklist.size();
@@ -201,7 +202,7 @@ void Table::applyWorklist()
   omp_lock_t* lock = (omp_lock_t*)malloc(n_items * sizeof(omp_lock_t));
   for (int i = 0; i < n_items; i++)
     omp_init_lock(&(lock[i]));
-#pragma omp parallel for
+#  pragma omp parallel for
   for (int i = 0; i < worklist.size(); i++) {
     auto key = worklist[i].first;
     auto value = worklist[i].second;
@@ -234,6 +235,8 @@ void Table::applyWorklist()
   free(lock);
   this->worklist.clear();
 }
+
+#endif
 
 /**
  * @brief Sets a value in the hash table.
@@ -291,9 +294,11 @@ bool Table::tableSet(ObjString* key, Value value)
  */
 bool Table::tableGet(ObjString* key, Value* value)
 {
+#ifdef ENABLE_MP
   if (this->worklist.size() > 0) {
     applyWorklist();
   }
+#endif
 
   if (this->count == 0)
     return false;
@@ -318,9 +323,11 @@ bool Table::tableGet(ObjString* key, Value* value)
  */
 bool Table::tableDelete(ObjString* key)
 {
+#ifdef ENABLE_MP
   if (this->worklist.size() > 0) {
     applyWorklist();
   }
+#endif
   if (this->count == 0)
     return false;
 
@@ -351,9 +358,11 @@ ObjString* Table::tableFindString(const char* chars,
                                   uint32_t hash,
                                   uint32_t hash2 = 0)
 {
+#ifdef ENABLE_MP
   if (this->worklist.size() > 0) {
     applyWorklist();
   }
+#endif
 
   if (this->count == 0)
     return NULL;
