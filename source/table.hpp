@@ -1,8 +1,11 @@
 #ifndef clox_table_h
 #define clox_table_h
 
+#include <utility>
+
 #include "common.hpp"
 #include "value.hpp"
+#include "vector"
 
 /**
  * @brief Represents an entry in a hash table.
@@ -44,6 +47,8 @@ class Table
    */
   void adjustCapacity(int capacity);
 
+  void applyWorklist();
+
 public:
   /**
    * @brief The number of key-value pairs currently stored in the table.
@@ -59,6 +64,17 @@ public:
    * @brief An array of entries storing key-value pairs.
    */
   Entry* entries;
+
+#ifdef ENABLE_MP
+
+  int threshold_count;
+
+  /**
+   * @brief An array of entries storing worklist of key-value pairs.
+   */
+  std::vector<std::pair<ObjString*, Value>> worklist;
+
+#endif
 
   /**
    * @brief Initializes an empty hash table.
@@ -120,7 +136,10 @@ public:
    * @param hash The pre-calculated hash value of the string.
    * @return A pointer to the found string object, or NULL if not found.
    */
-  ObjString* tableFindString(const char* chars, int length, uint32_t hash);
+  ObjString* tableFindString(const char* chars,
+                             int length,
+                             uint32_t hash,
+                             uint32_t hash2);
 
   /**
    * @brief Marks all objects in the table as reachable.
@@ -138,6 +157,8 @@ public:
    * process.
    */
   void tableRemoveWhite();
+
+  void tableBulkSearch();
 };
 
 /**

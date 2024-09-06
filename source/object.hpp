@@ -133,6 +133,10 @@ public:
    * @brief The hash value of the string.
    */
   uint32_t hash;
+
+#ifdef ENABLE_MP
+  uint32_t hash2;
+#endif
 };
 
 class ObjList : public Obj

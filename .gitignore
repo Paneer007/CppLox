@@ -12,3 +12,4 @@ compile_commands.json
 benchmark/CppLox
 benchmark/profile_output.txt
 docs/pages
+test/__pycache__

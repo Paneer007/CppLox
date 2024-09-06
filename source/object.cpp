@@ -38,6 +38,44 @@ static uint32_t hashString(const char* key, int length)
 #endif
 }
 
+#ifdef ENABLE_MP
+static inline uint32_t murmur_32_scramble(uint32_t k)
+{
+  k *= 0xcc9e2d51;
+  k = (k << 15) | (k >> 17);
+  k *= 0x1b873593;
+  return k;
+}
+static uint32_t hash2ndString(const char* key,
+                              int len,
+                              uint32_t seed = 0x9747b28c)
+
+{
+  uint32_t h = seed;
+  uint32_t k;
+  for (size_t i = len >> 2; i; i--) {
+    memcpy(&k, key, sizeof(uint32_t));
+    key += sizeof(uint32_t);
+    h ^= murmur_32_scramble(k);
+    h = (h << 13) | (h >> 19);
+    h = h * 5 + 0xe6546b64;
+  }
+  k = 0;
+  for (size_t i = len & 3; i; i--) {
+    k <<= 8;
+    k |= key[i - 1];
+  }
+  h ^= murmur_32_scramble(k);
+  h ^= len;
+  h ^= h >> 16;
+  h *= 0x85ebca6b;
+  h ^= h >> 13;
+  h *= 0xc2b2ae35;
+  h ^= h >> 16;
+  return h;
+}
+#endif
+
 /**
  * @brief Prints a representation of a function object.
  *
@@ -181,13 +219,21 @@ ObjNative* newNative(NativeFn function)
  * @param hash The pre-calculated hash value of the string.
  * @return A pointer to the newly created string object.
  */
-static ObjString* allocateString(char* chars, int length, uint32_t hash)
+static ObjString* allocateString(char* chars,
+                                 int length,
+                                 uint32_t hash,
+                                 uint32_t hash2 = 0)
 {
   auto vm = VM::getVM();
   auto string = ALLOCATE_OBJ<ObjString>(OBJ_STRING);
   string->length = length;
   string->chars = chars;
   string->hash = hash;
+
+#ifdef ENABLE_MP
+  string->hash2 = hash2;
+#endif
+
   vm->push(OBJ_VAL(string));
   vm->strings.tableSet(string, NIL_VAL);
   vm->pop();
@@ -209,8 +255,19 @@ static ObjString* allocateString(char* chars, int length, uint32_t hash)
 ObjString* copyString(const char* chars, int length)
 {
   uint32_t hash = hashString(chars, length);
+
+#ifdef ENABLE_MP
+  auto hash2 = hash2ndString(chars, length);
+#endif
+
   auto vm = VM::getVM();
+
+#ifdef ENABLE_MP
+  auto interned = vm->strings.tableFindString(chars, length, hash, hash2);
+#else
   auto interned = vm->strings.tableFindString(chars, length, hash);
+#endif
+
   if (interned != NULL)
     return interned;
   auto heapChars = ALLOCATE<char>(length + 1);
@@ -238,7 +295,12 @@ ObjString* copyString(const char* chars, int length)
 ObjString* takeString(char* chars, int length)
 {
   auto hash = hashString(chars, length);
+#ifdef ENABLE_MP
+  auto hash2 = hash2ndString(chars, length);
+  return allocateString(chars, length, hash, hash2);
+#else
   return allocateString(chars, length, hash);
+#endif
 }
 
 /**

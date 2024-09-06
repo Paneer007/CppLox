@@ -24,8 +24,6 @@
 #include "../../../source/vm.cpp"
 #include "../../../source/vm.hpp"
 
-#define ENABLE_MP
-
 enum TestType
 {
   HASH_8,
@@ -126,7 +124,7 @@ static void test_function(TestType func, const char* msg)
     case HASH_1024:
       x = test_table(1024 * 1.5);
     case HASH_10241024:
-      x = test_table(1024* 1.5);
+      x = test_table(1024 * 1.5);
       break;
     default:
       break;

@@ -4,8 +4,6 @@
 #include <omp.h>
 #include <string.h>
 
-#define ENABLE_MP
-
 enum TestType
 {
   HASH_8,
@@ -59,7 +57,7 @@ uint32_t hashString(const char* key, size_t len)
   uint32_t k;
 
   int num_threads = omp_get_max_threads();
-  
+
 #pragma omp parallel for reduction(^ : h)
   for (size_t i = 0; i < len >> 2; i++) {
     auto temp_k = key + i * sizeof(uint32_t);

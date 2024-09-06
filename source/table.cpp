@@ -34,6 +34,9 @@ void Table::initTable()
   this->count = 0;
   this->capacity = 0;
   this->entries = NULL;
+#ifdef ENABLE_MP
+  this->threshold_count = 8;
+#endif
 }
 
 /**
@@ -55,7 +58,7 @@ static Entry* findEntry(Entry* entries, int capacity, ObjString* key)
   uint32_t index = key->hash & (capacity - 1);
   Entry* tombstone = NULL;
   Entry* res = NULL;
-#ifdef ENABLE_MP
+#ifdef ENABLE_MP_FIND_ENTRY
 
 #  pragma omp parallel num_threads(4) default(none) firstprivate(index) \
       shared(tombstone, res, entries, capacity, key)
@@ -118,24 +121,64 @@ static Entry* findEntry(Entry* entries, int capacity, ObjString* key)
  */
 void Table::adjustCapacity(int capacity)
 {
-  Entry* entries = ALLOCATE<Entry>(capacity);
+  Entry* new_entries = ALLOCATE<Entry>(capacity);
   for (int i = 0; i < capacity; i++) {
-    entries[i].key = NULL;
-    entries[i].value = NIL_VAL;
+    new_entries[i].key = NULL;
+    new_entries[i].value = NIL_VAL;
   }
   this->count = 0;
+#ifdef ENABLE_MP
+  int n_items = this->capacity;
+  // Parallel insert stuff
+  omp_lock_t* lock = (omp_lock_t*)malloc(n_items * sizeof(omp_lock_t));
+  for (int i = 0; i < n_items; i++)
+    omp_init_lock(&(lock[i]));
+#  pragma omp parallel for
+  for (int i = 0; i < this->capacity; i++) {
+    auto entry = &this->entries[i];
+    auto key = entry->key;
+    auto value = entry->value;
+    int counter = 0;
+    bool workDone = false;
+    bool searchDone = false;
+
+    while (not workDone and not searchDone and counter <= 30) {
+      auto hash1 = key->hash;
+      auto hash2 = key->hash2;
+      auto hashedValue = (hash1 + hash2 * counter)
+          & (capacity - 1);  // TODO: Keep a check for integer overflow
+      if (entries[hashedValue].key == NULL) {
+        omp_set_lock(&(lock[hashedValue]));
+        if (entries[hashedValue].key == NULL) {
+          entries[hashedValue].key = key;
+          entries[hashedValue].value = value;
+          this->count++;
+        }
+        omp_unset_lock(&(lock[hashedValue]));
+      }
+      counter += 1;
+    }
+  }
+
+  for (int i = 0; i < n_items; i++)
+    omp_destroy_lock(&(lock[i]));
+
+  free(lock);
+#else
   for (int i = 0; i < this->capacity; i++) {
     Entry* entry = &this->entries[i];
     if (entry->key == NULL)
       continue;
 
-    Entry* dest = findEntry(entries, capacity, entry->key);
+    Entry* dest = findEntry(new_entries, capacity, entry->key);
     dest->key = entry->key;
     dest->value = entry->value;
     this->count++;
   }
+#endif
+
   FREE_ARRAY<Entry>(this->entries, this->capacity);
-  this->entries = entries;
+  this->entries = new_entries;
   this->capacity = capacity;
 }
 
@@ -151,6 +194,47 @@ void Table::freeTable()
   this->initTable();
 }
 
+void Table::applyWorklist()
+{
+  int n_items = worklist.size();
+  // Parallel insert stuff
+  omp_lock_t* lock = (omp_lock_t*)malloc(n_items * sizeof(omp_lock_t));
+  for (int i = 0; i < n_items; i++)
+    omp_init_lock(&(lock[i]));
+#pragma omp parallel for
+  for (int i = 0; i < worklist.size(); i++) {
+    auto key = worklist[i].first;
+    auto value = worklist[i].second;
+    int counter = 0;
+    bool workDone = false;
+    bool searchDone = false;
+
+    while (not workDone and not searchDone and counter <= 30) {
+      auto hash1 = key->hash;
+      auto hash2 = key->hash2;
+      auto hashedValue = (hash1 + hash2 * counter)
+          & (capacity - 1);  // TODO: Keep a check for integer overflow
+      bool empty_entry = this->entries[hashedValue].key == NULL;
+      if (this->entries[hashedValue].key == NULL) {
+        omp_set_lock(&(lock[hashedValue]));
+        if (this->entries[hashedValue].key == NULL) {
+          this->entries[hashedValue].key = key;
+          this->entries[hashedValue].value = value;
+          this->count++;
+        }
+        omp_unset_lock(&(lock[hashedValue]));
+      }
+      counter += 1;
+    }
+  }
+
+  for (int i = 0; i < n_items; i++)
+    omp_destroy_lock(&(lock[i]));
+
+  free(lock);
+  this->worklist.clear();
+}
+
 /**
  * @brief Sets a value in the hash table.
  *
@@ -164,6 +248,18 @@ void Table::freeTable()
  */
 bool Table::tableSet(ObjString* key, Value value)
 {
+#ifdef ENABLE_MP
+  if (this->count + 1 > this->capacity * TABLE_MAX_LOAD) {
+    int capacity = GROW_CAPACITY(this->capacity);
+    adjustCapacity(capacity);
+
+    applyWorklist();
+
+  } else {
+    this->worklist.push_back({key, value});
+  }
+
+#else
   if (this->count + 1 > this->capacity * TABLE_MAX_LOAD) {
     int capacity = GROW_CAPACITY(this->capacity);
     adjustCapacity(capacity);
@@ -178,6 +274,7 @@ bool Table::tableSet(ObjString* key, Value value)
   entry->key = key;
   entry->value = value;
   return isNewKey;
+#endif
 }
 
 /**
@@ -194,6 +291,10 @@ bool Table::tableSet(ObjString* key, Value value)
  */
 bool Table::tableGet(ObjString* key, Value* value)
 {
+  if (this->worklist.size() > 0) {
+    applyWorklist();
+  }
+
   if (this->count == 0)
     return false;
 
@@ -217,6 +318,9 @@ bool Table::tableGet(ObjString* key, Value* value)
  */
 bool Table::tableDelete(ObjString* key)
 {
+  if (this->worklist.size() > 0) {
+    applyWorklist();
+  }
   if (this->count == 0)
     return false;
 
@@ -242,12 +346,20 @@ bool Table::tableDelete(ObjString* key)
  * @param hash The pre-calculated hash value of the string.
  * @return A pointer to the found string object, or NULL if not found.
  */
-ObjString* Table::tableFindString(const char* chars, int length, uint32_t hash)
+ObjString* Table::tableFindString(const char* chars,
+                                  int length,
+                                  uint32_t hash,
+                                  uint32_t hash2 = 0)
 {
+  if (this->worklist.size() > 0) {
+    applyWorklist();
+  }
+
   if (this->count == 0)
     return NULL;
 
   uint32_t index = hash & (this->capacity - 1);
+
   for (;;) {
     Entry* entry = &this->entries[index];
     if (entry->key == NULL) {
