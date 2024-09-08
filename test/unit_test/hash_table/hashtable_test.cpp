@@ -27,6 +27,7 @@
 enum TestType
 {
   HASH_8,
+  HASH_16,
   HASH_32,
   HASH_128,
   HASH_512,
@@ -34,7 +35,7 @@ enum TestType
   HASH_10241024
 };
 
-const int KEY_SIZE = 10024;
+const int KEY_SIZE = 10;
 
 std::string gen_random(const int len)
 {
@@ -51,16 +52,22 @@ std::string gen_random(const int len)
   return tmp_s;
 }
 
-static ObjString* temp_allocateString(char* chars, int length, uint32_t hash)
+static ObjString* temp_allocateString(char* chars,
+                                      int length,
+                                      uint32_t hash,
+                                      uint32_t hash2)
 {
   auto string = ALLOCATE_OBJ<ObjString>(OBJ_STRING);
   string->length = length;
   string->chars = chars;
   string->hash = hash;
+#ifdef ENABLE_MP
+  string->hash2 = hash2;
+#endif
   return string;
 }
 
-int64_t test_table(uint32_t len)
+int64_t test_table(int len)
 {
   Table table;
   table.initTable();
@@ -68,21 +75,30 @@ int64_t test_table(uint32_t len)
   std::vector<Obj*> obj_keys;
 
   for (int i = 0; i < len; i++) {
+    printf("INSERTING ELEMENT %d \n", i);
     auto key = gen_random(KEY_SIZE);
     keys.push_back(key);
-
     char* chars = &key[0];
     int length = key.size();
-    uint32_t hash = hashString(chars, key.size());
+    uint32_t hash = hashString(chars, KEY_SIZE);
+#ifdef ENABLE_MP
+    uint32_t hash2 = hash2ndString(chars, KEY_SIZE);
+#else
+    uint32_t hash2 = 0;
+#endif
     auto heapChars = ALLOCATE<char>(length + 1);
     memcpy(heapChars, chars, length);
+
     heapChars[length] = '\0';
 
-    auto obj_key = temp_allocateString(heapChars, length, hash);
+    auto obj_key = temp_allocateString(heapChars, length, hash, hash2);
     obj_keys.push_back(obj_key);
 
-    table.tableSet(obj_key, OBJ_VAL(obj_key));
+    auto temp = obj_key;
+    table.tableSet(temp, OBJ_VAL(temp));
   }
+
+  printf("BEGIN SELECTING  VALUES \n");
 
   auto start = std::chrono::high_resolution_clock::now();
   // Execute search logic
@@ -95,6 +111,7 @@ int64_t test_table(uint32_t len)
   auto end = std::chrono::high_resolution_clock::now();
   auto duration =
       std::chrono::duration_cast<std::chrono::nanoseconds>(end - start);
+
   table.freeTable();
   auto x = duration.count();
   return x;
@@ -111,6 +128,9 @@ static void test_function(TestType func, const char* msg)
   switch (func) {
     case HASH_8:
       x = test_table(8 * 1.5);
+      break;
+    case HASH_16:
+      x = test_table(16 * 1.5);
       break;
     case HASH_32:
       x = test_table(32 * 1.5);
@@ -138,6 +158,7 @@ static void test_function(TestType func, const char* msg)
 void test_hash()
 {
   test_function(HASH_8, "HASH_8");
+  test_function(HASH_16, "HASH_16");
   test_function(HASH_32, "HASH_32");
   test_function(HASH_128, "HASH_128");
   test_function(HASH_512, "HASH_512");

@@ -1,5 +1,5 @@
 export OMP_CANCELLATION=TRUE
-g++ ./hashtable_test.cpp -g -fopenmp -o hashtable_test
+g++ ./hashtable_test.cpp -Wall -fopenmp -g -o hashtable_test
 
 # gdb ./hashtable_test --tui 
 ./hashtable_test
