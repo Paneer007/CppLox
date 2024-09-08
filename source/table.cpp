@@ -158,7 +158,6 @@ static Entry* findEntry(Entry* entries, int capacity, ObjString* key)
  */
 void Table::adjustCapacity(int capacity)
 {
-  printf("2!: ADJUSTING THE CAPACITY OF THE ARRAY \n");
   Entry* new_entries = ALLOCATE<Entry>(capacity);
   for (int i = 0; i < capacity; i++) {
     new_entries[i].key = NULL;
@@ -175,10 +174,8 @@ void Table::adjustCapacity(int capacity)
   for (int i = 0; i < n_items; i++) {
     auto key = this->entries[i].key;
     if (key == NULL) {
-      printf("2!: SKIP THIS ITERATION FOR THREAD ID: %d \n", i);
       continue;
     }
-    printf("2!: THREAD ID: %d KEY: %s \n", i, key->chars);
 
     auto value = this->entries[i].value;
     int counter = 0;
@@ -192,16 +189,6 @@ void Table::adjustCapacity(int capacity)
       auto hashedValue = (hash1 + counter + hash2 * counter)
           & (capacity - 1);  // TODO: Keep a check for integer overflow
       counter += 1;
-      printf(
-          "2!: KEY: %s COUNTER: %d HASH-1: %d HASH-2: %d HASH-VAL: %d "
-          "THREAD_ID: "
-          "%d \n",
-          key->chars,
-          counter,
-          hash1,
-          hash2,
-          hashedValue,
-          i);
       if (new_entries[hashedValue].key == NULL) {
         omp_set_lock(&lock[hashedValue]);
         if (new_entries[hashedValue].key == NULL) {
@@ -209,7 +196,6 @@ void Table::adjustCapacity(int capacity)
           new_entries[hashedValue].value = value;
           this->count++;
           searchDone = true;
-          printf("2!: ENTRIES INSERTED %s \n", key->chars);
         }
         omp_unset_lock(&lock[hashedValue]);
       }
@@ -220,8 +206,6 @@ void Table::adjustCapacity(int capacity)
     omp_unset_lock(&(lock[i]));
     omp_destroy_lock(&(lock[i]));
   }
-
-  printf("2!: EXITED LOOP \n");
 
   free(lock);
 #else
@@ -258,9 +242,7 @@ void Table::freeTable()
 void Table::applyWorklist()
 {
   int n_items = this->EntriesWorkList.getLength();
-  printf("NUMBER OF ENTRIES TO INSERT : %d CAPACITY: %d \n", n_items, capacity);
   if (n_items == 0) {
-    printf("EARLY EXITED LOOP \n");
     return;
   }
   // Parallel insert stuff
@@ -272,7 +254,6 @@ void Table::applyWorklist()
     auto element = this->EntriesWorkList.getElement(i);
     auto key = element->key;
     auto value = element->value;
-    printf("THREAD ID: %d KEY: %s \n", i, key->chars);
 
     int counter = 0;
     bool searchDone = false;
@@ -282,35 +263,20 @@ void Table::applyWorklist()
       auto hash2 = key->hash2 & (capacity - 1);
       auto hashedValue = (hash1 + counter + hash2 * counter)
           & (capacity - 1);  // TODO: Keep a check for integer overflow
-      printf(
-          "KEY: %s COUNTER: %d HASH-1: %d HASH-2: %d HASH-VAL: %d THREAD_ID: "
-          "%d \n",
-          key->chars,
-          counter,
-          hash1,
-          hash2,
-          hashedValue,
-          i);
+
       if (this->entries[hashedValue].key == NULL) {
-        printf("FOUND SPACE FOR %s %d \n", key->chars, hashedValue);
         omp_set_lock(&(lock[hashedValue]));
         if (this->entries[hashedValue].key == NULL) {
-          printf("ENTER INTO SLOT FOR ENTRIES INSERTED %s %d \n",
-                 key->chars,
-                 hashedValue);
           searchDone = true;
           this->entries[hashedValue].key = key;
           this->entries[hashedValue].value = value;
           this->count++;
-          printf("ENTRIES INSERTED %s %d \n", key->chars, hashedValue);
         }
         omp_unset_lock(&(lock[hashedValue]));
       }
       counter += 1;
     }
   }
-
-  printf("EXITED LOOP \n");
 
   for (int i = 0; i < capacity; i++) {
     omp_unset_lock(&(lock[i]));
@@ -338,19 +304,15 @@ void Table::applyWorklist()
 bool Table::tableSet(ObjString* key, Value value)
 {
 #ifdef ENABLE_MP
-  printf("INSERTING IN PROCESS \n");
   if (this->count + 1 > this->capacity * TABLE_MAX_LOAD) {
-    printf("CONDITIONAL ONE \n");
     int capacity = GROW_CAPACITY(this->capacity);
     adjustCapacity(capacity);
     applyWorklist();
     this->EntriesWorkList.writeWorkList(key, value);
   } else {
-    printf("CONDITIONAL TWO \n");
     this->EntriesWorkList.writeWorkList(key, value);
   }
   this->count += 1;
-  printf("DONE SETTING \n");
 
 #else
   if (this->count + 1 > this->capacity * TABLE_MAX_LOAD) {
@@ -386,7 +348,6 @@ bool Table::tableGet(ObjString* key, Value* value)
 {
 #ifdef ENABLE_MP
   if (this->EntriesWorkList.getLength() > 0) {
-    printf("ONE LAST TIME \n");
     applyWorklist();
   }
 #endif

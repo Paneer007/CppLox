@@ -32,7 +32,9 @@ enum TestType
   HASH_128,
   HASH_512,
   HASH_1024,
-  HASH_10241024
+  HASH_16384,
+  HASH_262144,
+  HASH_4194304
 };
 
 const int KEY_SIZE = 10;
@@ -73,9 +75,9 @@ int64_t test_table(int len)
   table.initTable();
   std::vector<std::string> keys;
   std::vector<Obj*> obj_keys;
+  auto start = std::chrono::high_resolution_clock::now();
 
   for (int i = 0; i < len; i++) {
-    printf("INSERTING ELEMENT %d \n", i);
     auto key = gen_random(KEY_SIZE);
     keys.push_back(key);
     char* chars = &key[0];
@@ -98,15 +100,12 @@ int64_t test_table(int len)
     table.tableSet(temp, OBJ_VAL(temp));
   }
 
-  printf("BEGIN SELECTING  VALUES \n");
-
-  auto start = std::chrono::high_resolution_clock::now();
-  // Execute search logic
-  for (int i = 0; i < len / 4; i++) {
-    auto obj_key = obj_keys[rand() % keys.size()];
-    auto value = OBJ_VAL(obj_key);
-    table.tableGet((ObjString*)obj_key, &value);
-  }
+  // // Execute search logic
+  // for (int i = 0; i < len / 4; i++) {
+  //   auto obj_key = obj_keys[rand() % keys.size()];
+  //   auto value = OBJ_VAL(obj_key);
+  //   table.tableGet((ObjString*)obj_key, &value);
+  // }
 
   auto end = std::chrono::high_resolution_clock::now();
   auto duration =
@@ -143,8 +142,15 @@ static void test_function(TestType func, const char* msg)
       break;
     case HASH_1024:
       x = test_table(1024 * 1.5);
-    case HASH_10241024:
-      x = test_table(1024 * 1.5);
+      break;
+    case HASH_16384:
+      x = test_table(16384 * 1.5);
+      break;
+    case HASH_262144:
+      x = test_table(262144 * 1.5);
+      break;
+    case HASH_4194304:
+      x = test_table(4194304 * 1.5);
       break;
     default:
       break;
@@ -163,6 +169,9 @@ void test_hash()
   test_function(HASH_128, "HASH_128");
   test_function(HASH_512, "HASH_512");
   test_function(HASH_1024, "HASH_1024");
+  test_function(HASH_16384, "HASH_16384");
+  test_function(HASH_262144, "HASH_262144");
+  test_function(HASH_4194304, "HASH_4194304");
 }
 
 int main()
