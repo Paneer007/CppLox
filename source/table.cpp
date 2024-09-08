@@ -93,40 +93,36 @@ void Table::initTable()
 
 static Entry* findEntry(Entry* entries, int capacity, ObjString* key)
 {
-  uint32_t index = key->hash & (capacity - 1);
   Entry* tombstone = NULL;
-#ifdef ENABLE_MP_FIND_ENTRY
 
-#  pragma omp parallel num_threads(4) default(none) firstprivate(index) \
-      shared(tombstone, res, entries, capacity, key)
-  for (int thread_id = omp_get_thread_num();;
-       index = (index + 4) & (capacity - 1))
-  {
-    auto search_id = (index + thread_id) & (capacity - 1);
-    Entry* entry = &entries[search_id];
+#ifdef ENABLE_MP
+
+  int counter = 0;
+  bool searchDone = false;
+  auto hash1 = key->hash & (capacity - 1);
+  auto hash2 = key->hash2 & (capacity - 1);
+  while (not searchDone and counter <= 30) {
+    auto index = (hash1 + hash2 * counter) & (capacity - 1);
+    Entry* entry = &entries[index];
     if (entry->key == NULL) {
       if (IS_NIL(entry->value)) {
         // Empty entry.
-        if (tombstone != NULL) {
-          res = tombstone;
-        } else {
-          res = entry;
-        }
-#  pragma omp cancel parallel
+        return tombstone != NULL ? tombstone : entry;
       } else {
-        // We found a tombstone
+        // We found a tombstone.
         if (tombstone == NULL)
           tombstone = entry;
       }
     } else if (entry->key == key) {
       // We found the key.
-      res = entry;
-#  pragma omp cancel parallel
+      return entry;
+      counter += 1;
     }
-#  pragma omp cancellation point parallel
   }
-  return res;
+
 #else
+  uint32_t index = key->hash & (capacity - 1);
+
   for (;;) {
     Entry* entry = &entries[index];
     if (entry->key == NULL) {
@@ -150,9 +146,9 @@ static Entry* findEntry(Entry* entries, int capacity, ObjString* key)
 /**
  * @brief Resizes the hash table to the specified capacity.
  *
- * Creates a new hash table with the given capacity, rehashes existing entries,
- * and replaces the old table with the new one. Handles collisions and
- * tombstones during the rehashing process.
+ * Creates a new hash table with the given capacity, rehashes existing
+ * entries, and replaces the old table with the new one. Handles collisions
+ * and tombstones during the rehashing process.
  *
  * @param capacity The new capacity for the hash table.
  */
@@ -229,8 +225,8 @@ void Table::adjustCapacity(int capacity)
 /**
  * @brief Frees the memory allocated for the hash table.
  *
- * Deallocates the memory used by the hash table's entries array and resets the
- * table's state to an empty table.
+ * Deallocates the memory used by the hash table's entries array and resets
+ * the table's state to an empty table.
  */
 void Table::freeTable()
 {
@@ -261,8 +257,7 @@ void Table::applyWorklist()
     while (not searchDone and counter <= 30) {
       auto hash1 = key->hash & (capacity - 1);
       auto hash2 = key->hash2 & (capacity - 1);
-      auto hashedValue = (hash1 + counter + hash2 * counter)
-          & (capacity - 1);  // TODO: Keep a check for integer overflow
+      auto hashedValue = (hash1 + counter + hash2 * counter) & (capacity - 1);
 
       if (this->entries[hashedValue].key == NULL) {
         omp_set_lock(&(lock[hashedValue]));
@@ -308,10 +303,8 @@ bool Table::tableSet(ObjString* key, Value value)
     int capacity = GROW_CAPACITY(this->capacity);
     adjustCapacity(capacity);
     applyWorklist();
-    this->EntriesWorkList.writeWorkList(key, value);
-  } else {
-    this->EntriesWorkList.writeWorkList(key, value);
   }
+  this->EntriesWorkList.writeWorkList(key, value);
   this->count += 1;
 
 #else
@@ -367,8 +360,8 @@ bool Table::tableGet(ObjString* key, Value* value)
  * @brief Deletes a key-value pair from the hash table.
  *
  * Removes the entry with the specified key from the hash table by placing a
- * tombstone in its place. Does not actually free the memory associated with the
- * key or value.
+ * tombstone in its place. Does not actually free the memory associated with
+ * the key or value.
  *
  * @param key The key to be deleted.
  * @return `true` if the key was found and deleted, `false` otherwise.
@@ -441,8 +434,8 @@ ObjString* Table::tableFindString(const char* chars,
 /**
  * @brief Marks all objects in the table as reachable.
  *
- * Iterates over all entries in the hash table and marks both the key and value
- * objects as reachable for garbage collection.
+ * Iterates over all entries in the hash table and marks both the key and
+ * value objects as reachable for garbage collection.
  */
 void Table::markTable()
 {
@@ -456,8 +449,9 @@ void Table::markTable()
 /**
  * @brief Removes entries with unmarked keys from the table.
  *
- * Iterates over the table and removes any entries whose keys are not marked as
- * reachable. This is typically used as part of the garbage collection process.
+ * Iterates over the table and removes any entries whose keys are not marked
+ * as reachable. This is typically used as part of the garbage collection
+ * process.
  */
 void Table::tableRemoveWhite()
 {
