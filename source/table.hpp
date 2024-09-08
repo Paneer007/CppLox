@@ -27,6 +27,22 @@ public:
   Value value;
 };
 
+class WorkList
+{
+  int count;
+  int capacity;
+
+  Entry* entries;
+
+public:
+  void initWorkList();
+  void writeWorkList(ObjString* key, Value value);
+  void clearWorkList();
+
+  int getLength();
+  Entry* getElement(int index);
+};
+
 /**
  * @brief Represents a hash table for storing key-value pairs.
  *
@@ -67,12 +83,11 @@ public:
 
 #ifdef ENABLE_MP
 
-  int threshold_count;
-
   /**
    * @brief An array of entries storing worklist of key-value pairs.
    */
-  std::vector<std::pair<ObjString*, Value>> worklist;
+
+  WorkList EntriesWorkList;
 
 #endif
 

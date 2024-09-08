@@ -47,7 +47,14 @@ target_compile_features(CppLox_exe PRIVATE cxx_std_17)
 
 target_link_libraries(CppLox_exe PRIVATE CppLox_lib)
 
+find_package(OpenMP)
+if(OpenMP_CXX_FOUND)
+    target_link_libraries(CppLox_exe PRIVATE OpenMP::OpenMP_CXX)
+endif()
+
 # ---- Install rules ----
+
+
 
 if(NOT CMAKE_SKIP_INSTALL_RULES)
   include(cmake/install-rules.cmake)
