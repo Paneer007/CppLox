@@ -106,7 +106,15 @@ TokenType Scanner::identifierType()
 {
   switch (this->start[0]) {
     case 'a':
-      return this->checkKeyword(1, 2, "nd", TOKEN_AND);
+      if (this->current - this->start > 1) {
+        switch (this->start[1]) {
+          case 's':
+            return this->checkKeyword(2, 3, "ync", TOKEN_ASYNC);
+          case 'n':
+            return this->checkKeyword(2, 1, "d", TOKEN_AND);
+        }
+      }
+      break;
     case 'c':
       return this->checkKeyword(1, 4, "lass", TOKEN_CLASS);
     case 'e':
@@ -120,12 +128,13 @@ TokenType Scanner::identifierType()
             return checkKeyword(2, 1, "r", TOKEN_FOR);
           case 'u':
             return checkKeyword(2, 1, "n", TOKEN_FUN);
+          case 'i':
+            return checkKeyword(2, 4, "nish", TOKEN_FINISH);
         }
       }
       break;
     case 'i':
       return this->checkKeyword(1, 1, "f", TOKEN_IF);
-
     case 'n':
       return this->checkKeyword(1, 2, "il", TOKEN_NIL);
     case 'o':
@@ -170,7 +179,8 @@ bool Scanner::isAtEnd()
 /**
  * @brief Advances the scanner to the next character.
  *
- * Increments the current character pointer and returns the previous character.
+ * Increments the current character pointer and returns the previous
+ * character.
  *
  * @return The character that was at the previous position.
  */
@@ -184,8 +194,8 @@ char Scanner::advance()
  * @brief Peeks at the next character without advancing the scanner.
  *
  * Returns the next character in the input stream without moving the current
- * character pointer. If the end of the input has been reached, returns the null
- * character.
+ * character pointer. If the end of the input has been reached, returns the
+ * null character.
  *
  * @return The next character in the input stream.
  */
@@ -290,9 +300,9 @@ Token Scanner::number()
 /**
  * @brief Skips whitespace and comments.
  *
- * Consumes whitespace characters (spaces, tabs, newlines, and carriage returns)
- * and single-line comments. Increments the line number when encountering
- * newlines.
+ * Consumes whitespace characters (spaces, tabs, newlines, and carriage
+ * returns) and single-line comments. Increments the line number when
+ * encountering newlines.
  *
  */
 void Scanner::skipWhitespace()
@@ -328,8 +338,8 @@ void Scanner::skipWhitespace()
  * @brief Scans the next token from the input stream.
  *
  * Advances the input pointer and identifies the next token based on the
- * character encountered. Handles single-character tokens, numbers, identifiers,
- * strings, and two-character tokens.
+ * character encountered. Handles single-character tokens, numbers,
+ * identifiers, strings, and two-character tokens.
  *
  * @return The next token in the input stream.
  */
@@ -396,8 +406,8 @@ Token Scanner::scanToken()
 /**
  * @brief Creates a new token with the given type.
  *
- * Constructs a token object with the specified type, starting position, length,
- * and line number.
+ * Constructs a token object with the specified type, starting position,
+ * length, and line number.
  *
  * @param type The type of the token to be created.
  * @return The newly created token.

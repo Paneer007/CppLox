@@ -61,7 +61,10 @@ typedef enum
   TOKEN_EOF,  ///< End of file
 
   TOKEN_LEFT_BRACKET,
-  TOKEN_RIGHT_BRACKET
+  TOKEN_RIGHT_BRACKET,
+
+  TOKEN_ASYNC,
+  TOKEN_FINISH
 } TokenType;
 
 /**

@@ -130,6 +130,8 @@ typedef enum
   TYPE_INITIALIZER,  // Initializer function
   TYPE_SCRIPT,  // Script
   TYPE_METHOD,  // Method
+  TYPE_FINISH,
+  TYPE_ASYNC
 } FunctionType;
 
 /**
@@ -1269,6 +1271,28 @@ static void funDeclaration()
   defineVariable(global);
 }
 
+static void finishDeclaration()
+{
+  emitByte(OP_FINISH_BEGIN);
+  consume(TOKEN_LEFT_BRACE, "Expect '{' before function body.");
+  beginScope();
+  block();
+  endScope();
+  emitByte(OP_FINISH_END);
+}
+
+static void asyncDeclaration()
+{
+  auto asyncStart = currentChunk()->count;
+  auto exitJump = emitJump(OP_ASYNC_BEGIN);
+  consume(TOKEN_LEFT_BRACE, "Expect '{' before function body.");
+  beginScope();
+  block();
+  endScope();
+  emitByte(OP_ASYNC_END);
+  patchJump(exitJump);
+}
+
 /**
  * @brief Parses a variable declaration.
  *
@@ -1509,6 +1533,10 @@ static void statement()
     forStatement();
   } else if (match(TOKEN_WHILE)) {
     whileStatement();
+  } else if (match(TOKEN_FINISH)) {
+    finishDeclaration();
+  } else if (match(TOKEN_ASYNC)) {
+    asyncDeclaration();
   } else {
     expressionStatement();
   }

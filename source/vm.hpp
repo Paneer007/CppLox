@@ -5,6 +5,7 @@
 #include "table.hpp"
 
 constexpr int FRAMES_MAX = 2048;
+constexpr int FINISH_MAX = 32;
 constexpr int STACK_MAX = (FRAMES_MAX * UINT8_COUNT);
 
 /**
@@ -107,8 +108,8 @@ public:
   static VM* vm;
 
   CallFrame frames[FRAMES_MAX];
-  int frameCount;
 
+  int frameCount;
   Value stack[STACK_MAX];
   Value* stackTop;
   Table strings;

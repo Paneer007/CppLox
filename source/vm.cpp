@@ -396,7 +396,9 @@ InterpretResult VM::run()
                      &&OP_GET_SUPER_INSTRCTN,     &&OP_METHOD_INSTRCTN,
                      &&OP_GET_GLOBAL_INSTRCTN,    &&OP_SET_GLOBAL_INSTRCTN,
                      &&OP_BUILD_LIST_INSTRCTN,    &&OP_INDEX_GET_INSTRCTN,
-                     &&OP_INDEX_SET_INSTRCTN};
+                     &&OP_INDEX_SET_INSTRCTN,     &&OP_FINISH_BEGIN_INSTRCTN,
+                     &&OP_FINISH_END_INSTRCTN,    &&OP_ASYNC_BEGIN_INSTRCTN,
+                     &&OP_ASYNC_END_INSTRCTN};
 
   const auto READ_BYTE = [&frame]() { return *frame->ip++; };
 #ifdef DEBUG_TRACE_EXECUTION
@@ -927,6 +929,18 @@ OP_INDEX_SET_INSTRCTN : {
     push(st_item);
   }
 
+  NEXT_INSTRCTN();
+}
+OP_FINISH_BEGIN_INSTRCTN : {
+  NEXT_INSTRCTN();
+}
+OP_FINISH_END_INSTRCTN : {
+  NEXT_INSTRCTN();
+}
+OP_ASYNC_BEGIN_INSTRCTN : {
+  NEXT_INSTRCTN();
+}
+OP_ASYNC_END_INSTRCTN : {
   NEXT_INSTRCTN();
 }
 #undef NEXT_INSTRCTN

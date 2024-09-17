@@ -12,6 +12,7 @@ class Dispatcher
   std::unordered_map<size_t, int> id_to_vm;
   VM vm_pool[32];
   VM main_thread;
+
   Dispatcher();
   void initDispatcher();
   void freeDispatcher();
