@@ -57,7 +57,6 @@ private:
   /**
    * @brief Constructs a new virtual machine instance.
    */
-  VM();
 
   /**
    * @brief Resets the virtual machine's stack.
@@ -104,6 +103,7 @@ private:
   bool callValue(Value callee, int argCount);
 
 public:
+  VM();
   static VM* vm;
 
   CallFrame frames[FRAMES_MAX];
@@ -121,6 +121,9 @@ public:
   int grayCapacity;
   Obj** grayStack;
   ObjString* initString;
+
+  VM* parent;
+  bool assigned;
 
   /**
    * @brief Initializes the virtual machine.
@@ -146,7 +149,7 @@ public:
    *
    * @return A pointer to the virtual machine instance.
    */
-  static VM* getVM();
+  // static VM* getVM();
 
   /**
    * @brief Interprets the given source code.
@@ -228,7 +231,8 @@ public:
    * @brief Reports a runtime error and terminates execution.
    *
    * Prints an error message to stderr, including the error message, the current
-   * line number, and the call stack. Resets the virtual machine's state after
+   * line number, and the call stack. Reset  std::copy(parent->frames,
+parent->frames + frameCount, this->frames); s the virtual machine's state after
    * printing the error.
    *
    * @param format The format string for the error message.
@@ -286,6 +290,8 @@ public:
    * occurred.
    */
   bool invokeFromClass(ObjClass* klass, ObjString* name, int argCount);
+
+  void copyParent(VM* parent);
 };
 
 #endif

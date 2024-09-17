@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "dispatcher.hpp"
 #include "memory.hpp"
 #include "vm.hpp"
 
@@ -67,13 +68,16 @@ void Chunk::freeChunk()
 
 /**
  * @brief Add a value to the chunk array and return index
- * 
+ *
  * @param value Value to be appended to the chunk array
- * @return int index of element 
+ * @return int index of element
  */
 int Chunk::addConstant(Value value)
 {
-  auto vm = VM::getVM();
+  // auto vm = VM::getVM();
+  auto dispatcher = Dispatcher::getDispatcher();
+  auto vm = dispatcher->getVM();
+
   vm->push(value);
   this->constants.writeValueArray(value);
   vm->pop();

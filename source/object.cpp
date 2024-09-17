@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "dispatcher.hpp"
 #include "memory.hpp"
 #include "table.hpp"
 #include "value.hpp"
@@ -113,7 +114,8 @@ static void printFunction(ObjFunction* function)
  */
 static Obj* allocateObject(size_t size, ObjType type)
 {
-  auto vm = VM::getVM();
+  auto dispatcher = Dispatcher::getDispatcher();
+  auto vm = dispatcher->getVM();
   auto object = (Obj*)reallocate(NULL, 0, size);
   object->type = type;
   object->isMarked = false;
@@ -230,7 +232,8 @@ static ObjString* allocateString(char* chars,
                                  uint32_t hash,
                                  uint32_t hash2 = 0)
 {
-  auto vm = VM::getVM();
+  auto dispatcher = Dispatcher::getDispatcher();
+  auto vm = dispatcher->getVM();
   auto string = ALLOCATE_OBJ<ObjString>(OBJ_STRING);
   string->length = length;
   string->chars = chars;
@@ -266,7 +269,8 @@ ObjString* copyString(const char* chars, int length)
   auto hash2 = hash2ndString(chars, length);
 #endif
 
-  auto vm = VM::getVM();
+  auto dispatcher = Dispatcher::getDispatcher();
+  auto vm = dispatcher->getVM();
 
 #ifdef ENABLE_MP
   auto interned = vm->strings.tableFindString(chars, length, hash, hash2);

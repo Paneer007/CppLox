@@ -11,6 +11,7 @@
 #include "common.hpp"
 #include "compiler.hpp"
 #include "debug.hpp"
+#include "dispatcher.hpp"
 #include "memory.hpp"
 #include "object.hpp"
 
@@ -172,7 +173,8 @@ static Value randNative(int argCount, Value* args)
 static ObjUpvalue* captureUpvalue(Value* local)
 {
   // note source of failure
-  auto vm = VM::getVM();
+  auto dispatcher = Dispatcher::getDispatcher();
+  auto vm = dispatcher->getVM();
   ObjUpvalue* prevUpvalue = NULL;
   auto upvalue = vm->openUpvalues;
   while (upvalue != NULL && upvalue->location > local) {
@@ -206,7 +208,8 @@ static ObjUpvalue* captureUpvalue(Value* local)
  */
 static void closeUpvalues(Value* last)
 {
-  auto vm = VM::getVM();  // source of failure
+  auto dispatcher = Dispatcher::getDispatcher();
+  auto vm = dispatcher->getVM();
   while (vm->openUpvalues != NULL && vm->openUpvalues->location >= last) {
     auto upvalue = vm->openUpvalues;
     upvalue->closed = *upvalue->location;
@@ -936,10 +939,10 @@ OP_INDEX_SET_INSTRCTN : {
  *
  * @return A pointer to the virtual machine instance.
  */
-VM* VM::getVM()
-{
-  return vm;
-}
+// VM* VM::getVM()
+// {
+//   return vm;
+// }
 
 /**
  * @brief Resets the virtual machine's stack.
@@ -1187,6 +1190,21 @@ void VM::defineNative(const char* name, NativeFn function)
   this->globals.tableSet(AS_STRING(this->stack[0]), this->stack[1]);
   pop();
   pop();
+}
+
+void VM::copyParent(VM* parent)
+{
+  if (parent != NULL) {
+    std::copy(parent->frames, parent->frames + frameCount, this->frames);
+    std::copy(parent->stack, parent->stack + STACK_MAX, this->stack);
+    auto diff = parent->stackTop - stack;
+    this->stackTop = this->stack + diff;
+    this->frameCount = parent->frameCount;
+
+    this->parent = parent;
+  }
+  this->assigned = true;
+  this->initVM();
 }
 
 VM* VM::vm = new VM;

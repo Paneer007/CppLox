@@ -1,3 +1,6 @@
+#include <iostream>
+#include <thread>
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -5,6 +8,7 @@
 #include "chunk.hpp"
 #include "common.hpp"
 #include "debug.hpp"
+#include "dispatcher.hpp"
 #include "vm.hpp"
 
 /**
@@ -18,7 +22,10 @@ private:
    */
   void repl()
   {
-    auto vm = VM::getVM();
+    // auto vm = VM::getVM();
+
+    auto dispatcher = Dispatcher::getDispatcher();
+    auto vm = dispatcher->getVM();
 
     char line[1024];
     while (true) {
@@ -81,7 +88,9 @@ private:
    */
   void runFile(const char* path)
   {
-    auto vm = VM::getVM();
+    // auto vm = VM::getVM();
+    auto dispatcher = Dispatcher::getDispatcher();
+    auto vm = dispatcher->getVM();
     auto source = this->readFile(path);
     InterpretResult result = vm->interpret(source);
     delete[] source;
@@ -101,8 +110,8 @@ public:
    */
   int execute(int argc, const char* argv[])
   {
-    Chunk chunk;
-    auto vm = VM::getVM();
+    auto dispatcher_object = Dispatcher::getDispatcher();
+    auto vm = dispatcher_object->dispatchThread(NULL);
     vm->initVM();
 
     switch (argc) {

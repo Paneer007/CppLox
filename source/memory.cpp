@@ -3,6 +3,7 @@
 #include <stdlib.h>
 
 #include "compiler.hpp"
+#include "dispatcher.hpp"
 #include "vm.hpp"
 
 #ifdef DEBUG_LOG_GC
@@ -32,7 +33,9 @@ constexpr int GC_HEAP_GROW_FACTOR = 2;
  */
 void* reallocate(void* pointer, size_t oldSize, size_t newSize)
 {
-  auto vm = VM::getVM();
+  // auto vm = VM::getVM();
+  auto dispatcher = Dispatcher::getDispatcher();
+  auto vm = dispatcher->getVM();
   vm->bytesAllocated += newSize - oldSize;
   if (newSize > oldSize) {
 #ifdef DEBUG_STRESS_GC
@@ -77,7 +80,8 @@ void markObject(Obj* object)
   printf("\n");
 #endif
   object->isMarked = true;
-  auto vm = VM::getVM();
+  auto dispatcher = Dispatcher::getDispatcher();
+  auto vm = dispatcher->getVM();
   if (vm->grayCapacity < vm->grayCount + 1) {
     vm->grayCapacity = GROW_CAPACITY(vm->grayCapacity);
     vm->grayStack =
@@ -258,7 +262,8 @@ static void freeObject(Obj* object)
  */
 void freeObjects()
 {
-  auto vm = VM::getVM();
+  auto dispatcher = Dispatcher::getDispatcher();
+  auto vm = dispatcher->getVM();
   auto object = vm->objects;
   while (object != NULL) {
     auto next = object->next;
@@ -278,7 +283,8 @@ void freeObjects()
  */
 static void markRoots()
 {
-  auto vm = VM::getVM();
+  auto dispatcher = Dispatcher::getDispatcher();
+  auto vm = dispatcher->getVM();
   for (auto slot = vm->stack; slot < vm->stackTop; slot++) {
     markValue(*slot);
   }
@@ -304,7 +310,8 @@ static void markRoots()
  */
 static void traceReferences()
 {
-  auto vm = VM::getVM();
+  auto dispatcher = Dispatcher::getDispatcher();
+  auto vm = dispatcher->getVM();
   while (vm->grayCount > 0) {
     auto object = vm->grayStack[--vm->grayCount];
     blackenObject(object);
@@ -323,7 +330,8 @@ static void traceReferences()
  */
 static void sweep()
 {
-  auto vm = VM::getVM();
+  auto dispatcher = Dispatcher::getDispatcher();
+  auto vm = dispatcher->getVM();
   Obj* previous = NULL;
   auto object = vm->objects;
   while (object != NULL) {
@@ -358,7 +366,8 @@ static void sweep()
  */
 void collectGarbage()
 {
-  auto vm = VM::getVM();
+  auto dispatcher = Dispatcher::getDispatcher();
+  auto vm = dispatcher->getVM();
 #ifdef DEBUG_LOG_GC
   printf("-- gc begin\n");
   size_t before = vm->bytesAllocated;

@@ -25,6 +25,7 @@ add_library(
     source/scanner.cpp
     source/table.cpp
     source/value.cpp
+    source/dispatcher.cpp
     source/vm.cpp
 )
 
