@@ -72,7 +72,13 @@ static uint32_t hash2ndString(const char* key,
   h ^= h >> 13;
   h *= 0xc2b2ae35;
   h ^= h >> 16;
-  return h;
+
+  if (h % 2 == 0) {
+    h += 1;
+  }
+
+  // return h;
+  return 1;
 }
 #endif
 
@@ -273,7 +279,11 @@ ObjString* copyString(const char* chars, int length)
   auto heapChars = ALLOCATE<char>(length + 1);
   memcpy(heapChars, chars, length);
   heapChars[length] = '\0';
+#ifdef ENABLE_MP
+  return allocateString(heapChars, length, hash, hash2);
+#else
   return allocateString(heapChars, length, hash);
+#endif
 }
 
 /**

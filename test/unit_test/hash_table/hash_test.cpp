@@ -83,10 +83,7 @@ uint32_t hashString(const char* key, size_t len)
   return h;
 }
 
-static
-
-    void
-    test_function(TestType func, const char* msg)
+void test_function(TestType func, const char* msg)
 {
   std::cout << " ======== " << msg << " ======== " << std::endl;
 

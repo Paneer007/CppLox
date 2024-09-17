@@ -1702,7 +1702,6 @@ ObjFunction* compile(const char* source)
   auto scanner = Scanner::getScanner();
   scanner->initScanner(source);
   Compiler compiler;
-  ObjFunction* compile(const char* source);
   initCompiler(&compiler, TYPE_SCRIPT);
 
   parser.hadError = false;

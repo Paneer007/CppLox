@@ -92,6 +92,7 @@ int64_t test_table(int len)
 #endif
     auto heapChars = ALLOCATE<char>(length + 1);
     memcpy(heapChars, chars, length);
+
     heapChars[length] = '\0';
 
     auto obj_key = temp_allocateString(heapChars, length, hash, hash2);
@@ -100,26 +101,12 @@ int64_t test_table(int len)
     auto temp = obj_key;
     table.tableSet(temp, OBJ_VAL(temp));
   }
-  printf("Search time \n");
+
   // Execute search logic
   for (int i = 0; i < len / 4; i++) {
-    std::cout << i << std::endl;
     auto obj_key = obj_keys[rand() % keys.size()];
-#ifndef ENABLE_MP
-    table.tableFindString(((ObjString*)obj_key)->chars,
-                          ((ObjString*)obj_key)->length,
-                          ((ObjString*)obj_key)->hash);
-#else
-    auto x = table.tableFindString(((ObjString*)obj_key)->chars,
-                                   ((ObjString*)obj_key)->length,
-                                   ((ObjString*)obj_key)->hash,
-                                   ((ObjString*)obj_key)->hash2);
-    if (x == NULL) {
-      printf("Error \n");
-      exit(0);
-    }
-    printf("%s \n", x->chars);
-#endif
+    auto value = OBJ_VAL(obj_key);
+    table.tableGet(((ObjString*)obj_key), &value);
   }
 
   auto end = std::chrono::high_resolution_clock::now();
@@ -140,12 +127,12 @@ int64_t test_vector(int len)
   // std::vector<std::string> keys;
   // std::vector<Obj*> obj_keys;
   auto start = std::chrono::high_resolution_clock::now();
-  std::vector<std::pair<str, str>> arrays;
-  std::vector<std::string> keys;
+  std::vector<std::pair<str*, str*>> arrays;
+  std::vector<std::string*> keys;
   for (int i = 0; i < len; i++) {
     auto key = gen_random(KEY_SIZE);
-    keys.push_back(key);
-    arrays.push_back({key, key});
+    keys.push_back(&key);
+    arrays.push_back({&key, &key});
   }
 
   // Execute search logic
@@ -166,12 +153,12 @@ int64_t test_vector(int len)
 int64_t test_map(int len)
 {
   auto start = std::chrono::high_resolution_clock::now();
-  std::unordered_map<std::string, std::string> mp;
-  std::vector<std::string> keys;
+  std::unordered_map<std::string*, std::string*> mp;
+  std::vector<std::string*> keys;
   for (int i = 0; i < len; i++) {
     auto key = gen_random(KEY_SIZE);
-    keys.push_back(key);
-    mp[key] = key;
+    keys.push_back(&key);
+    mp[&key] = &key;
   }
 
   // Execute search logic
@@ -334,16 +321,16 @@ static void test_map_function(TestType func, const char* msg)
 
 void test_hash()
 {
-  // test_custom_function(HASH_8, "HASH_8");
+  test_custom_function(HASH_8, "HASH_8");
   test_custom_function(HASH_16, "HASH_16");
-  // test_custom_function(HASH_32, "HASH_32");
-  // test_custom_function(HASH_128, "HASH_128");
-  // test_custom_function(HASH_512, "HASH_512");
-  // test_custom_function(HASH_1024, "HASH_1024");
-  // test_custom_function(HASH_16384, "HASH_16384");
-  // test_custom_function(HASH_262144, "HASH_262144");
-  // test_custom_function(HASH_4194304, "HASH_4194304");
-  // test_custom_function(HASH_33554432, "HASH_33554432");
+  test_custom_function(HASH_32, "HASH_32");
+  test_custom_function(HASH_128, "HASH_128");
+  test_custom_function(HASH_512, "HASH_512");
+  test_custom_function(HASH_1024, "HASH_1024");
+  test_custom_function(HASH_16384, "HASH_16384");
+  test_custom_function(HASH_262144, "HASH_262144");
+  test_custom_function(HASH_4194304, "HASH_4194304");
+  test_custom_function(HASH_33554432, "HASH_33554432");
   // test_custom_function(HASH_1000000000, "HASH_1000000000");
 }
 
@@ -379,11 +366,11 @@ void test_map() {}
 
 int main()
 {
-  std::cout << "====== HASH TEST ======" << std::endl;
-  test_hash();
-  // std::cout << "====== VECTOR TEST ======" << std::endl;
-  // test_vector();
-  // std::cout << "====== SET TEST ======" << std::endl;
-  // test_mapr();
+  // std::cout << "====== HASH TEST ======" << std::endl;
+  // test_hash();
+  std::cout << "====== VECTOR TEST ======" << std::endl;
+  test_vector();
+  std::cout << "====== SET TEST ======" << std::endl;
+  test_mapr();
   return 0;
 }
