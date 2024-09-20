@@ -4,9 +4,35 @@
 
 #include "dispatcher.hpp"
 
+#include "debug.hpp"
+
+static void childMain(VM* parent, VM* childVM, int vm_id)
+{
+  auto dispatcher = Dispatcher::getDispatcher();
+  auto thread_id = std::hash<std::thread::id> {}(std::this_thread::get_id());
+  dispatcher->setId(thread_id, vm_id);
+
+  auto frame = &childVM->frames[childVM->frameCount - 1];
+
+  // if (frame->closure == NULL) {
+  //   printf("skill issue \n");
+  //   exit(0);
+  // }
+
+  // disassembleInstruction(
+  //     &frame->closure->function->chunk,
+  //     (int)(frame->ip - frame->closure->function->chunk.code));
+  childVM->run();
+}
+
 Dispatcher::Dispatcher()
 {
   this->initDispatcher();
+}
+
+void Dispatcher::setId(size_t thread_id, int vm_id)
+{
+  this->id_to_vm[thread_id] = vm_id;
 }
 
 void Dispatcher::initDispatcher()
@@ -19,7 +45,6 @@ void Dispatcher::freeDispatcher()
   for (int i = 0; i < 32; i++) {
     this->vm_pool[i].freeVM();
   }
-  this->main_thread.freeVM();
   this->id_to_vm.clear();
 }
 
@@ -51,7 +76,7 @@ VM* Dispatcher::dispatchThread(VM* parent)
     printf("Creating thread that already exist in the Dispatcher");
     exit(0);
   }
-  auto vm_id = this->findFreeVM();
+  auto vm_id = this->findFreeVM();  // Handle full VM error
   auto childVM = &this->vm_pool[vm_id];
   this->id_to_vm[thread_id] = vm_id;
   childVM->copyParent(parent);
@@ -73,6 +98,19 @@ void Dispatcher::freeVM()
 Dispatcher* Dispatcher::getDispatcher()
 {
   return Dispatcher::dispatcher;
+}
+
+std::thread Dispatcher::asyncBegin()
+{
+  auto parent_vm = this->getVM();
+  auto free_vm_index = this->findFreeVM();
+  auto childVM = &this->vm_pool[free_vm_index];
+  childVM->copyParent(parent_vm);
+  auto frame = &childVM->frames[childVM->frameCount - 1];
+  frame->ip += 2;  // Skip jump
+
+  std::thread child_obj(childMain, parent_vm, childVM, free_vm_index);
+  return child_obj;
 }
 
 Dispatcher* Dispatcher::dispatcher = new Dispatcher;

@@ -205,6 +205,14 @@ int disassembleInstruction(Chunk* chunk, int offset)
       return byteInstruction("OP_SET_LOCAL", chunk, offset);
     case OP_JUMP:
       return jumpInstruction("OP_JUMP", 1, chunk, offset);
+    case OP_ASYNC_BEGIN:
+      return jumpInstruction("OP_ASYNC_BEGIN", 1, chunk, offset);
+    case OP_FINISH_BEGIN:
+      return simpleInstruction("OP_FINISH_BEGIN", offset);
+    case OP_FINISH_END:
+      return simpleInstruction("OP_FINISH_END", offset);
+    case OP_ASYNC_END:
+      return simpleInstruction("OP_ASYNC_END", offset);
     case OP_JUMP_IF_FALSE:
       return jumpInstruction("OP_JUMP_IF_FALSE", 1, chunk, offset);
     case OP_LOOP:

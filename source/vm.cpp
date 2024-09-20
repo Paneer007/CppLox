@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
+#include <unistd.h>
 
 #include "common.hpp"
 #include "compiler.hpp"
@@ -243,7 +244,8 @@ void VM::initVM()
   this->strings.initTable();
   this->globals.initTable();
 
-  this->initString = NULL;
+  this->finishStackCount = 0;
+
   this->initString = copyString("init", 4);
 
   defineNative("clock", clockNative);
@@ -267,6 +269,8 @@ void VM::freeVM()
   this->globals.freeTable();
   this->strings.freeTable();
   this->initString = NULL;
+  this->assigned = false;
+  this->parent = NULL;
   freeObjects();
 }
 
@@ -404,16 +408,21 @@ InterpretResult VM::run()
 #ifdef DEBUG_TRACE_EXECUTION
 #  define NEXT_INSTRCTN() \
     do { \
-      printf("          "); \
-      for (Value* slot = this->stack; slot < this->stackTop; slot++) { \
-        printf("[ "); \
-        printValue(*slot); \
-        printf(" ]"); \
+      if (this->parent != NULL) { \
+        auto thread_id = \
+            std::hash<std::thread::id> {}(std::this_thread::get_id()); \
+        std::cout << thread_id << std::endl; \
+        printf("          "); \
+        for (Value* slot = this->stack; slot < this->stackTop; slot++) { \
+          printf("[ "); \
+          printValue(*slot); \
+          printf(" ]"); \
+        } \
+        printf("\n"); \
+        disassembleInstruction( \
+            &frame->closure->function->chunk, \
+            (int)(frame->ip - frame->closure->function->chunk.code)); \
       } \
-      printf("\n"); \
-      disassembleInstruction( \
-          &frame->closure->function->chunk, \
-          (int)(frame->ip - frame->closure->function->chunk.code)); \
       goto* targets[READ_BYTE()]; \
     } while (0)
 
@@ -932,16 +941,35 @@ OP_INDEX_SET_INSTRCTN : {
   NEXT_INSTRCTN();
 }
 OP_FINISH_BEGIN_INSTRCTN : {
+  this->finishStackCount++;
   NEXT_INSTRCTN();
 }
 OP_FINISH_END_INSTRCTN : {
+  for (auto& thread : this->finishStack[this->finishStackCount]) {
+    thread->join();
+  }
+  this->finishStack[this->finishStackCount].clear();
+  this->finishStackCount--;
   NEXT_INSTRCTN();
 }
 OP_ASYNC_BEGIN_INSTRCTN : {
+  // Prep Thread VM to execute
+  // Note: Skip jump in bytecode
+  auto dispatcher = Dispatcher::getDispatcher();
+  auto new_thread = dispatcher->asyncBegin();
+  // new_thread.join();
+
+  this->finishStack[this->finishStackCount].push_back(&new_thread);
+  // Start Next line of execution
+  auto offset = READ_SHORT();
+  frame->ip += offset;
   NEXT_INSTRCTN();
 }
 OP_ASYNC_END_INSTRCTN : {
-  NEXT_INSTRCTN();
+  auto dispatcher = Dispatcher::getDispatcher();
+  dispatcher->freeVM();
+  pop();
+  return INTERPRET_OK;
 }
 #undef NEXT_INSTRCTN
 }
@@ -1209,16 +1237,42 @@ void VM::defineNative(const char* name, NativeFn function)
 void VM::copyParent(VM* parent)
 {
   if (parent != NULL) {
-    std::copy(parent->frames, parent->frames + frameCount, this->frames);
+    std::copy(parent->frames, parent->frames + 2048, this->frames);
     std::copy(parent->stack, parent->stack + STACK_MAX, this->stack);
     auto diff = parent->stackTop - stack;
     this->stackTop = this->stack + diff;
     this->frameCount = parent->frameCount;
-
     this->parent = parent;
+    // TODO: check if this causes BT in enclosing variables
+    this->strings.initTable();
+    this->globals.initTable();
+
+    this->openUpvalues = parent->openUpvalues;
+
+    // Do not mess with GC in child variables
+    this->bytesAllocated = 0;
+    this->nextGC = 1024 * 1024;
+
+    this->grayCount = 0;
+    this->grayCapacity = 0;
+    this->grayStack = NULL;
+
+    this->finishStackCount = 0;
+    this->initString = copyString("init", 4);
+
+    defineNative("clock", clockNative);
+    defineNative("rand", randNative);
+    defineNative("append", appendNative);
+    defineNative("delete", deleteNative);
+    defineNative("int_input", intInput);
+    defineNative("str_input", strInput);
+    defineNative("char_input", charInput);
+    defineNative("len", objLength);
+
+  } else {
+    this->initVM();
   }
   this->assigned = true;
-  this->initVM();
 }
 
 VM* VM::vm = new VM;

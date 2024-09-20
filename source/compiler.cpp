@@ -1283,7 +1283,6 @@ static void finishDeclaration()
 
 static void asyncDeclaration()
 {
-  auto asyncStart = currentChunk()->count;
   auto exitJump = emitJump(OP_ASYNC_BEGIN);
   consume(TOKEN_LEFT_BRACE, "Expect '{' before function body.");
   beginScope();

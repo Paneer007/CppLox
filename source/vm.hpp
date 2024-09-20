@@ -1,6 +1,9 @@
 #ifndef clox_vm_h
 #define clox_vm_h
 
+#include <thread>
+
+#include "atomic"
 #include "object.hpp"
 #include "table.hpp"
 
@@ -122,6 +125,9 @@ public:
   int grayCapacity;
   Obj** grayStack;
   ObjString* initString;
+
+  std::vector<std::thread*> finishStack[256];
+  int finishStackCount;
 
   VM* parent;
   bool assigned;

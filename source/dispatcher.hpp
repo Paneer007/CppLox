@@ -9,9 +9,8 @@
 class Dispatcher
 {
   static Dispatcher* dispatcher;
-  std::unordered_map<size_t, int> id_to_vm;
-  VM vm_pool[32];
-  VM main_thread;
+  std::unordered_map<size_t, int> id_to_vm;  // Make this atomic
+  VM vm_pool[32];  // Make this atomic
 
   Dispatcher();
   void initDispatcher();
@@ -22,9 +21,9 @@ public:
   static Dispatcher* getDispatcher();
   VM* getVM();
   VM* dispatchThread(VM* parent);  // Sets new VM loop with this
-  // VM* getVMByID();
-
+  std::thread asyncBegin();
   void freeVM();
+  void setId(size_t thread_id, int vm_id);
 };
 
 #endif
