@@ -13,15 +13,6 @@ static void childMain(VM* parent, VM* childVM, int vm_id)
   dispatcher->setId(thread_id, vm_id);
 
   auto frame = &childVM->frames[childVM->frameCount - 1];
-
-  // if (frame->closure == NULL) {
-  //   printf("skill issue \n");
-  //   exit(0);
-  // }
-
-  // disassembleInstruction(
-  //     &frame->closure->function->chunk,
-  //     (int)(frame->ip - frame->closure->function->chunk.code));
   childVM->run();
 }
 

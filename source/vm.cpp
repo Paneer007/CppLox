@@ -946,7 +946,9 @@ OP_FINISH_BEGIN_INSTRCTN : {
 }
 OP_FINISH_END_INSTRCTN : {
   for (auto& thread : this->finishStack[this->finishStackCount]) {
-    thread->join();
+    if (thread->joinable()) {
+      thread->join();
+    }
   }
   this->finishStack[this->finishStackCount].clear();
   this->finishStackCount--;
