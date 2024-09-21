@@ -15,6 +15,8 @@
 
 // #define ENABLE_MP
 
+#define ENABLE_MTHM
+
 constexpr int UINT8_COUNT = (UINT8_MAX + 1);
 
 #endif

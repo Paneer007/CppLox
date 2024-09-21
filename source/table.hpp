@@ -7,6 +7,9 @@
 #include "value.hpp"
 #include "vector"
 
+#define THREAD_COUNT 4
+#define ELEMENT_COUNT 1 << 20
+
 /**
  * @brief Represents an entry in a hash table.
  *
@@ -29,18 +32,31 @@ public:
 
 class WorkList
 {
+public:
   int count;
   int capacity;
 
   Entry* entries;
-
-public:
   void initWorkList();
   void writeWorkList(ObjString* key, Value value);
   void clearWorkList();
 
   int getLength();
   Entry* getElement(int index);
+};
+
+class MultiDimWorkList
+{
+public:
+  int count[16];
+  int capacity;
+
+  Entry** entries;
+
+  void initList();
+  void writeList(ObjString* key, Value value);
+  void clearList();
+  Entry* getElement(int map, int index);
 };
 
 /**
@@ -90,6 +106,18 @@ public:
   WorkList EntriesWorkList;
 
 #endif
+
+#ifdef ENABLE_MTHM
+  MultiDimWorkList EntriesWorkList;
+  MultiDimWorkList entrylists;
+#endif
+  /**
+   * @brief Represents a hash table for storing key-value pairs.
+   *
+   * Provides methods for inserting, retrieving, deleting, and managing entries
+   * in the hash table. Implements resizing, rehashing, and garbage collection
+   * support.
+   */
 
   /**
    * @brief Initializes an empty hash table.

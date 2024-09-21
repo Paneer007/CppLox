@@ -35,16 +35,16 @@ void* reallocate(void* pointer, size_t oldSize, size_t newSize)
 {
   // auto vm = VM::getVM();
   auto dispatcher = Dispatcher::getDispatcher();
-  auto vm = dispatcher->getVM();
-  vm->bytesAllocated += newSize - oldSize;
-  if (newSize > oldSize) {
-#ifdef DEBUG_STRESS_GC
-    collectGarbage();
-#endif
-    if (vm->bytesAllocated > vm->nextGC) {
-      collectGarbage();
-    }
-  }
+  // auto vm = dispatcher->getVM();
+  // vm->bytesAllocated += newSize - oldSize;
+  //   if (newSize > oldSize) {
+  // #ifdef DEBUG_STRESS_GC
+  //     collectGarbage();
+  // #endif
+  //     if (vm->bytesAllocated > vm->nextGC) {
+  //       collectGarbage();
+  //     }
+  //   }
   if (newSize == 0) {
     free(pointer);
     return NULL;

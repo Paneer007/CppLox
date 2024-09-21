@@ -246,16 +246,16 @@ void VM::initVM()
 
   this->finishStackCount = 0;
 
-  this->initString = copyString("init", 4);
+  // this->initString = copyString("init", 4);
 
-  defineNative("clock", clockNative);
-  defineNative("rand", randNative);
-  defineNative("append", appendNative);
-  defineNative("delete", deleteNative);
+  // defineNative("clock", clockNative);
+  // defineNative("rand", randNative);
+  // defineNative("append", appendNative);
+  // defineNative("delete", deleteNative);
   defineNative("int_input", intInput);
-  defineNative("str_input", strInput);
-  defineNative("char_input", charInput);
-  defineNative("len", objLength);
+  // defineNative("str_input", strInput);
+  // defineNative("char_input", charInput);
+  // defineNative("len", objLength);
 }
 
 /**
@@ -534,6 +534,7 @@ OP_RETURN_INSTRCTN : {
   this->frameCount--;
   if (this->frameCount == 0) {
     pop();
+    printf("DONE \n");
     return INTERPRET_OK;
   }
 
@@ -957,7 +958,6 @@ OP_ASYNC_BEGIN_INSTRCTN : {
   // Note: Skip jump in bytecode
   auto dispatcher = Dispatcher::getDispatcher();
   auto new_thread = dispatcher->asyncBegin();
-  // new_thread.join();
 
   this->finishStack[this->finishStackCount].push_back(&new_thread);
   // Start Next line of execution

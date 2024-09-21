@@ -12,6 +12,10 @@
 #  include <omp.h>
 #endif
 
+#ifdef ENABLE_MTHM
+#  include <omp.h>
+#endif
+
 /**
  * @brief Maximum load factor for the hash table before resizing.
  *
@@ -23,11 +27,50 @@
  */
 constexpr double TABLE_MAX_LOAD = 0.75;
 
+void MultiDimWorkList::initList()
+{
+  this->entries = new Entry*[THREAD_COUNT];
+  for (int i = 0; i < THREAD_COUNT; i++) {
+    this->count[i] = 0;
+    this->entries[i] = new Entry[ELEMENT_COUNT];
+    for (int j = 0; j < ELEMENT_COUNT; j++) {
+      this->entries[i][j].key = NULL;
+      this->entries[i][j].value = NIL_VAL;
+    }
+  }
+}
+
+void MultiDimWorkList::writeList(ObjString* key, Value value)
+{
+  auto index = key->hash % (THREAD_COUNT);
+  auto count = this->count[index];
+  auto entry = &this->entries[index][count];
+  entry->key = key;
+  entry->value = value;
+  this->count[index]++;
+}
+
+void MultiDimWorkList::clearList()
+{
+  this->initList();
+}
+
+Entry* MultiDimWorkList::getElement(int map, int index)
+{
+  return &this->entries[map][index];
+}
+
 void WorkList::initWorkList()
 {
   this->count = 0;
   this->capacity = 0;
   this->entries = NULL;
+}
+
+void WorkList::clearWorkList()
+{
+  FREE_ARRAY<Entry>(this->entries, this->capacity);
+  this->initWorkList();
 }
 
 void WorkList::writeWorkList(ObjString* key, Value value)
@@ -43,12 +86,6 @@ void WorkList::writeWorkList(ObjString* key, Value value)
   entry->key = key;
   entry->value = value;
   this->count++;
-}
-
-void WorkList::clearWorkList()
-{
-  FREE_ARRAY<Entry>(this->entries, this->capacity);
-  this->initWorkList();
 }
 
 int WorkList::getLength()
@@ -72,8 +109,14 @@ void Table::initTable()
   this->count = 0;
   this->capacity = 0;
   this->entries = NULL;
+
 #ifdef ENABLE_MP
   this->EntriesWorkList.initWorkList();
+#endif
+
+#ifdef ENABLE_MTHM
+  this->EntriesWorkList.initList();
+  this->entrylists.initList();
 #endif
 }
 
@@ -91,10 +134,12 @@ void Table::initTable()
  * found.
  */
 
-static Entry* findEntry(Entry* entries, int capacity, ObjString* key)
+static Entry* findEntry(Entry* entries,
+                        int capacity,
+                        ObjString* key,
+                        int thread_id = -1)
 {
   Entry* tombstone = NULL;
-
 #ifdef ENABLE_MP
 
   int counter = 0;
@@ -128,10 +173,12 @@ static Entry* findEntry(Entry* entries, int capacity, ObjString* key)
   exit(0);
 
 #else
-  uint32_t index = key->hash & (capacity - 1);
+
+  uint32_t index = key->hash % (ELEMENT_COUNT);
 
   for (;;) {
     Entry* entry = &entries[index];
+
     if (entry->key == NULL) {
       if (IS_NIL(entry->value)) {
         // Empty entry.
@@ -145,8 +192,9 @@ static Entry* findEntry(Entry* entries, int capacity, ObjString* key)
       // We found the key.
       return entry;
     }
-    index = (index + 1) & (capacity - 1);
+    index = (index + 1) % (capacity);
   }
+
 #endif
 }
 
@@ -294,6 +342,31 @@ void Table::applyWorklist()
 
 #endif
 
+#ifdef ENABLE_MTHM
+void Table::applyWorklist()
+{
+#  pragma omp parallel for num_threads(4)
+  for (int i = 0; i < THREAD_COUNT; i++) {
+    auto list_entries = this->entrylists.entries[i];
+    auto search_elem = this->EntriesWorkList.entries[i];
+
+    if (this->EntriesWorkList.count[i] == 0) {
+      continue;
+    }
+
+    for (int j = 0; j < this->EntriesWorkList.count[i]; j++) {
+      auto element = &search_elem[j];
+      Entry* entry = findEntry(list_entries, ELEMENT_COUNT, element->key, i);
+      bool isNewKey = entry->key == NULL;
+      entry->key = element->key;
+      entry->value = element->value;
+    }
+  }
+  this->EntriesWorkList.clearList();
+}
+
+#endif
+
 /**
  * @brief Sets a value in the hash table.
  *
@@ -317,10 +390,20 @@ bool Table::tableSet(ObjString* key, Value value)
   this->count += 1;
 
 #else
+
+#  ifdef ENABLE_MTHM
   if (this->count + 1 > this->capacity * TABLE_MAX_LOAD) {
     int capacity = GROW_CAPACITY(this->capacity);
-    adjustCapacity(capacity);
+    this->capacity = capacity;
+
+    // adjustCapacity(capacity);
+    applyWorklist();
   }
+  this->EntriesWorkList.writeList(key, value);
+  this->count += 1;
+
+#  else
+
   Entry* entry = findEntry(this->entries, this->capacity, key);
   bool isNewKey = entry->key == NULL;
   if (isNewKey && IS_NIL(entry->value))
@@ -331,6 +414,7 @@ bool Table::tableSet(ObjString* key, Value value)
   entry->key = key;
   entry->value = value;
   return isNewKey;
+#  endif
 #endif
 }
 
@@ -354,10 +438,22 @@ bool Table::tableGet(ObjString* key, Value* value)
   }
 #endif
 
+#ifdef ENABLE_MTHM
+  auto hash_index = key->hash % (THREAD_COUNT);
+  if (this->EntriesWorkList.count[hash_index] > 0) {
+    applyWorklist();
+  }
+#endif
+
   if (this->count == 0)
     return false;
 
+#ifdef ENABLE_MTHM
+  Entry* entry =
+      findEntry(this->entrylists.entries[hash_index], ELEMENT_COUNT, key);
+#else
   Entry* entry = findEntry(this->entries, this->capacity, key);
+#endif
   if (entry->key == NULL)
     return false;
 
@@ -382,11 +478,20 @@ bool Table::tableDelete(ObjString* key)
     applyWorklist();
   }
 #endif
+
   if (this->count == 0)
     return false;
 
-  // Find the entry.
+#ifdef ENABLE_MTHM
+  auto hash_index = key->hash % (THREAD_COUNT - 1);
+
+  Entry* entry = findEntry(this->entrylists.entries[hash_index],
+                           this->entrylists.count[hash_index],
+                           key);
+#else
   Entry* entry = findEntry(this->entries, this->capacity, key);
+#endif
+
   if (entry->key == NULL)
     return false;
 
@@ -455,6 +560,28 @@ ObjString* Table::tableFindString(const char* chars,
 
 #else
 
+#  ifdef ENABLE_MTHM
+  uint32_t index = hash % (ELEMENT_COUNT);
+  uint32_t map = hash % (THREAD_COUNT);
+  auto list = this->entrylists.entries[map];
+  // printf("hashed index %d \n", index);
+  for (;;) {
+    Entry* entry = &list[index];
+    index = (index + 1) % (ELEMENT_COUNT);
+    if (entry->key == NULL) {
+      // Stop if we find an empty non-tombstone entry.
+      if (IS_NIL(entry->value))
+        return NULL;
+    } else if (entry->key->length == length && entry->key->hash == hash
+               && memcmp(entry->key->chars, chars, length) == 0)
+    {
+      // We found it.
+      return entry->key;
+    }
+  }
+
+#  else
+
   uint32_t index = hash & (this->capacity - 1);
 
   for (;;) {
@@ -472,6 +599,7 @@ ObjString* Table::tableFindString(const char* chars,
 
     index = (index + 1) & (this->capacity - 1);
   }
+#  endif
 #endif
 }
 

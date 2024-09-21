@@ -1,6 +1,9 @@
 finish {
     async {
-        print "Hello World";
+        print "Hello World 1";
+    }
+    async {
+        print "Hello World 3";
     }
     print 10;
 }
