@@ -11,6 +11,8 @@
 #include "../../../source/compiler.hpp"
 #include "../../../source/debug.cpp"
 #include "../../../source/debug.hpp"
+#include "../../../source/dispatcher.cpp"
+#include "../../../source/dispatcher.hpp"
 #include "../../../source/memory.cpp"
 #include "../../../source/memory.hpp"
 #include "../../../source/object.cpp"
@@ -23,7 +25,6 @@
 #include "../../../source/value.hpp"
 #include "../../../source/vm.cpp"
 #include "../../../source/vm.hpp"
-
 enum TestType
 {
   HASH_8,
@@ -96,15 +97,16 @@ int64_t test_table(int len)
 
     auto obj_key = temp_allocateString(heapChars, length, hash, hash2);
     obj_keys.push_back(obj_key);
-
+    // printf("%d \n", ((ObjString*)obj_key)->hash);
     auto temp = obj_key;
     table.tableSet(temp, OBJ_VAL(temp));
   }
-  printf("Search time \n");
+  // printf("Search time \n");
   // Execute search logic
   for (int i = 0; i < len / 4; i++) {
-    std::cout << i << std::endl;
+    // std::cout << i << std::endl;
     auto obj_key = obj_keys[rand() % keys.size()];
+    // printf("%d \n", ((ObjString*)obj_key)->hash);
 #ifndef ENABLE_MP
     table.tableFindString(((ObjString*)obj_key)->chars,
                           ((ObjString*)obj_key)->length,
@@ -335,14 +337,14 @@ static void test_map_function(TestType func, const char* msg)
 void test_hash()
 {
   // test_custom_function(HASH_8, "HASH_8");
-  test_custom_function(HASH_16, "HASH_16");
+  // test_custom_function(HASH_16, "HASH_16");
   // test_custom_function(HASH_32, "HASH_32");
   // test_custom_function(HASH_128, "HASH_128");
   // test_custom_function(HASH_512, "HASH_512");
   // test_custom_function(HASH_1024, "HASH_1024");
   // test_custom_function(HASH_16384, "HASH_16384");
   // test_custom_function(HASH_262144, "HASH_262144");
-  // test_custom_function(HASH_4194304, "HASH_4194304");
+  test_custom_function(HASH_4194304, "HASH_4194304");
   // test_custom_function(HASH_33554432, "HASH_33554432");
   // test_custom_function(HASH_1000000000, "HASH_1000000000");
 }
@@ -379,6 +381,8 @@ void test_map() {}
 
 int main()
 {
+  auto x = Dispatcher::getDispatcher();
+  x->dispatchThread(NULL);
   std::cout << "====== HASH TEST ======" << std::endl;
   test_hash();
   // std::cout << "====== VECTOR TEST ======" << std::endl;
