@@ -52,6 +52,10 @@ void MultiDimWorkList::writeList(ObjString* key, Value value)
 
 void MultiDimWorkList::clearList()
 {
+  for (int i = 0; i < THREAD_COUNT; i++) {
+    delete this->entries[i];
+  }
+  delete this->entries;
   this->initList();
 }
 
@@ -173,8 +177,30 @@ static Entry* findEntry(Entry* entries,
   exit(0);
 
 #else
-
+#  ifdef ENABLE_MTHM
   uint32_t index = key->hash % (ELEMENT_COUNT);
+
+  for (;;) {
+    Entry* entry = &entries[index];
+
+    if (entry->key == NULL) {
+      if (IS_NIL(entry->value)) {
+        // Empty entry.
+        return tombstone != NULL ? tombstone : entry;
+      } else {
+        // We found a tombstone.
+        if (tombstone == NULL)
+          tombstone = entry;
+      }
+    } else if (entry->key == key) {
+      // We found the key.
+      return entry;
+    }
+    index = (index + 1) % (ELEMENT_COUNT);
+  }
+
+#  else
+  uint32_t index = key->hash % (capacity);
 
   for (;;) {
     Entry* entry = &entries[index];
@@ -194,6 +220,7 @@ static Entry* findEntry(Entry* entries,
     }
     index = (index + 1) % (capacity);
   }
+#  endif
 
 #endif
 }
@@ -288,7 +315,14 @@ void Table::adjustCapacity(int capacity)
  */
 void Table::freeTable()
 {
+#ifdef ENABLE_MTHM
+  this->EntriesWorkList.clearList();
+  this->entrylists.clearList();
+
+#endif
+
   FREE_ARRAY<Entry>(this->entries, this->capacity);
+
   this->initTable();
 }
 
@@ -403,7 +437,11 @@ bool Table::tableSet(ObjString* key, Value value)
   this->count += 1;
 
 #  else
-
+  if (this->count + 1 > this->capacity * TABLE_MAX_LOAD) {
+    int capacity = GROW_CAPACITY(this->capacity);
+    adjustCapacity(capacity);
+    this->capacity = capacity;
+  }
   Entry* entry = findEntry(this->entries, this->capacity, key);
   bool isNewKey = entry->key == NULL;
   if (isNewKey && IS_NIL(entry->value))
