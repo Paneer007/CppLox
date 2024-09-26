@@ -26,82 +26,6 @@
  * TODO: Tune this metric
  */
 constexpr double TABLE_MAX_LOAD = 0.75;
-
-void MultiDimWorkList::initList()
-{
-  this->entries = new Entry*[THREAD_COUNT];
-  for (int i = 0; i < THREAD_COUNT; i++) {
-    this->count[i] = 0;
-    this->entries[i] = new Entry[ELEMENT_COUNT];
-    for (int j = 0; j < ELEMENT_COUNT; j++) {
-      this->entries[i][j].key = NULL;
-      this->entries[i][j].value = NIL_VAL;
-    }
-  }
-}
-
-void MultiDimWorkList::writeList(ObjString* key, Value value)
-{
-  auto index = key->hash % (THREAD_COUNT);
-  auto count = this->count[index];
-  auto entry = &this->entries[index][count];
-  entry->key = key;
-  entry->value = value;
-  this->count[index]++;
-}
-
-void MultiDimWorkList::clearList()
-{
-  for (int i = 0; i < THREAD_COUNT; i++) {
-    delete this->entries[i];
-  }
-  delete this->entries;
-  this->initList();
-}
-
-Entry* MultiDimWorkList::getElement(int map, int index)
-{
-  return &this->entries[map][index];
-}
-
-void WorkList::initWorkList()
-{
-  this->count = 0;
-  this->capacity = 0;
-  this->entries = NULL;
-}
-
-void WorkList::clearWorkList()
-{
-  FREE_ARRAY<Entry>(this->entries, this->capacity);
-  this->initWorkList();
-}
-
-void WorkList::writeWorkList(ObjString* key, Value value)
-{
-  auto temp = *key;
-  if (this->capacity < this->count + 1) {
-    int old_capacity = this->capacity;
-    this->capacity = GROW_CAPACITY(old_capacity);
-    this->entries =
-        GROW_ARRAY<Entry>(this->entries, old_capacity, this->capacity);
-  }
-  auto entry = &this->entries[this->count];
-  entry->key = key;
-  entry->value = value;
-  this->count++;
-}
-
-int WorkList::getLength()
-{
-  return this->count;
-}
-
-Entry* WorkList::getElement(int index)
-{
-  return &this->entries[index];
-}
-
 /**
  * @brief Initializes an empty table.
  *
@@ -110,18 +34,13 @@ Entry* WorkList::getElement(int index)
  */
 void Table::initTable()
 {
-  this->count = 0;
-  this->capacity = 0;
-  this->entries = NULL;
-
-#ifdef ENABLE_MP
-  this->EntriesWorkList.initWorkList();
-#endif
-
-#ifdef ENABLE_MTHM
-  this->EntriesWorkList.initList();
-  this->entrylists.initList();
-#endif
+  for (int i = 0; i < THREAD_COUNT; i++) {
+    this->count[i] = 0;
+    this->capacity[i] = 0;
+  }
+  this->entries = new Entry*[THREAD_COUNT];
+  this->worklist =
+      std::vector<std::vector<std::pair<ObjString*, Value>>>(THREAD_COUNT);
 }
 
 /**
@@ -144,62 +63,7 @@ static Entry* findEntry(Entry* entries,
                         int thread_id = -1)
 {
   Entry* tombstone = NULL;
-#ifdef ENABLE_MP
-
-  int counter = 0;
-  auto hash1 = key->hash & (capacity - 1);
-  auto hash2 = key->hash2 & (capacity - 1);
-  while (counter <= capacity) {
-    auto index = (hash1 + hash2 * counter) & (capacity - 1);
-    Entry* entry = &entries[index];
-    if (entry->key == NULL) {
-      if (IS_NIL(entry->value)) {
-        // Empty entry.
-        return tombstone != NULL ? tombstone : entry;
-      } else {
-        // We found a tombstone.
-        if (tombstone == NULL)
-          tombstone = entry;
-      }
-    } else if (entry->key == key) {
-      // We found the key.
-      return entry;
-    }
-    counter += 1;
-  }
-
-  if (tombstone != NULL) {
-    return tombstone;
-  }
-
-  // printf("h1: %d h2: %d %d %d \n", hash1, hash2, counter, capacity);
-  // printf("Error in finding element");
-  exit(0);
-
-#else
-#  ifdef ENABLE_MTHM
-  uint32_t index = key->hash % (ELEMENT_COUNT);
-
-  for (;;) {
-    Entry* entry = &entries[index];
-
-    if (entry->key == NULL) {
-      if (IS_NIL(entry->value)) {
-        // Empty entry.
-        return tombstone != NULL ? tombstone : entry;
-      } else {
-        // We found a tombstone.
-        if (tombstone == NULL)
-          tombstone = entry;
-      }
-    } else if (entry->key == key) {
-      // We found the key.
-      return entry;
-    }
-    index = (index + 1) % (ELEMENT_COUNT);
-  }
-
-#  else
+#ifdef ENABLE_MTHM
   uint32_t index = key->hash % (capacity);
 
   for (;;) {
@@ -220,7 +84,28 @@ static Entry* findEntry(Entry* entries,
     }
     index = (index + 1) % (capacity);
   }
-#  endif
+
+#else
+  uint32_t index = key->hash % (capacity);
+
+  for (;;) {
+    Entry* entry = &entries[index];
+
+    if (entry->key == NULL) {
+      if (IS_NIL(entry->value)) {
+        // Empty entry.
+        return tombstone != NULL ? tombstone : entry;
+      } else {
+        // We found a tombstone.
+        if (tombstone == NULL)
+          tombstone = entry;
+      }
+    } else if (entry->key == key) {
+      // We found the key.
+      return entry;
+    }
+    index = (index + 1) % (capacity);
+  }
 
 #endif
 }
@@ -234,77 +119,29 @@ static Entry* findEntry(Entry* entries,
  *
  * @param capacity The new capacity for the hash table.
  */
-void Table::adjustCapacity(int capacity)
+void Table::adjustCapacity(int capacity, int index)
 {
-  // printf("new adjusting capacity \n");
+  // printf("new adjusting capacity %d \n", capacity);
   Entry* new_entries = ALLOCATE<Entry>(capacity);
   for (int i = 0; i < capacity; i++) {
     new_entries[i].key = NULL;
     new_entries[i].value = NIL_VAL;
   }
-  auto old_count = this->count;
-#ifdef ENABLE_MP
-
-  int n_items = this->capacity;
-  // Parallel insert stuff
-  omp_lock_t* lock = (omp_lock_t*)malloc(capacity * sizeof(omp_lock_t));
-  for (int i = 0; i < capacity; i++) {
-    omp_init_lock(&(lock[i]));
-  }
-#  pragma omp parallel for num_threads(4)
-  for (int i = 0; i < n_items; i++) {
-    auto key = this->entries[i].key;
-    if (key == NULL) {
-      continue;
-    }
-    auto value = this->entries[i].value;
-    bool searchDone = false;
-    int counter = 0;
-    auto hash1 = key->hash & (capacity - 1);
-    auto hash2 = key->hash2 & (capacity - 1);
-    // printf("%d %d \n", hash1, hash2);
-    while (not searchDone and counter <= capacity) {
-      auto hashedValue = (hash1 + hash2 * counter) & (capacity - 1);
-      counter += 1;
-      if (new_entries[hashedValue].key == NULL) {
-        omp_set_lock(&lock[hashedValue]);
-        if (new_entries[hashedValue].key == NULL) {
-          new_entries[hashedValue].key = key;
-          new_entries[hashedValue].value = value;
-          searchDone = true;
-        }
-        omp_unset_lock(&lock[hashedValue]);
-      }
-    }
-
-    if (not searchDone) {
-      // printf("Failed to added element \n");
-      exit(0);
-    }
-  }
-
-  for (int i = 0; i < capacity; i++) {
-    omp_unset_lock(&(lock[i]));
-    omp_destroy_lock(&(lock[i]));
-  }
-
-  free(lock);
-#else
-  for (int i = 0; i < this->capacity; i++) {
-    Entry* entry = &this->entries[i];
+  this->count[index] = 0;
+  for (int i = 0; i < this->capacity[index]; i++) {
+    Entry* entry = &this->entries[index][i];
     if (entry->key == NULL)
       continue;
 
     Entry* dest = findEntry(new_entries, capacity, entry->key);
     dest->key = entry->key;
     dest->value = entry->value;
-    this->count++;
+    this->count[index]++;
   }
-#endif
-
-  FREE_ARRAY<Entry>(this->entries, this->capacity);
-  this->entries = new_entries;
-  this->capacity = capacity;
+  // printf("old capacity: %d \n", this->capacity[index]);
+  FREE_ARRAY<Entry>(this->entries[index], this->capacity[index]);
+  this->entries[index] = new_entries;
+  this->capacity[index] = capacity;
 }
 
 /**
@@ -316,87 +153,92 @@ void Table::adjustCapacity(int capacity)
 void Table::freeTable()
 {
 #ifdef ENABLE_MTHM
-  this->EntriesWorkList.clearList();
-  this->entrylists.clearList();
 
 #endif
 
-  FREE_ARRAY<Entry>(this->entries, this->capacity);
-
+  for (int i = 0; i < THREAD_COUNT; i++) {
+    delete this->entries[i];
+  }
+  worklist.clear();
   this->initTable();
 }
 
-#ifdef ENABLE_MP
-void Table::applyWorklist()
+// #ifdef ENABLE_MP
+// void Table::applyWorklist()
+// {
+//   int n_items = this->EntriesWorkList.getLength();
+//   if (n_items == 0) {
+//     return;
+//   }
+//   // Parallel insert stuff
+//   omp_lock_t* lock = (omp_lock_t*)malloc(capacity * sizeof(omp_lock_t));
+//   for (int i = 0; i < capacity; i++) {
+//     omp_init_lock(&(lock[i]));
+//   }
+// #  pragma omp parallel for num_threads(4)
+//   for (int i = 0; i < n_items; i++) {
+//     auto element = this->EntriesWorkList.getElement(i);
+//     auto key = element->key;
+//     auto value = element->value;
+
+//     int counter = 0;
+//     bool searchDone = false;
+//     auto hash1 = key->hash & (capacity - 1);
+//     auto hash2 = key->hash2 & (capacity - 1);
+//     while (not searchDone and counter <= capacity) {
+//       auto hashedValue = (hash1 + hash2 * counter) & (capacity - 1);
+//       counter += 1;
+//       if (this->entries[hashedValue].key == NULL) {
+//         omp_set_lock(&(lock[hashedValue]));
+//         if (this->entries[hashedValue].key == NULL) {
+//           searchDone = true;
+//           this->entries[hashedValue].key = key;
+//           this->entries[hashedValue].value = value;
+//           this->count++;
+//         }
+//         omp_unset_lock(&(lock[hashedValue]));
+//       }
+//     }
+//   }
+
+//   for (int i = 0; i < capacity; i++) {
+//     omp_unset_lock(&(lock[i]));
+//     omp_destroy_lock(&(lock[i]));
+//   }
+
+//   free(lock);
+
+//   this->EntriesWorkList.clearWorkList();
+// }
+
+// #endif
+
+void Table::clearWorklist()
 {
-  int n_items = this->EntriesWorkList.getLength();
-  if (n_items == 0) {
-    return;
+  for (int i = 0; i < THREAD_COUNT; i++) {
+    this->worklist[i].clear();
   }
-  // Parallel insert stuff
-  omp_lock_t* lock = (omp_lock_t*)malloc(capacity * sizeof(omp_lock_t));
-  for (int i = 0; i < capacity; i++) {
-    omp_init_lock(&(lock[i]));
-  }
-#  pragma omp parallel for num_threads(4)
-  for (int i = 0; i < n_items; i++) {
-    auto element = this->EntriesWorkList.getElement(i);
-    auto key = element->key;
-    auto value = element->value;
-
-    int counter = 0;
-    bool searchDone = false;
-    auto hash1 = key->hash & (capacity - 1);
-    auto hash2 = key->hash2 & (capacity - 1);
-    while (not searchDone and counter <= capacity) {
-      auto hashedValue = (hash1 + hash2 * counter) & (capacity - 1);
-      counter += 1;
-      if (this->entries[hashedValue].key == NULL) {
-        omp_set_lock(&(lock[hashedValue]));
-        if (this->entries[hashedValue].key == NULL) {
-          searchDone = true;
-          this->entries[hashedValue].key = key;
-          this->entries[hashedValue].value = value;
-          this->count++;
-        }
-        omp_unset_lock(&(lock[hashedValue]));
-      }
-    }
-  }
-
-  for (int i = 0; i < capacity; i++) {
-    omp_unset_lock(&(lock[i]));
-    omp_destroy_lock(&(lock[i]));
-  }
-
-  free(lock);
-
-  this->EntriesWorkList.clearWorkList();
 }
-
-#endif
 
 #ifdef ENABLE_MTHM
 void Table::applyWorklist()
 {
-#  pragma omp parallel for num_threads(4)
+#  pragma omp parallel for num_threads(THREAD_COUNT)
   for (int i = 0; i < THREAD_COUNT; i++) {
-    auto list_entries = this->entrylists.entries[i];
-    auto search_elem = this->EntriesWorkList.entries[i];
+    auto curr_worklist = this->worklist[i];
+    auto curr_entries = this->entries[i];
 
-    if (this->EntriesWorkList.count[i] == 0) {
-      continue;
-    }
-
-    for (int j = 0; j < this->EntriesWorkList.count[i]; j++) {
-      auto element = &search_elem[j];
-      Entry* entry = findEntry(list_entries, ELEMENT_COUNT, element->key, i);
+    for (int j = 0; j < curr_worklist.size(); j++) {
+      auto element = &curr_worklist[j];
+      Entry* entry =
+          findEntry(curr_entries, this->capacity[i], element->first, i);
       bool isNewKey = entry->key == NULL;
-      entry->key = element->key;
-      entry->value = element->value;
+      entry->key = element->first;
+      entry->value = element->second;
     }
   }
-  this->EntriesWorkList.clearList();
+
+  this->clearWorklist();
 }
 
 #endif
@@ -414,29 +256,29 @@ void Table::applyWorklist()
  */
 bool Table::tableSet(ObjString* key, Value value)
 {
-#ifdef ENABLE_MP
-  if (this->count + 1 > this->capacity * TABLE_MAX_LOAD) {
-    int capacity = GROW_CAPACITY(this->capacity);
-    adjustCapacity(capacity);
+  // #ifdef ENABLE_MP
+  //   if (this->count + 1 > this->capacity * TABLE_MAX_LOAD) {
+  //     int capacity = GROW_CAPACITY(this->capacity);
+  //     adjustCapacity(capacity);
+  //     applyWorklist();
+  //   }
+  //   this->EntriesWorkList.writeWorkList(key, value);
+  //   this->count += 1;
+
+  // #else
+
+#ifdef ENABLE_MTHM
+  auto index = key->hash % THREAD_COUNT;
+  if (this->count[index] + 1 > this->capacity[index] * TABLE_MAX_LOAD) {
+    int capacity = GROW_CAPACITY(this->capacity[index]);
+    adjustCapacity(capacity, index);
     applyWorklist();
   }
-  this->EntriesWorkList.writeWorkList(key, value);
-  this->count += 1;
+
+  this->worklist[index].push_back({key, value});
+  this->count[index] += 1;
 
 #else
-
-#  ifdef ENABLE_MTHM
-  if (this->count + 1 > this->capacity * TABLE_MAX_LOAD) {
-    int capacity = GROW_CAPACITY(this->capacity);
-    this->capacity = capacity;
-
-    // adjustCapacity(capacity);
-    applyWorklist();
-  }
-  this->EntriesWorkList.writeList(key, value);
-  this->count += 1;
-
-#  else
   if (this->count + 1 > this->capacity * TABLE_MAX_LOAD) {
     int capacity = GROW_CAPACITY(this->capacity);
     adjustCapacity(capacity);
@@ -452,8 +294,8 @@ bool Table::tableSet(ObjString* key, Value value)
   entry->key = key;
   entry->value = value;
   return isNewKey;
-#  endif
 #endif
+  // #endif
 }
 
 /**
@@ -470,25 +312,25 @@ bool Table::tableSet(ObjString* key, Value value)
  */
 bool Table::tableGet(ObjString* key, Value* value)
 {
-#ifdef ENABLE_MP
-  if (this->EntriesWorkList.getLength() > 0) {
-    applyWorklist();
-  }
-#endif
+  // #ifdef ENABLE_MP
+  //   if (this->EntriesWorkList.getLength() > 0) {
+  //     applyWorklist();
+  //   }
+  // #endif
 
 #ifdef ENABLE_MTHM
   auto hash_index = key->hash % (THREAD_COUNT);
-  if (this->EntriesWorkList.count[hash_index] > 0) {
+  if (this->worklist[hash_index].size() > 0) {
     applyWorklist();
   }
 #endif
 
-  if (this->count == 0)
+  if (this->count[hash_index] == 0)
     return false;
 
 #ifdef ENABLE_MTHM
   Entry* entry =
-      findEntry(this->entrylists.entries[hash_index], ELEMENT_COUNT, key);
+      findEntry(this->entries[hash_index], this->capacity[hash_index], key);
 #else
   Entry* entry = findEntry(this->entries, this->capacity, key);
 #endif
@@ -523,9 +365,8 @@ bool Table::tableDelete(ObjString* key)
 #ifdef ENABLE_MTHM
   auto hash_index = key->hash % (THREAD_COUNT - 1);
 
-  Entry* entry = findEntry(this->entrylists.entries[hash_index],
-                           this->entrylists.count[hash_index],
-                           key);
+  Entry* entry =
+      findEntry(this->entries[hash_index], this->capacity[hash_index], key);
 #else
   Entry* entry = findEntry(this->entries, this->capacity, key);
 #endif
@@ -563,49 +404,17 @@ ObjString* Table::tableFindString(const char* chars,
                                   uint32_t hash2 = 0)
 #endif
 {
-#ifdef ENABLE_MP
-  if (this->EntriesWorkList.getLength() > 0) {
-    applyWorklist();
-  }
-#endif
-
   if (this->count == 0)
     return NULL;
 
-#ifdef ENABLE_MP
-  int counter = 0;
-  auto hash1 = hash & (capacity - 1);
-  auto nhash2 = hash2 & (capacity - 1);
-
-  while (counter <= capacity) {
-    auto index = (hash1 + nhash2 * counter) & (capacity - 1);
-    Entry* entry = &entries[index];
-    counter += 1;
-    // printf("%d %d %d %d \n", hash1, hash2, counter, index);
-
-    if (entry->key == NULL) {
-      if (IS_NIL(entry->value)) {
-        continue;
-      }
-    } else if (entry->key->length == length && entry->key->hash == hash
-               && entry->key->hash2 == hash2
-               && memcmp(entry->key->chars, chars, length) == 0)
-    {
-      return entry->key;
-    }
-  }
-  return NULL;
-
-#else
-
-#  ifdef ENABLE_MTHM
-  uint32_t index = hash % (ELEMENT_COUNT);
+#ifdef ENABLE_MTHM
   uint32_t map = hash % (THREAD_COUNT);
-  auto list = this->entrylists.entries[map];
+  uint32_t index = hash % (this->capacity[map]);
+  auto list = this->entries[map];
   // printf("hashed index %d \n", index);
   for (;;) {
     Entry* entry = &list[index];
-    index = (index + 1) % (ELEMENT_COUNT);
+    index = (index + 1) % (this->capacity[map]);
     if (entry->key == NULL) {
       // Stop if we find an empty non-tombstone entry.
       if (IS_NIL(entry->value))
@@ -618,7 +427,7 @@ ObjString* Table::tableFindString(const char* chars,
     }
   }
 
-#  else
+#else
 
   uint32_t index = hash & (this->capacity - 1);
 
@@ -637,7 +446,6 @@ ObjString* Table::tableFindString(const char* chars,
 
     index = (index + 1) & (this->capacity - 1);
   }
-#  endif
 #endif
 }
 
@@ -649,10 +457,12 @@ ObjString* Table::tableFindString(const char* chars,
  */
 void Table::markTable()
 {
-  for (int i = 0; i < this->capacity; i++) {
-    Entry* entry = &this->entries[i];
-    markObject((Obj*)entry->key);
-    markValue(entry->value);
+  for (int j = 0; j < THREAD_COUNT; j++) {
+    for (int i = 0; i < this->capacity[j]; i++) {
+      Entry* entry = &this->entries[j][i];
+      markObject((Obj*)entry->key);
+      markValue(entry->value);
+    }
   }
 }
 
@@ -665,10 +475,12 @@ void Table::markTable()
  */
 void Table::tableRemoveWhite()
 {
-  for (int i = 0; i < this->capacity; i++) {
-    Entry* entry = &this->entries[i];
-    if (entry->key != NULL && !entry->key->isMarked) {
-      this->tableDelete(entry->key);
+  for (int j = 0; j < THREAD_COUNT; j++) {
+    for (int i = 0; i < this->capacity[j]; i++) {
+      Entry* entry = &this->entries[j][i];
+      if (entry->key != NULL && !entry->key->isMarked) {
+        this->tableDelete(entry->key);
+      }
     }
   }
 }
@@ -685,10 +497,12 @@ void Table::tableRemoveWhite()
  */
 void tableAddAll(Table* from, Table* to)
 {
-  for (int i = 0; i < from->capacity; i++) {
-    Entry* entry = &from->entries[i];
-    if (entry->key != NULL) {
-      to->tableSet(entry->key, entry->value);
+  for (int j = 0; j < THREAD_COUNT; j++) {
+    for (int i = 0; i < from->capacity[j]; i++) {
+      Entry* entry = &from->entries[j][i];
+      if (entry->key != NULL) {
+        to->tableSet(entry->key, entry->value);
+      }
     }
   }
 }

@@ -7,8 +7,7 @@
 #include "value.hpp"
 #include "vector"
 
-#define THREAD_COUNT 16
-#define ELEMENT_COUNT 1 << 19
+#define THREAD_COUNT 4
 
 /**
  * @brief Represents an entry in a hash table.
@@ -30,29 +29,15 @@ public:
   Value value;
 };
 
-class WorkList
-{
-public:
-  int count;
-  int capacity;
-
-  Entry* entries;
-  void initWorkList();
-  void writeWorkList(ObjString* key, Value value);
-  void clearWorkList();
-
-  int getLength();
-  Entry* getElement(int index);
-};
-
 class MultiDimWorkList
 {
 public:
   int count[16];
-  int capacity;
+  int capacity[16];
 
   Entry** entries;
 
+  void adjustCapacity(int capacity);
   void initList();
   void writeList(ObjString* key, Value value);
   void clearList();
@@ -77,39 +62,34 @@ class Table
    *
    * @param capacity The new capacity for the hash table.
    */
-  void adjustCapacity(int capacity);
+  void adjustCapacity(int capacity, int index);
 
   void applyWorklist();
+
+  void clearWorklist();
 
 public:
   /**
    * @brief The number of key-value pairs currently stored in the table.
    */
-  int count;
+  // int count;
 
-  /**
-   * @brief The maximum capacity of the table.
-   */
-  int capacity;
+  // /**
+  //  * @brief The maximum capacity of the table.
+  //  */
+  // int capacity;
 
-  /**
-   * @brief An array of entries storing key-value pairs.
-   */
-  Entry* entries;
-
-#ifdef ENABLE_MP
-
-  /**
-   * @brief An array of entries storing worklist of key-value pairs.
-   */
-
-  WorkList EntriesWorkList;
-
-#endif
+  // /**
+  //  * @brief An array of entries storing key-value pairs.
+  //  */
+  // Entry* entries;
 
 #ifdef ENABLE_MTHM
-  MultiDimWorkList EntriesWorkList;
-  MultiDimWorkList entrylists;
+  int count[16];
+  int capacity[16];
+
+  std::vector<std::vector<std::pair<ObjString*, Value>>> worklist;
+  Entry** entries;
 #endif
   /**
    * @brief Represents a hash table for storing key-value pairs.

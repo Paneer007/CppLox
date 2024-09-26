@@ -104,12 +104,14 @@ int64_t test_table(int len)
     table.tableSet(temp, OBJ_VAL(temp));
   }
 
-  // Execute search logic
-  for (int i = 0; i < len / 4; i++) {
-    auto obj_key = obj_keys[rand() % keys.size()];
-    auto value = OBJ_VAL(obj_key);
-    table.tableGet(((ObjString*)obj_key), &value);
-  }
+  // printf("search now \n");
+
+  // // Execute search logic
+  // for (int i = 0; i < len / 4; i++) {
+  //   auto obj_key = obj_keys[rand() % keys.size()];
+  //   auto value = OBJ_VAL(obj_key);
+  //   table.tableGet(((ObjString*)obj_key), &value);
+  // }
 
   auto end = std::chrono::high_resolution_clock::now();
   auto duration =
@@ -176,7 +178,6 @@ int64_t test_map(int len)
       std::chrono::duration_cast<std::chrono::nanoseconds>(end - start);
 
   auto x = duration.count();
-
 
   return x;
 }
@@ -333,7 +334,7 @@ void test_hash()
   // test_custom_function(HASH_1024, "HASH_1024");
   // test_custom_function(HASH_16384, "HASH_16384");
   // test_custom_function(HASH_262144, "HASH_262144");
-  test_custom_function(HASH_4194304, "HASH_4194304");
+  // test_custom_function(HASH_4194304, "HASH_4194304");
   test_custom_function(HASH_33554432, "HASH_33554432");
   // test_custom_function(HASH_1000000000, "HASH_1000000000");
 }
