@@ -135,6 +135,8 @@ TokenType Scanner::identifierType()
       break;
     case 'i':
       return this->checkKeyword(1, 1, "f", TOKEN_IF);
+    case 'l':
+      return this->checkKeyword(1, 5, "ambda", TOKEN_LAMBDA);
     case 'n':
       return this->checkKeyword(1, 2, "il", TOKEN_NIL);
     case 'o':

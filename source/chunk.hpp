@@ -53,7 +53,7 @@ typedef enum
   OP_FINISH_BEGIN,
   OP_FINISH_END,
   OP_ASYNC_BEGIN,
-  OP_ASYNC_END,
+  OP_ASYNC_END
 } OpCode;
 
 /**

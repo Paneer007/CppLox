@@ -1,0 +1,9 @@
+fun Hello(){
+    var x = lambda(a ,  b){
+        print a+b;
+    };
+    print x;
+    x(1,2);
+}
+
+Hello();

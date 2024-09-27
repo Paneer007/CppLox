@@ -64,7 +64,9 @@ typedef enum
   TOKEN_RIGHT_BRACKET,
 
   TOKEN_ASYNC,
-  TOKEN_FINISH
+  TOKEN_FINISH,
+
+  TOKEN_LAMBDA
 } TokenType;
 
 /**

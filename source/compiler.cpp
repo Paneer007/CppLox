@@ -1569,6 +1569,31 @@ static void string(bool canAssign)
       copyString(parser.previous.start + 1, parser.previous.length - 2)));
 }
 
+static void _lambda(bool canAssign)
+{
+  Compiler compiler;
+  initCompiler(&compiler, TYPE_FUNCTION);
+  beginScope();
+
+  consume(TOKEN_LEFT_PAREN, "Expect '(' after function name.");
+  if (!check(TOKEN_RIGHT_PAREN)) {
+    do {
+      current->function->arity++;
+      if (current->function->arity > 255) {
+        errorAtCurrent("Can't have more than 255 parameters.");
+      }
+      uint8_t constant = parseVariable("Expect parameter name.");
+      defineVariable(constant);
+    } while (match(TOKEN_COMMA));
+  }
+  consume(TOKEN_RIGHT_PAREN, "Expect ')' after parameters.");
+  consume(TOKEN_LEFT_BRACE, "Expect '{' before function body.");
+  block();
+  ObjFunction* function = endCompiler();
+  emitConstant(OBJ_VAL(newClosure(function)));
+  emitByte(OP_POP);
+}
+
 /**
  * @brief Parses an expression with the given precedence.
  *
@@ -1700,6 +1725,9 @@ ParseRule rules[] = {
     [TOKEN_EOF] = {NULL, NULL, PREC_NONE},
     [TOKEN_LEFT_BRACKET] = {list, subscript, PREC_SUBSCRIPT},
     [TOKEN_RIGHT_BRACKET] = {NULL, NULL, PREC_NONE},
+    [TOKEN_ASYNC] = {NULL, NULL, PREC_NONE},
+    [TOKEN_FINISH] = {NULL, NULL, PREC_NONE},
+    [TOKEN_LAMBDA] = {_lambda, NULL, PREC_NONE},
 };
 
 /**
