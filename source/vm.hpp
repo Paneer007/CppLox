@@ -131,6 +131,8 @@ public:
 
   VM* parent;
   bool assigned;
+  bool isFuture;
+  Value futureResultValue;
 
   /**
    * @brief Initializes the virtual machine.

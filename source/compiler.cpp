@@ -130,8 +130,7 @@ typedef enum
   TYPE_INITIALIZER,  // Initializer function
   TYPE_SCRIPT,  // Script
   TYPE_METHOD,  // Method
-  TYPE_FINISH,
-  TYPE_ASYNC
+  TYPE_FUTURE
 } FunctionType;
 
 /**
@@ -1594,6 +1593,25 @@ static void _lambda(bool canAssign)
   emitByte(OP_POP);
 }
 
+static void _future(bool canAssign)
+{
+  emitByte(OP_FUTURE);
+  advance();
+  auto skip = emitJump(OP_JUMP);
+  variable(canAssign);
+  consume(TOKEN_LEFT_PAREN, "Expect Left Parenthesis for invocation.");
+  uint8_t argCount = argumentList();
+  emitBytes(OP_CALL, argCount);
+  patchJump(skip);
+}
+
+static void _await(bool canAssign)
+{
+  advance();
+  namedVariable(parser.previous, canAssign);
+  emitByte(OP_GET_FUTURE);
+}
+
 /**
  * @brief Parses an expression with the given precedence.
  *
@@ -1728,6 +1746,8 @@ ParseRule rules[] = {
     [TOKEN_ASYNC] = {NULL, NULL, PREC_NONE},
     [TOKEN_FINISH] = {NULL, NULL, PREC_NONE},
     [TOKEN_LAMBDA] = {_lambda, NULL, PREC_NONE},
+    [TOKEN_FUTURE] = {_future, NULL, PREC_NONE},
+    [TOKEN_AWAIT] = {_await, NULL, PREC_NONE},
 };
 
 /**

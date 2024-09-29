@@ -4,6 +4,7 @@
 #include <thread>
 #include <unordered_map>
 
+#include "object.hpp"
 #include "vm.hpp"
 
 class Dispatcher
@@ -22,8 +23,12 @@ public:
   VM* getVM();
   VM* dispatchThread(VM* parent);  // Sets new VM loop with this
   std::thread asyncBegin();
+
   void freeVM();
   void setId(size_t thread_id, int vm_id);
+
+  int launchFuture();
+  VM* getVMbyId(int vm_id);
 };
 
 #endif

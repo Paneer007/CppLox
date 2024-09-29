@@ -9,6 +9,7 @@
 #define OBJ_TYPE(value) (AS_OBJ(value)->type)
 #define IS_FUNCTION(value) isObjType(value, OBJ_FUNCTION)
 #define IS_STRING(value) isObjType(value, OBJ_STRING)
+#define IS_FUTURE(value) isObjType(value, OBJ_FUTURE)
 #define IS_CLOSURE(value) isObjType(value, OBJ_CLOSURE)
 #define IS_NATIVE(value) isObjType(value, OBJ_NATIVE)
 #define IS_CLASS(value) isObjType(value, OBJ_CLASS)
@@ -21,6 +22,7 @@
 #define AS_CLOSURE(value) ((ObjClosure*)AS_OBJ(value))
 #define AS_FUNCTION(value) ((ObjFunction*)AS_OBJ(value))
 #define AS_STRING(value) ((ObjString*)AS_OBJ(value))
+#define AS_FUTURE(value) ((ObjFuture*)AS_OBJ(value))
 #define AS_CSTRING(value) (((ObjString*)AS_OBJ(value))->chars)
 #define AS_NATIVE(value) (((ObjNative*)AS_OBJ(value))->function)
 #define AS_INSTANCE(value) ((ObjInstance*)AS_OBJ(value))
@@ -44,6 +46,7 @@
  */
 typedef enum
 {
+  OBJ_FUTURE,
   OBJ_BOUND_METHOD,
   OBJ_CLASS,
   OBJ_CLOSURE,
@@ -77,6 +80,12 @@ public:
    * @brief A pointer to the next object in the object list.
    */
   Obj* next;
+};
+
+class ObjFuture : public Obj
+{
+public:
+  int vm_id;
 };
 
 /**
@@ -199,6 +208,10 @@ public:
    * @brief The number of upvalues in the closure.
    */
   int upvalueCount;
+
+  // For futures
+  Obj* returnValue;
+  bool done;
 };
 
 /**
@@ -323,6 +336,8 @@ ObjString* copyString(const char* chars, int length);
  * @return A pointer to the newly created string object.
  */
 ObjString* takeString(char* chars, int length);
+
+ObjFuture* newFuture(int vm_id);
 
 /**
  * @brief Creates a new function object.

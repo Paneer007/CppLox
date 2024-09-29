@@ -108,6 +108,8 @@ TokenType Scanner::identifierType()
     case 'a':
       if (this->current - this->start > 1) {
         switch (this->start[1]) {
+          case 'w':
+            return this->checkKeyword(2, 3, "ait", TOKEN_AWAIT);
           case 's':
             return this->checkKeyword(2, 3, "ync", TOKEN_ASYNC);
           case 'n':
@@ -127,7 +129,14 @@ TokenType Scanner::identifierType()
           case 'o':
             return checkKeyword(2, 1, "r", TOKEN_FOR);
           case 'u':
-            return checkKeyword(2, 1, "n", TOKEN_FUN);
+            if (this->current - this->start > 2) {
+              switch (this->start[2]) {
+                case 'n':
+                  return checkKeyword(3, 0, "", TOKEN_FUN);
+                case 't':
+                  return checkKeyword(3, 3, "ure", TOKEN_FUTURE);
+              }
+            }
           case 'i':
             return checkKeyword(2, 4, "nish", TOKEN_FINISH);
         }

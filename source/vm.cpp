@@ -247,6 +247,7 @@ void VM::initVM()
   this->finishStackCount = 0;
 
   this->initString = copyString("init", 4);
+  this->isFuture = false;
 
   defineNative("clock", clockNative);
   defineNative("rand", randNative);
@@ -402,16 +403,14 @@ InterpretResult VM::run()
                      &&OP_BUILD_LIST_INSTRCTN,    &&OP_INDEX_GET_INSTRCTN,
                      &&OP_INDEX_SET_INSTRCTN,     &&OP_FINISH_BEGIN_INSTRCTN,
                      &&OP_FINISH_END_INSTRCTN,    &&OP_ASYNC_BEGIN_INSTRCTN,
-                     &&OP_ASYNC_END_INSTRCTN};
+                     &&OP_ASYNC_END_INSTRCTN,     &&OP_FUTURE_INSTRCTN,
+                     &&OP_GET_FUTURE_INSTRCTN};
 
   const auto READ_BYTE = [&frame]() { return *frame->ip++; };
 #ifdef DEBUG_TRACE_EXECUTION
 #  define NEXT_INSTRCTN() \
     do { \
       if (this->parent != NULL) { \
-        auto thread_id = \
-            std::hash<std::thread::id> {}(std::this_thread::get_id()); \
-        std::cout << thread_id << std::endl; \
         printf("          "); \
         for (Value* slot = this->stack; slot < this->stackTop; slot++) { \
           printf("[ "); \
@@ -532,6 +531,10 @@ OP_RETURN_INSTRCTN : {
   auto result = pop();
   closeUpvalues(frame->slots);
   this->frameCount--;
+  if (this->isFuture) {
+    this->futureResultValue = result;
+    return INTERPRET_OK;
+  }
   if (this->frameCount == 0) {
     pop();
     return INTERPRET_OK;
@@ -921,12 +924,10 @@ OP_INDEX_SET_INSTRCTN : {
   } else if (IS_STRING(st_obj)) {
     ObjString* string = AS_STRING(st_obj);
     int index = AS_NUMBER(st_index);
-
     if (!isValidStringIndex(string, index)) {
       runtimeError("Invalid list index.");
       return INTERPRET_RUNTIME_ERROR;
     }
-
     ObjString* item = AS_STRING(st_item);
 
     if (item->length > 1) {
@@ -973,6 +974,27 @@ OP_ASYNC_END_INSTRCTN : {
   pop();
   return INTERPRET_OK;
 }
+OP_FUTURE_INSTRCTN : {
+  auto dispatcher = Dispatcher::getDispatcher();
+  auto future_vm = dispatcher->launchFuture();
+  auto future_res = newFuture(future_vm);
+  push(OBJ_VAL(future_res));
+  NEXT_INSTRCTN();
+}
+OP_GET_FUTURE_INSTRCTN : {
+  auto future_res = AS_FUTURE(peek(0));
+  pop();
+  auto dispatcher = Dispatcher::getDispatcher();
+  auto future_vm = dispatcher->getVMbyId(future_res->vm_id);
+  while (future_vm->isFuture) {
+    sleep(10);
+  }
+  // free VM spot once done
+  auto res = future_vm->futureResultValue;
+  push(res);
+  NEXT_INSTRCTN();
+}
+
 #undef NEXT_INSTRCTN
 }
 
@@ -1241,13 +1263,18 @@ void VM::copyParent(VM* parent)
   if (parent != NULL) {
     std::copy(parent->frames, parent->frames + 2048, this->frames);
     std::copy(parent->stack, parent->stack + STACK_MAX, this->stack);
-    auto diff = parent->stackTop - stack;
+    auto diff = parent->stackTop - parent->stack;
     this->stackTop = this->stack + diff;
     this->frameCount = parent->frameCount;
     this->parent = parent;
     // TODO: check if this causes BT in enclosing variables
-    this->strings.initTable();
-    this->globals.initTable();
+    if (this->isFuture) {
+      tableAddAll(&parent->strings, &this->strings);
+      tableAddAll(&parent->globals, &this->globals);
+    } else {
+      this->strings.initTable();
+      this->globals.initTable();
+    }
 
     this->openUpvalues = parent->openUpvalues;
 

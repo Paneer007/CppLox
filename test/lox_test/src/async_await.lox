@@ -1,0 +1,12 @@
+fun waitForMe(){
+    return 1;
+}
+
+fun main(){
+    var x = future waitForMe();
+    print x;
+    var res = await x ;
+    print res;
+}
+
+main();

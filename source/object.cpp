@@ -354,6 +354,9 @@ void printObject(Value value)
     case OBJ_INSTANCE:
       printf("%s instance", AS_INSTANCE(value)->klass->name->chars);
       break;
+    case OBJ_FUTURE:
+      printf("<future obj>");
+      break;
     case OBJ_LIST:
       printf("[");
       for (int i = 0; i < AS_LIST(value)->count; i++) {
@@ -407,6 +410,13 @@ ObjClosure* newClosure(ObjFunction* function)
   closure->upvalues = upvalues;
   closure->upvalueCount = function->upvalueCount;
   return closure;
+}
+
+ObjFuture* newFuture(int vm_id)
+{
+  auto future = ALLOCATE_OBJ<ObjFuture>(OBJ_FUTURE);
+  future->vm_id = vm_id;
+  return future;
 }
 
 /**

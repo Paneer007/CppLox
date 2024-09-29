@@ -5,6 +5,7 @@
 #include "dispatcher.hpp"
 
 #include "debug.hpp"
+#include "object.hpp"
 
 static void childMain(VM* parent, VM* childVM, int vm_id)
 {
@@ -14,6 +15,17 @@ static void childMain(VM* parent, VM* childVM, int vm_id)
 
   auto frame = &childVM->frames[childVM->frameCount - 1];
   childVM->run();
+}
+
+static void futureTask(VM* parent, VM* childVM, int vm_id)
+{
+  auto dispatcher = Dispatcher::getDispatcher();
+  auto thread_id = std::hash<std::thread::id> {}(std::this_thread::get_id());
+  dispatcher->setId(thread_id, vm_id);
+  childVM->isFuture = true;
+  childVM->run();
+  auto res = childVM->pop();
+  childVM->isFuture = false;
 }
 
 Dispatcher::Dispatcher()
@@ -102,6 +114,26 @@ std::thread Dispatcher::asyncBegin()
 
   std::thread child_obj(childMain, parent_vm, childVM, free_vm_index);
   return child_obj;
+}
+
+int Dispatcher::launchFuture()
+{
+  auto parent_vm = this->getVM();
+  auto free_vm_index = this->findFreeVM();
+  auto childVM = &this->vm_pool[free_vm_index];
+  childVM->isFuture = true;
+  childVM->copyParent(parent_vm);
+  auto frame = &childVM->frames[childVM->frameCount - 1];
+  frame->ip += 3;  // Skip call
+  // Launch Future
+  futureTask(parent_vm, childVM, free_vm_index);
+
+  return free_vm_index;
+}
+
+VM* Dispatcher::getVMbyId(int vm_id)
+{
+  return &this->vm_pool[vm_id];
 }
 
 Dispatcher* Dispatcher::dispatcher = new Dispatcher;
