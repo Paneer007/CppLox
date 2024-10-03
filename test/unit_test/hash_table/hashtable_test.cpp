@@ -66,7 +66,7 @@ static ObjString* temp_allocateString(char* chars,
   string->length = length;
   string->chars = chars;
   string->hash = hash;
-#ifdef ENABLE_MP
+#ifdef ENABLE_MTHM
   string->hash2 = hash2;
 #endif
   return string;
@@ -86,7 +86,7 @@ int64_t test_table(int len)
     char* chars = &key[0];
     int length = key.size();
     uint32_t hash = hashString(chars, KEY_SIZE);
-#ifdef ENABLE_MP
+#ifdef ENABLE_MTHM
     uint32_t hash2 = hash2ndString(chars, KEY_SIZE);
 #else
     uint32_t hash2 = 0;
@@ -107,7 +107,7 @@ int64_t test_table(int len)
     // std::cout << i << std::endl;
     auto obj_key = obj_keys[rand() % keys.size()];
     // printf("%d \n", ((ObjString*)obj_key)->hash);
-#ifndef ENABLE_MP
+#ifndef ENABLE_MTHM
     table.tableFindString(((ObjString*)obj_key)->chars,
                           ((ObjString*)obj_key)->length,
                           ((ObjString*)obj_key)->hash);
