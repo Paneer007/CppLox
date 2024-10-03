@@ -161,7 +161,7 @@ public:
   ObjString* tableFindString(const char* chars,
                              int length,
                              uint32_t hash,
-                             uint32_t hash2);
+                             uint32_t hash2 = 0);
 
   /**
    * @brief Marks all objects in the table as reachable.

@@ -22,7 +22,7 @@
  */
 static uint32_t hashString(const char* key, int length)
 {
-#ifdef ENABLE_MP
+#ifdef ENABLE_MTHM
   uint32_t hash = 2166136261u;
   for (int i = 0; i < length; i++) {
     hash ^= (uint8_t)key[i];
@@ -39,7 +39,7 @@ static uint32_t hashString(const char* key, int length)
 #endif
 }
 
-#ifdef ENABLE_MP
+#ifdef ENABLE_MTHM
 static inline uint32_t murmur_32_scramble(uint32_t k)
 {
   k *= 0xcc9e2d51;
@@ -78,8 +78,8 @@ static uint32_t hash2ndString(const char* key,
     h += 1;
   }
 
-  // return h;
-  return 1;
+  return h;
+  // return 1;
 }
 #endif
 
@@ -230,7 +230,7 @@ ObjNative* newNative(NativeFn function)
 static ObjString* allocateString(char* chars,
                                  int length,
                                  uint32_t hash,
-                                 uint32_t hash2 = 0)
+                                 uint32_t hash2)
 {
   auto dispatcher = Dispatcher::getDispatcher();
   auto vm = dispatcher->getVM();
@@ -239,7 +239,7 @@ static ObjString* allocateString(char* chars,
   string->chars = chars;
   string->hash = hash;
 
-#ifdef ENABLE_MP
+#ifdef ENABLE_MTHM
   string->hash2 = hash2;
 #endif
 
@@ -265,14 +265,14 @@ ObjString* copyString(const char* chars, int length)
 {
   uint32_t hash = hashString(chars, length);
 
-#ifdef ENABLE_MP
+#ifdef ENABLE_MTHM
   auto hash2 = hash2ndString(chars, length);
 #endif
 
   auto dispatcher = Dispatcher::getDispatcher();
   auto vm = dispatcher->getVM();
 
-#ifdef ENABLE_MP
+#ifdef ENABLE_MTHM
   auto interned = vm->strings.tableFindString(chars, length, hash, hash2);
 #else
   auto interned = vm->strings.tableFindString(chars, length, hash, 0);
@@ -283,7 +283,7 @@ ObjString* copyString(const char* chars, int length)
   auto heapChars = ALLOCATE<char>(length + 1);
   memcpy(heapChars, chars, length);
   heapChars[length] = '\0';
-#ifdef ENABLE_MP
+#ifdef ENABLE_MTHM
   return allocateString(heapChars, length, hash, hash2);
 #else
   return allocateString(heapChars, length, hash);
@@ -309,7 +309,7 @@ ObjString* copyString(const char* chars, int length)
 ObjString* takeString(char* chars, int length)
 {
   auto hash = hashString(chars, length);
-#ifdef ENABLE_MP
+#ifdef ENABLE_MTHM
   auto hash2 = hash2ndString(chars, length);
   return allocateString(chars, length, hash, hash2);
 #else

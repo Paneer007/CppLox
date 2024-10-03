@@ -82,7 +82,8 @@ static Entry* findEntry(Entry* entries,
       // We found the key.
       return entry;
     }
-    index = (index + 1) % (capacity);
+    index = (index + key->hash2) % (capacity);
+    // printf("%d %d \n", index, key->hash2);
   }
 
 #else
@@ -392,7 +393,7 @@ bool Table::tableDelete(ObjString* key)
  * @return A pointer to the found string object, or NULL if not found.
  */
 
-#ifdef ENABLE_MP
+#ifdef ENABLE_MTHM
 ObjString* Table::tableFindString(const char* chars,
                                   int length,
                                   uint32_t hash,
@@ -401,7 +402,7 @@ ObjString* Table::tableFindString(const char* chars,
 ObjString* Table::tableFindString(const char* chars,
                                   int length,
                                   uint32_t hash,
-                                  uint32_t hash2 = 0)
+                                  uint32_t hash2)
 #endif
 {
   if (this->count == 0)

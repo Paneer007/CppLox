@@ -9,8 +9,12 @@
 class Dispatcher
 {
   static Dispatcher* dispatcher;
+
   std::unordered_map<size_t, int> id_to_vm;  // Make this atomic
+  std::mutex id_to_vm_mtx;
+  
   VM vm_pool[32];  // Make this atomic
+  std::mutex vm_pool_mtx;
 
   Dispatcher();
   void initDispatcher();

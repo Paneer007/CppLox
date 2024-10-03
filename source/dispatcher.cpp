@@ -13,15 +13,6 @@ static void childMain(VM* parent, VM* childVM, int vm_id)
   dispatcher->setId(thread_id, vm_id);
 
   auto frame = &childVM->frames[childVM->frameCount - 1];
-
-  // if (frame->closure == NULL) {
-  //   printf("skill issue \n");
-  //   exit(0);
-  // }
-
-  // disassembleInstruction(
-  //     &frame->closure->function->chunk,
-  //     (int)(frame->ip - frame->closure->function->chunk.code));
   childVM->run();
 }
 
@@ -32,6 +23,7 @@ Dispatcher::Dispatcher()
 
 void Dispatcher::setId(size_t thread_id, int vm_id)
 {
+  std::lock_guard<std::mutex> lock(this->id_to_vm_mtx);
   this->id_to_vm[thread_id] = vm_id;
 }
 
@@ -50,8 +42,10 @@ void Dispatcher::freeDispatcher()
 
 int Dispatcher::findFreeVM()
 {
+  std::lock_guard<std::mutex> lock(this->vm_pool_mtx);
   for (int i = 0; i < 32; i++) {
     if (this->vm_pool[i].assigned == false) {
+      this->vm_pool[i].assigned = true;
       return i;
     }
   }
@@ -77,14 +71,22 @@ VM* Dispatcher::dispatchThread(VM* parent)
     exit(0);
   }
   auto vm_id = this->findFreeVM();  // Handle full VM error
+  while (vm_id == -1) {
+    sleep(1);
+    vm_id = this->findFreeVM();
+  }
+
   auto childVM = &this->vm_pool[vm_id];
-  this->id_to_vm[thread_id] = vm_id;
+  this->setId(thread_id, vm_id);
   childVM->copyParent(parent);
   return childVM;
 }
 
 void Dispatcher::freeVM()
 {
+  std::lock_guard<std::mutex> lock(this->id_to_vm_mtx);
+  std::lock_guard<std::mutex> lock(this->vm_pool_mtx);
+
   auto thread_id = std::hash<std::thread::id> {}(std::this_thread::get_id());
   if (this->id_to_vm.find(thread_id) == this->id_to_vm.end()) {
     printf("Accessing thread that doesn't exist in the Dispatcher");
@@ -93,6 +95,7 @@ void Dispatcher::freeVM()
   auto vm_id = this->id_to_vm[thread_id];
   auto vm = &this->vm_pool[vm_id];
   vm->freeVM();
+  this->id_to_vm.erase(thread_id);
 }
 
 Dispatcher* Dispatcher::getDispatcher()

@@ -134,7 +134,7 @@ public:
    */
   uint32_t hash;
 
-#ifdef ENABLE_MP
+#ifdef ENABLE_MTHM
   uint32_t hash2;
 #endif
 };
