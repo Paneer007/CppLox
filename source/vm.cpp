@@ -232,6 +232,7 @@ VM::VM() {}
  */
 void VM::initVM()
 {
+  this->threadFailure = false;
   this->resetStack();
   this->objects = NULL;
   this->bytesAllocated = 0;
@@ -404,24 +405,28 @@ InterpretResult VM::run()
                      &&OP_INDEX_SET_INSTRCTN,     &&OP_FINISH_BEGIN_INSTRCTN,
                      &&OP_FINISH_END_INSTRCTN,    &&OP_ASYNC_BEGIN_INSTRCTN,
                      &&OP_ASYNC_END_INSTRCTN,     &&OP_FUTURE_INSTRCTN,
-                     &&OP_GET_FUTURE_INSTRCTN};
+                     &&OP_GET_FUTURE_INSTRCTN,    &&OP_BEGIN_SCOPE_INSTRCTN};
 
-  const auto READ_BYTE = [&frame]() { return *frame->ip++; };
+  const auto READ_BYTE = [&frame, this]()
+  {
+    if (this->threadFailure) {
+      exit(0);
+    };
+    return *frame->ip++;
+  };
 #ifdef DEBUG_TRACE_EXECUTION
 #  define NEXT_INSTRCTN() \
     do { \
-      if (this->parent != NULL) { \
-        printf("          "); \
-        for (Value* slot = this->stack; slot < this->stackTop; slot++) { \
-          printf("[ "); \
-          printValue(*slot); \
-          printf(" ]"); \
-        } \
-        printf("\n"); \
-        disassembleInstruction( \
-            &frame->closure->function->chunk, \
-            (int)(frame->ip - frame->closure->function->chunk.code)); \
+      printf("          "); \
+      for (Value* slot = this->stack; slot < this->stackTop; slot++) { \
+        printf("[ "); \
+        printValue(*slot); \
+        printf(" ]"); \
       } \
+      printf("\n"); \
+      disassembleInstruction( \
+          &frame->closure->function->chunk, \
+          (int)(frame->ip - frame->closure->function->chunk.code)); \
       goto* targets[READ_BYTE()]; \
     } while (0)
 
@@ -701,6 +706,16 @@ OP_GET_GLOBAL_INSTRCTN : {
   auto name = READ_STRING();
   Value value;
   if (!this->globals.tableGet(name, &value)) {
+    if (this->parent != NULL) {
+      auto curr_parent = this->parent;
+      while (curr_parent != NULL) {
+        if (curr_parent->globals.tableGet(name, &value)) {
+          push(value);
+          NEXT_INSTRCTN();
+        }
+        curr_parent = curr_parent->parent;
+      }
+    }
     runtimeError("Undefined variable '%s'.", name->chars);
     return INTERPRET_RUNTIME_ERROR;
   }
@@ -767,6 +782,13 @@ OP_GET_LOCAL_INSTRCTN : {
 
 OP_SET_LOCAL_INSTRCTN : {
   auto slot = READ_BYTE();
+  if (this->parent != NULL && frame->futureLocalScope.size() > 0
+      && slot <= frame->futureLocalScope[frame->futureLocalScope.size() - 1])
+  {
+    runtimeError(
+        "Attempting to access variable outside asychronous code scope. \n");
+    return INTERPRET_RUNTIME_ERROR;
+  }
   frame->slots[slot] = peek(0);
   NEXT_INSTRCTN();
 }
@@ -781,12 +803,25 @@ OP_JUMP_IF_FALSE_INSTRCTN : {
 OP_SET_GLOBAL_INSTRCTN : {
   auto name = READ_STRING();
   if (this->globals.tableSet(name, peek(0))) {
-    this->globals.tableDelete(name);
-    runtimeError("Undefined variable '%s'.", name->chars);
-    return INTERPRET_RUNTIME_ERROR;
+    if (this->parent != NULL) {
+      Value value;
+      auto curr_parent = this->parent;
+      while (curr_parent != NULL) {
+        if (curr_parent->globals.tableGet(name, &value)) {
+          runtimeError(
+              "Attempting to modify global variable inside a asynchronous "
+              "block of code '%s'.",
+              name->chars);
+          return INTERPRET_RUNTIME_ERROR;
+        }
+        curr_parent = curr_parent->parent;
+      }
+      this->globals.tableDelete(name);
+      runtimeError("Undefined variable '%s'.", name->chars);
+      return INTERPRET_RUNTIME_ERROR;
+    }
+    NEXT_INSTRCTN();
   }
-  NEXT_INSTRCTN();
-}
 
 OP_LOOP_INSTRCTN : {
   auto offset = READ_SHORT();
@@ -958,18 +993,23 @@ OP_FINISH_END_INSTRCTN : {
 OP_ASYNC_BEGIN_INSTRCTN : {
   // Prep Thread VM to execute
   // Note: Skip jump in bytecode
+  int gap = this->stackTop - frame->slots;
+  frame->futureLocalScope.push_back(gap);
   auto dispatcher = Dispatcher::getDispatcher();
   auto new_thread = dispatcher->asyncBegin();
+  frame->futureLocalScope.pop_back();
   // new_thread.join();
 
   this->finishStack[this->finishStackCount].push_back(&new_thread);
   // Start Next line of execution
   auto offset = READ_SHORT();
   frame->ip += offset;
+
   NEXT_INSTRCTN();
 }
 OP_ASYNC_END_INSTRCTN : {
   auto dispatcher = Dispatcher::getDispatcher();
+  frame->futureLocalScope.pop_back();
   dispatcher->freeVM();
   pop();
   return INTERPRET_OK;
@@ -994,10 +1034,13 @@ OP_GET_FUTURE_INSTRCTN : {
   push(res);
   NEXT_INSTRCTN();
 }
+OP_BEGIN_SCOPE_INSTRCTN : {
+  NEXT_INSTRCTN();
+}
 
 #undef NEXT_INSTRCTN
 }
-
+}
 /**
  * @brief Gets the singleton virtual machine instance.
  *
@@ -1013,8 +1056,8 @@ OP_GET_FUTURE_INSTRCTN : {
 /**
  * @brief Resets the virtual machine's stack.
  *
- * Clears the stack, frame count, and open upvalues, preparing the VM for a new
- * execution.
+ * Clears the stack, frame count, and open upvalues, preparing the VM for a
+ * new execution.
  */
 void VM::resetStack()
 {
@@ -1026,8 +1069,8 @@ void VM::resetStack()
 /**
  * @brief Pushes a value onto the top of the stack.
  *
- * Increments the stack pointer and stores the given value at the new top of the
- * stack.
+ * Increments the stack pointer and stores the given value at the new top of
+ * the stack.
  *
  * @param value The value to be pushed onto the stack.
  */
@@ -1040,8 +1083,8 @@ void VM::push(Value value)
 /**
  * @brief Pops a value from the top of the stack.
  *
- * Decrements the stack pointer and returns the value at the previous top of the
- * stack.
+ * Decrements the stack pointer and returns the value at the previous top of
+ * the stack.
  *
  * @return The popped value.
  */
@@ -1099,8 +1142,8 @@ bool VM::call(ObjClosure* closure, int argCount)
  * @brief Calls a callable value.
  *
  * Determines the type of the callable value and dispatches the call
- * accordingly. Handles bound methods, class constructors, closures, and native
- * functions.
+ * accordingly. Handles bound methods, class constructors, closures, and
+ * native functions.
  *
  * @param callee The callable value to be invoked.
  * @param argCount The number of arguments passed to the function.
@@ -1170,8 +1213,8 @@ bool VM::invokeFromClass(ObjClass* klass, ObjString* name, int argCount)
 /**
  * @brief Invokes a method on an object.
  *
- * Looks up the method by name in the object's instance variables or its class's
- * methods. Calls the method with the given arguments.
+ * Looks up the method by name in the object's instance variables or its
+ * class's methods. Calls the method with the given arguments.
  *
  * @param name The name of the method to invoke.
  * @param argCount The number of arguments passed to the method.
@@ -1243,8 +1286,8 @@ void VM::runtimeError(const char* format, ...)
 /**
  * @brief Defines a native function in the global environment.
  *
- * Creates a string for the function name, creates a native function object, and
- * adds it to the global table.
+ * Creates a string for the function name, creates a native function object,
+ * and adds it to the global table.
  *
  * @param name The name of the native function.
  * @param function The native function implementation.
@@ -1262,11 +1305,17 @@ void VM::copyParent(VM* parent)
 {
   if (parent != NULL) {
     std::copy(parent->frames, parent->frames + 2048, this->frames);
-    std::copy(parent->stack, parent->stack + STACK_MAX, this->stack);
+    std::copy(parent->stack,
+              parent->stack + STACK_MAX,
+              this->stack);  // Synchronize the new jumps
     auto diff = parent->stackTop - parent->stack;
     this->stackTop = this->stack + diff;
     this->frameCount = parent->frameCount;
     this->parent = parent;
+
+    auto stack_diff =
+        parent->frames[parent->frameCount - 1].slots - parent->stack;
+    this->frames[this->frameCount - 1].slots = this->stack + stack_diff;
     // TODO: check if this causes BT in enclosing variables
     if (this->isFuture) {
       tableAddAll(&parent->strings, &this->strings);
@@ -1275,9 +1324,7 @@ void VM::copyParent(VM* parent)
       this->strings.initTable();
       this->globals.initTable();
     }
-
     this->openUpvalues = parent->openUpvalues;
-
     // Do not mess with GC in child variables
     this->bytesAllocated = 0;
     this->nextGC = 1024 * 1024;

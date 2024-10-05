@@ -33,7 +33,6 @@ constexpr int GC_HEAP_GROW_FACTOR = 2;
  */
 void* reallocate(void* pointer, size_t oldSize, size_t newSize)
 {
-  // auto vm = VM::getVM();
   auto dispatcher = Dispatcher::getDispatcher();
   auto vm = dispatcher->getVM();
   vm->bytesAllocated += newSize - oldSize;

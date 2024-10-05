@@ -1,9 +1,9 @@
 fun Hello(){
     var x = lambda(a ,  b){
-        print a+b;
+        return a+b;
     };
     print x;
-    x(1,2);
+    print x(1,x(3,5));
 }
 
 Hello();

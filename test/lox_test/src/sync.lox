@@ -1,20 +1,25 @@
-finish {
-    async {
-        var j = 0;
-        for(var i = 0;i < 2000; j= j +1){
-            print j;
-            if(j % 100 == 0){
-                i = i+1;
+fun main(){
+    finish {
+        async {
+            var j = 0;
+            for(var i = 1; j < 2; j= j +1){
+                print j;
+                if(j % 100 == 0){
+                    i = i+1;
+                }
             }
+            print "Hello World 1";
         }
-        print "Hello World 1";
+        print 13;
+        async {
+            print "Hello World 2";
+        }
+        async {
+            print "Hello World 3";
+        }
+        print 16;
     }
-    print 12;
-    async {
-        print "Hello World 2";
-    }
-    async {
-        print "Hello World 3";
-    }
-    print 16;
 }
+
+main();
+

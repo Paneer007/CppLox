@@ -34,6 +34,8 @@ public:
    * @brief A pointer to the base of the local variables for this frame.
    */
   Value* slots;
+
+  std::vector<int> futureLocalScope;
 };
 
 /**
@@ -133,6 +135,8 @@ public:
   bool assigned;
   bool isFuture;
   Value futureResultValue;
+
+  bool threadFailure;
 
   /**
    * @brief Initializes the virtual machine.

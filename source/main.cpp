@@ -22,8 +22,6 @@ private:
    */
   void repl()
   {
-    // auto vm = VM::getVM();
-
     auto dispatcher = Dispatcher::getDispatcher();
     auto vm = dispatcher->getVM();
 
@@ -88,7 +86,6 @@ private:
    */
   void runFile(const char* path)
   {
-    // auto vm = VM::getVM();
     auto dispatcher = Dispatcher::getDispatcher();
     auto vm = dispatcher->getVM();
     auto source = this->readFile(path);
