@@ -405,7 +405,8 @@ InterpretResult VM::run()
                      &&OP_INDEX_SET_INSTRCTN,     &&OP_FINISH_BEGIN_INSTRCTN,
                      &&OP_FINISH_END_INSTRCTN,    &&OP_ASYNC_BEGIN_INSTRCTN,
                      &&OP_ASYNC_END_INSTRCTN,     &&OP_FUTURE_INSTRCTN,
-                     &&OP_GET_FUTURE_INSTRCTN,    &&OP_BEGIN_SCOPE_INSTRCTN};
+                     &&OP_GET_FUTURE_INSTRCTN,    &&OP_DUPLICATE_INSTRCTN,
+                     &&OP_REDUCE_BEGIN_INSTRCTN,  &&OP_REDUCE_UPDATE_INSTRCTN};
 
   const auto READ_BYTE = [&frame, this]()
   {
@@ -544,7 +545,6 @@ OP_RETURN_INSTRCTN : {
     pop();
     return INTERPRET_OK;
   }
-
   this->stackTop = frame->slots;
   push(result);
   frame = &this->frames[this->frameCount - 1];
@@ -912,7 +912,6 @@ OP_INDEX_GET_INSTRCTN : {
       runtimeError("List index out of range.");
       return INTERPRET_RUNTIME_ERROR;
     }
-
     result = indexFromList(list, index);
     push(result);
   } else if (IS_STRING(st_obj)) {
@@ -1034,7 +1033,40 @@ OP_GET_FUTURE_INSTRCTN : {
   push(res);
   NEXT_INSTRCTN();
 }
-OP_BEGIN_SCOPE_INSTRCTN : {
+OP_DUPLICATE_INSTRCTN : {
+  auto top = peek(0);
+  push(top);
+  NEXT_INSTRCTN();
+}
+OP_REDUCE_BEGIN_INSTRCTN : {
+  this->stackTop[-4] =
+      this->stackTop[-1];  // Copying top value to reducer value for result
+  this->stackTop[-3] = this->stackTop[-1];  // Copying top value to reducer
+                                            // value for original value
+  auto top = READ_BYTE();
+  this->stackTop[-2].as.number = top;  // Storing operand type
+  NEXT_INSTRCTN();
+}
+OP_REDUCE_UPDATE_INSTRCTN : {
+  auto reducer_slot = READ_BYTE();
+  auto reducer_local_value = AS_NUMBER(frame->slots[reducer_slot]);
+  auto reducer_operator = AS_NUMBER(frame->slots[reducer_slot - 1]);
+  auto reducer_original_value = AS_NUMBER(frame->slots[reducer_slot - 2]);
+  auto reducer_result = AS_NUMBER(frame->slots[reducer_slot - 3]);
+
+  if (reducer_operator == ('+' - 0)) {
+    reducer_result += reducer_local_value;
+  } else if (reducer_operator == ('-' - 0)) {
+    reducer_result -= reducer_local_value;
+  } else if (reducer_operator == ('*' - 0)) {
+    reducer_result *= reducer_local_value;
+  } else if (reducer_operator == ('/' - 0)) {
+    reducer_result /= reducer_local_value;
+  }
+
+  frame->slots[reducer_slot - 3] = NUMBER_VAL(reducer_result);
+  frame->slots[reducer_slot] = frame->slots[reducer_slot - 2];
+
   NEXT_INSTRCTN();
 }
 

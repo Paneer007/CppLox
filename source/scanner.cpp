@@ -153,7 +153,17 @@ TokenType Scanner::identifierType()
     case 'p':
       return this->checkKeyword(1, 4, "rint", TOKEN_PRINT);
     case 'r':
-      return this->checkKeyword(1, 5, "eturn", TOKEN_RETURN);
+      if (this->current - this->start > 1 && this->start[1] == 'e'
+          && this->current - this->start > 2)
+      {
+        switch (this->start[2]) {
+          case 'd':
+
+            return this->checkKeyword(3, 3, "uce", TOKEN_REDUCE);
+          case 't':
+            return this->checkKeyword(3, 3, "urn", TOKEN_RETURN);
+        }
+      }
     case 's':
       return this->checkKeyword(1, 4, "uper", TOKEN_SUPER);
     case 't':
@@ -371,6 +381,8 @@ Token Scanner::scanToken()
     return identifier();
 
   switch (c) {
+    case ':':
+      return makeToken(TOKEN_COLON);
     case '(':
       return makeToken(TOKEN_LEFT_PAREN);
     case ')':

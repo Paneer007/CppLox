@@ -1,0 +1,8 @@
+fun main(){
+    var res = reduce(var x = 2 : * ; var i = 1; i < 5 ; i = i+1){
+        x = i;
+    };
+    print res;
+}
+
+main();

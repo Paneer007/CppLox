@@ -566,6 +566,22 @@ static void endScope()
   }
 }
 
+static void endReducer()
+{
+  current->scopeDepth--;
+  while (current->localCount > 1
+         && current->locals[current->localCount - 1].depth
+             > current->scopeDepth)
+  {
+    if (current->locals[current->localCount - 1].isCaptured) {
+      emitByte(OP_CLOSE_UPVALUE);
+    } else {
+      emitByte(OP_POP);
+    }
+    current->localCount--;
+  }
+}
+
 /**
  * @brief Begins a new scope.
  *
@@ -1376,6 +1392,117 @@ static void forStatement()
   endScope();
 }
 
+static void consumeOperator()
+{
+  TokenType operatorType = parser.current.type;
+
+  switch (operatorType) {
+    case TOKEN_PLUS:
+      emitByte('+' - 0);
+      break;
+    case TOKEN_MINUS:
+      emitByte('-' - 0);
+      break;
+    case TOKEN_STAR:
+      emitByte('*' - 0);
+      break;
+    case TOKEN_SLASH:
+      emitByte('/' - 0);
+      break;
+    case TOKEN_MODULUS:
+      emitByte('%' - 0);
+      break;
+    default:
+      errorAtCurrent("Expected Operator");
+      return;
+  }
+  advance();
+}
+
+static void _reduceStatement(bool canAssign)
+{
+  beginScope();
+
+  // Result variable (dummy value zero for now)
+  emitConstant(NUMBER_VAL(0));  // To store result
+  emitConstant(NUMBER_VAL(0));  // To store copy of reducer original value
+  emitConstant(NUMBER_VAL(0));  // To store operator type
+
+  current->localCount += 2;
+
+  // Reducer Declaration
+  consume(TOKEN_LEFT_PAREN, "Expect '(' after 'reduce'.");
+  consume(TOKEN_VAR, "Expect reducer declaration");
+  uint8_t global = parseVariable("Expect variable name.");
+
+  auto temp_reducer = parser.previous;
+
+  if (match(TOKEN_EQUAL)) {
+    expression();
+  } else {
+    emitByte(OP_NIL);
+  }
+
+  defineVariable(global);
+  emitByte(OP_REDUCE_BEGIN);
+
+  // Define another variable on the stack for copy of the reducer variable in
+  // each iterator
+
+  // Operator Declaration
+  consume(TOKEN_COLON, "Expect ':' after variable declaration.");
+  consumeOperator();
+  consume(TOKEN_SEMICOLON, "Expect ';' after operator.");
+
+  // Loop Variable
+  if (match(TOKEN_SEMICOLON)) {
+    // No initializer.
+  } else if (match(TOKEN_VAR)) {
+    varDeclaration();
+  } else {
+    expressionStatement();
+  }
+
+  int loopStart = currentChunk()->count;
+
+  int exitJump = -1;
+  if (!match(TOKEN_SEMICOLON)) {
+    expression();
+    consume(TOKEN_SEMICOLON, "Expect ';' after loop condition.");
+
+    // Jump out of the loop if the condition is false.
+    exitJump = emitJump(OP_JUMP_IF_FALSE);
+    emitByte(OP_POP);  // Condition.
+  }
+
+  if (!match(TOKEN_RIGHT_PAREN)) {
+    int bodyJump = emitJump(OP_JUMP);
+    int incrementStart = currentChunk()->count;
+    expression();
+    emitByte(OP_POP);
+    consume(TOKEN_RIGHT_PAREN, "Expect ')' after for clauses.");
+
+    emitLoop(loopStart);
+    loopStart = incrementStart;
+    patchJump(bodyJump);
+  }
+
+  statement();
+  auto arg = resolveLocal(current, &temp_reducer);
+  emitBytes(OP_REDUCE_UPDATE, arg);
+  emitLoop(loopStart);
+
+  if (exitJump != -1) {
+    patchJump(exitJump);
+    emitByte(OP_POP);  // Condition.
+  }
+
+  endScope();
+  current->localCount -= 2;
+  emitByte(OP_POP);  // Remove Temporary Variable
+  emitByte(OP_POP);  // Remove Operator Details
+}
+
 /**
  * @brief Parses an if statement.
  *
@@ -1748,6 +1875,9 @@ ParseRule rules[] = {
     [TOKEN_LAMBDA] = {_lambda, NULL, PREC_NONE},
     [TOKEN_FUTURE] = {_future, NULL, PREC_NONE},
     [TOKEN_AWAIT] = {_await, NULL, PREC_NONE},
+    [TOKEN_REDUCE] = {_reduceStatement, NULL, PREC_NONE},
+    [TOKEN_COLON] = {NULL, NULL, PREC_NONE},
+
 };
 
 /**

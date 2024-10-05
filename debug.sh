@@ -2,7 +2,7 @@
 
 input_program="./build/CppLox"
 # input_file="./benchmark/src/binary-tree.lox"
-input_file="./test/lox_test/src/sync.lox"
+input_file="./test/lox_test/src/reduce.lox"
 
 g++ -Wall -g ./source/*.cpp -o $input_program  
 # gdb -tui --args ./$input_program $input_file

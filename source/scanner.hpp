@@ -66,7 +66,9 @@ typedef enum
   TOKEN_FINISH,
   TOKEN_LAMBDA,
   TOKEN_FUTURE,
-  TOKEN_AWAIT
+  TOKEN_AWAIT,
+  TOKEN_REDUCE,
+  TOKEN_COLON
 } TokenType;
 
 /**
