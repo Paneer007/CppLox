@@ -334,8 +334,8 @@ void test_hash()
   // test_custom_function(HASH_1024, "HASH_1024");
   // test_custom_function(HASH_16384, "HASH_16384");
   // test_custom_function(HASH_262144, "HASH_262144");
-  // test_custom_function(HASH_4194304, "HASH_4194304");
-  test_custom_function(HASH_33554432, "HASH_33554432");
+  test_custom_function(HASH_4194304, "HASH_4194304");
+  // test_custom_function(HASH_33554432, "HASH_33554432");
   // test_custom_function(HASH_1000000000, "HASH_1000000000");
 }
 

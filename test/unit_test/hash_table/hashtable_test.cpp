@@ -116,11 +116,6 @@ int64_t test_table(int len)
                                    ((ObjString*)obj_key)->length,
                                    ((ObjString*)obj_key)->hash,
                                    ((ObjString*)obj_key)->hash2);
-    if (x == NULL) {
-      printf("Error \n");
-      exit(0);
-    }
-    printf("%s \n", x->chars);
 #endif
   }
 

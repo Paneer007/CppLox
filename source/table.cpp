@@ -65,7 +65,7 @@ static Entry* findEntry(Entry* entries,
   Entry* tombstone = NULL;
 #ifdef ENABLE_MTHM
   uint32_t index = key->hash % (capacity);
-
+  int count = 1;
   for (;;) {
     Entry* entry = &entries[index];
 
@@ -82,8 +82,18 @@ static Entry* findEntry(Entry* entries,
       // We found the key.
       return entry;
     }
+
+    // Linear Search
+    // index = (index + 1) % (capacity);
+
+    // Quadratic Search
+    // auto n_i = (count + count * count) >> 1;
+    // index = (index + n_i) % (capacity);
+    // count += 1;
+
+    // Double Hashing
     index = (index + key->hash2) % (capacity);
-    // printf("%d %d \n", index, key->hash2);
+
   }
 
 #else
@@ -413,9 +423,20 @@ ObjString* Table::tableFindString(const char* chars,
   uint32_t index = hash % (this->capacity[map]);
   auto list = this->entries[map];
   // printf("hashed index %d \n", index);
+  auto count = 1;
   for (;;) {
     Entry* entry = &list[index];
-    index = (index + 1) % (this->capacity[map]);
+
+    // Linear Search
+    // index = (index + 1) % (this->capacity[map]);
+
+    // Double Hashing
+    index = (index + hash2) % (this->capacity[map]);
+
+    // Quadratic search
+    // auto n_i = (count + count * count) >> 1;
+    // index = (index + n_i) % (this->capacity[map]);
+    // count += 1;
     if (entry->key == NULL) {
       // Stop if we find an empty non-tombstone entry.
       if (IS_NIL(entry->value))

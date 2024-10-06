@@ -23,7 +23,6 @@ Dispatcher::Dispatcher()
 
 void Dispatcher::setId(size_t thread_id, int vm_id)
 {
-  std::lock_guard<std::mutex> lock(this->id_to_vm_mtx);
   this->id_to_vm[thread_id] = vm_id;
 }
 
@@ -42,7 +41,6 @@ void Dispatcher::freeDispatcher()
 
 int Dispatcher::findFreeVM()
 {
-  std::lock_guard<std::mutex> lock(this->vm_pool_mtx);
   for (int i = 0; i < 32; i++) {
     if (this->vm_pool[i].assigned == false) {
       this->vm_pool[i].assigned = true;
@@ -72,7 +70,6 @@ VM* Dispatcher::dispatchThread(VM* parent)
   }
   auto vm_id = this->findFreeVM();  // Handle full VM error
   while (vm_id == -1) {
-    sleep(1);
     vm_id = this->findFreeVM();
   }
 
@@ -84,8 +81,6 @@ VM* Dispatcher::dispatchThread(VM* parent)
 
 void Dispatcher::freeVM()
 {
-  std::lock_guard<std::mutex> lock(this->id_to_vm_mtx);
-  std::lock_guard<std::mutex> lock(this->vm_pool_mtx);
 
   auto thread_id = std::hash<std::thread::id> {}(std::this_thread::get_id());
   if (this->id_to_vm.find(thread_id) == this->id_to_vm.end()) {
