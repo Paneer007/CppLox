@@ -1,0 +1,12 @@
+var b = 2;
+fun main(){
+    var a= 10;
+    finish {
+        async {
+            a = a+1;
+        }
+    }
+}
+
+main();
+
