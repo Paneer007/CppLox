@@ -14,6 +14,7 @@
  * Stores a key-value pair. The key is an `ObjString` and the value is a generic
  * `Value`.
  */
+
 class Entry
 {
 public:
@@ -86,6 +87,7 @@ public:
 #ifdef ENABLE_MTHM
   int count[16];
   int capacity[16];
+  int g_count[16];
 
   std::vector<std::vector<std::pair<ObjString*, Value>>> worklist;
   Entry** entries;
@@ -180,7 +182,9 @@ public:
    */
   void tableRemoveWhite();
 
-  void tableBulkSearch();
+#ifdef ENABLE_MTHM
+  int getCount();
+#endif
 };
 
 /**

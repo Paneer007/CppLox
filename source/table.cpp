@@ -37,6 +37,7 @@ void Table::initTable()
   for (int i = 0; i < THREAD_COUNT; i++) {
     this->count[i] = 0;
     this->capacity[i] = 0;
+    this->g_count[i] = 0;
   }
   this->entries = new Entry*[THREAD_COUNT];
   this->worklist =
@@ -60,6 +61,7 @@ void Table::initTable()
 static Entry* findEntry(Entry* entries,
                         int capacity,
                         ObjString* key,
+                        int& g_count,
                         int thread_id = -1)
 {
   Entry* tombstone = NULL;
@@ -68,7 +70,6 @@ static Entry* findEntry(Entry* entries,
   int count = 1;
   for (;;) {
     Entry* entry = &entries[index];
-
     if (entry->key == NULL) {
       if (IS_NIL(entry->value)) {
         // Empty entry.
@@ -93,7 +94,7 @@ static Entry* findEntry(Entry* entries,
 
     // Double Hashing
     index = (index + key->hash2) % (capacity);
-
+    g_count++;
   }
 
 #else
@@ -144,7 +145,8 @@ void Table::adjustCapacity(int capacity, int index)
     if (entry->key == NULL)
       continue;
 
-    Entry* dest = findEntry(new_entries, capacity, entry->key);
+    Entry* dest =
+        findEntry(new_entries, capacity, entry->key, this->g_count[index]);
     dest->key = entry->key;
     dest->value = entry->value;
     this->count[index]++;
@@ -241,8 +243,8 @@ void Table::applyWorklist()
 
     for (int j = 0; j < curr_worklist.size(); j++) {
       auto element = &curr_worklist[j];
-      Entry* entry =
-          findEntry(curr_entries, this->capacity[i], element->first, i);
+      Entry* entry = findEntry(
+          curr_entries, this->capacity[i], element->first, this->g_count[i], i);
       bool isNewKey = entry->key == NULL;
       entry->key = element->first;
       entry->value = element->second;
@@ -340,8 +342,10 @@ bool Table::tableGet(ObjString* key, Value* value)
     return false;
 
 #ifdef ENABLE_MTHM
-  Entry* entry =
-      findEntry(this->entries[hash_index], this->capacity[hash_index], key);
+  Entry* entry = findEntry(this->entries[hash_index],
+                           this->capacity[hash_index],
+                           key,
+                           this->g_count[hash_index]);
 #else
   Entry* entry = findEntry(this->entries, this->capacity, key);
 #endif
@@ -376,8 +380,10 @@ bool Table::tableDelete(ObjString* key)
 #ifdef ENABLE_MTHM
   auto hash_index = key->hash % (THREAD_COUNT - 1);
 
-  Entry* entry =
-      findEntry(this->entries[hash_index], this->capacity[hash_index], key);
+  Entry* entry = findEntry(this->entries[hash_index],
+                           this->capacity[hash_index],
+                           key,
+                           this->g_count[hash_index]);
 #else
   Entry* entry = findEntry(this->entries, this->capacity, key);
 #endif
@@ -447,6 +453,7 @@ ObjString* Table::tableFindString(const char* chars,
       // We found it.
       return entry->key;
     }
+    this->g_count[index]++;
   }
 
 #else
@@ -486,6 +493,20 @@ void Table::markTable()
       markValue(entry->value);
     }
   }
+}
+
+int Table::getCount()
+{
+  int res = 0;
+  for (int i = 0; i < THREAD_COUNT; i++) {
+    printf("QUEUE %d \n", i);
+
+    printf("Number of Elements : %d | ", this->count[i]);
+    printf("Number of Collisions : %d \n", g_count[i]);
+    res += g_count[i];
+  }
+  printf("Total Number of Collisions %d \n", res);
+  return res;
 }
 
 /**
