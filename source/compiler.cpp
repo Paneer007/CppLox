@@ -1420,6 +1420,8 @@ static void pforStatement()
   emitLoop(loopStart);
   patchJump(bfpj);
   emitByte(OP_PARALLEL_FOR_END);
+  emitByte(OP_POP);
+  emitByte(OP_POP);
   endScope();
 }
 
