@@ -151,7 +151,21 @@ TokenType Scanner::identifierType()
     case 'o':
       return this->checkKeyword(1, 1, "r", TOKEN_OR);
     case 'p':
-      return this->checkKeyword(1, 4, "rint", TOKEN_PRINT);
+      if (this->current - this->start > 1) {
+        switch (this->start[1]) {
+          case 'f':
+            return checkKeyword(2, 2, "or", TOKEN_PFOR);
+          case 'r':
+            if (this->current - this->start > 2) {
+              switch (this->start[2]) {
+                case 'i':
+                  return checkKeyword(3, 2, "nt", TOKEN_PRINT);
+                case 'e':
+                  return checkKeyword(3, 4, "duce", TOKEN_PREDUCE);
+              }
+            }
+        }
+      }
     case 'r':
       if (this->current - this->start > 1 && this->start[1] == 'e'
           && this->current - this->start > 2)

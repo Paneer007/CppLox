@@ -1,6 +1,8 @@
 #ifndef clox_vm_h
 #define clox_vm_h
 
+#include <future>
+#include <list>
 #include <thread>
 
 #include "atomic"
@@ -129,7 +131,9 @@ public:
   ObjString* initString;
 
   std::vector<std::thread*> finishStack[256];
+  std::list<std::future<int>> finish2Stack[256];
   int finishStackCount;
+  int finish2StackCount;
 
   VM* parent;
   bool assigned;

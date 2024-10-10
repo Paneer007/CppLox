@@ -1392,6 +1392,37 @@ static void forStatement()
   endScope();
 }
 
+static void pforStatement()
+{
+  beginScope();
+  emitConstant(NUMBER_VAL(0));  // To store index
+  current->localCount += 1;
+  consume(TOKEN_LEFT_PAREN, "Expect '(' after 'pfor'.");
+  consume(TOKEN_VAR, "Expect pfor variable declaration");
+  uint8_t global = parseVariable("Expect variable name.");
+  emitByte(OP_NIL);
+  consume(TOKEN_COLON, "Expect colon after pfor variable declaration");
+  advance();
+  Token identifierName = parser.previous;
+  defineVariable(global);
+  namedVariable(identifierName, false);
+
+  consume(TOKEN_RIGHT_PAREN, "Expect ')' after 'pfor'.");
+
+  // add iterator for pfor variable begin and incrementing condition
+  auto bfpj =
+      emitJump(OP_PARALLEL_FOR_BEGIN);  // main thread jumps and waits for the
+                                        // rest of code to finish
+
+  int loopStart = currentChunk()->count;
+  emitByte(OP_EXIT_IF_FALSE_ITERATOR);
+  statement();
+  emitLoop(loopStart);
+  patchJump(bfpj);
+  emitByte(OP_PARALLEL_FOR_END);
+  endScope();
+}
+
 static void consumeOperator()
 {
   TokenType operatorType = parser.current.type;
@@ -1656,6 +1687,8 @@ static void statement()
     endScope();
   } else if (match(TOKEN_FOR)) {
     forStatement();
+  } else if (match(TOKEN_PFOR)) {
+    pforStatement();
   } else if (match(TOKEN_WHILE)) {
     whileStatement();
   } else if (match(TOKEN_FINISH)) {
@@ -1738,6 +1771,8 @@ static void _await(bool canAssign)
   namedVariable(parser.previous, canAssign);
   emitByte(OP_GET_FUTURE);
 }
+
+static void _preduce(bool canAssign) {}
 
 /**
  * @brief Parses an expression with the given precedence.
@@ -1877,7 +1912,8 @@ ParseRule rules[] = {
     [TOKEN_AWAIT] = {_await, NULL, PREC_NONE},
     [TOKEN_REDUCE] = {_reduceStatement, NULL, PREC_NONE},
     [TOKEN_COLON] = {NULL, NULL, PREC_NONE},
-
+    [TOKEN_PREDUCE] = {_preduce, NULL, PREC_NONE},
+    [TOKEN_PFOR] = {NULL, NULL, PREC_NONE},
 };
 
 /**

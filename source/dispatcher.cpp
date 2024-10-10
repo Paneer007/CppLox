@@ -1,4 +1,6 @@
 #include <algorithm>
+#include <chrono>
+#include <future>
 #include <iostream>
 #include <thread>
 #include <unordered_map>
@@ -10,7 +12,7 @@
 #include "debug.hpp"
 #include "object.hpp"
 
-static void childMain(VM* parent, VM* childVM, int vm_id)
+static int childMain(VM* parent, VM* childVM, int vm_id)
 {
   auto dispatcher = Dispatcher::getDispatcher();
   auto thread_id = std::hash<std::thread::id> {}(std::this_thread::get_id());
@@ -22,11 +24,13 @@ static void childMain(VM* parent, VM* childVM, int vm_id)
   if (res == INTERPRET_RUNTIME_ERROR) {
     dispatcher->terminateAllThreads();
     exit(0);
+    return 1;
   }
   dispatcher->free_active_thread(thread_id);
+  return 0;
 }
 
-static void futureTask(VM* parent, VM* childVM, int vm_id)
+static int futureTask(VM* parent, VM* childVM, int vm_id)
 {
   auto dispatcher = Dispatcher::getDispatcher();
   auto thread_id = std::hash<std::thread::id> {}(std::this_thread::get_id());
@@ -36,10 +40,13 @@ static void futureTask(VM* parent, VM* childVM, int vm_id)
   auto vm_res = childVM->run();
   if (vm_res == INTERPRET_RUNTIME_ERROR) {
     dispatcher->terminateAllThreads();
+    exit(0);
+    return 1;
   }
   auto res = childVM->pop();
   dispatcher->free_active_thread(thread_id);
   childVM->isFuture = false;
+  return 0;
 }
 
 Dispatcher::Dispatcher()
@@ -186,6 +193,27 @@ void Dispatcher::terminateAllThreads()
     auto vm = &vm_pool[id_to_vm[x]];
     vm->threadFailure = true;
   }
+}
+
+void Dispatcher::dispatch_loop_thread(int index,
+                                      std::list<std::future<int>>& futures)
+{
+  auto parent_vm = this->getVM();
+  auto free_vm_index = this->findFreeVM();
+  auto childVM = &this->vm_pool[free_vm_index];
+  childVM->isFuture = true;
+  childVM->copyParent(parent_vm);
+  auto frame = &childVM->frames[childVM->frameCount - 1];
+  *(childVM->stackTop - 2) = NUMBER_VAL(index);  // Test this
+  frame->ip += 2;  // Skip jump statement
+  // Launch Future
+  // auto res = std::async(
+  //     std::launch::async, futureTask, parent_vm, childVM, free_vm_index);
+  // child_obj.join();
+  futures.push_back(std::async(
+      std::launch::async, futureTask, parent_vm, childVM, free_vm_index));
+
+  return;
 }
 
 Dispatcher* Dispatcher::dispatcher = new Dispatcher;

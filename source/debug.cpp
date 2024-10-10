@@ -246,6 +246,14 @@ int disassembleInstruction(Chunk* chunk, int offset)
       return simpleInstruction("OP_FUTURE", offset);
     case OP_GET_FUTURE:
       return simpleInstruction("OP_GET_FUTURE", offset);
+    case OP_PARALLEL_FOR_BEGIN:
+      return jumpInstruction("OP_PARALLEL_FOR_BEGIN", 1, chunk, offset);
+    case OP_PARALLEL_FOR_END:
+      return simpleInstruction("OP_PARALLEL_FOR_END", offset);
+    case OP_EXIT_IF_FALSE_ITERATOR:
+      return simpleInstruction("OP_EXIT_IF_FALSE_ITERATOR", offset);
+    case OP_INCR_ITERATOR:
+      return simpleInstruction("OP_INCR_ITERATOR", offset);
     default:
       printf("Unknown opcode %d\n", instruction);
       return offset + 1;

@@ -68,7 +68,11 @@ typedef enum
   TOKEN_FUTURE,
   TOKEN_AWAIT,
   TOKEN_REDUCE,
-  TOKEN_COLON
+  TOKEN_COLON,
+
+  TOKEN_PREDUCE,
+  TOKEN_PFOR
+
 } TokenType;
 
 /**

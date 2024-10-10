@@ -246,6 +246,7 @@ void VM::initVM()
   this->globals.initTable();
 
   this->finishStackCount = 0;
+  this->finish2StackCount = 0;
 
   this->initString = copyString("init", 4);
   this->isFuture = false;
@@ -382,31 +383,62 @@ InterpretResult VM::run()
 {
   auto frame = &this->frames[this->frameCount - 1];
 
-  void* targets[] = {&&OP_CONSTANT_INSTRCTN,      &&OP_NIL_INSTRCTN,
-                     &&OP_TRUE_INSTRCTN,          &&OP_FALSE_INSTRCTN,
-                     &&OP_EQUAL_INSTRCTN,         &&OP_GREATER_INSTRCTN,
-                     &&OP_LESS_INSTRCTN,          &&OP_RETURN_INSTRCTN,
-                     &&OP_NEGATE_INSTRCTN,        &&OP_ADD_INSTRCTN,
-                     &&OP_SUBTRACT_INSTRCTN,      &&OP_MULTIPLY_INSTRCTN,
-                     &&OP_DIVIDE_INSTRCTN,        &&OP_MODULUS_INSTRCTN,
-                     &&OP_NOT_INSTRCTN,           &&OP_PRINT_INSTRCTN,
-                     &&OP_JUMP_INSTRCTN,          &&OP_JUMP_IF_FALSE_INSTRCTN,
-                     &&OP_LOOP_INSTRCTN,          &&OP_CALL_INSTRCTN,
-                     &&OP_INVOKE_INSTRCTN,        &&OP_SUPER_INVOKE_INSTRCTN,
-                     &&OP_CLOSURE_INSTRCTN,       &&OP_GET_UPVALUE_INSTRCTN,
-                     &&OP_SET_UPVALUE_INSTRCTN,   &&OP_GET_PROPERTY_INSTRCTN,
-                     &&OP_SET_PROPERTY_INSTRCTN,  &&OP_POP_INSTRCTN,
-                     &&OP_GET_LOCAL_INSTRCTN,     &&OP_SET_LOCAL_INSTRCTN,
-                     &&OP_DEFINE_GLOBAL_INSTRCTN, &&OP_CLOSE_UPVALUE_INSTRCTN,
-                     &&OP_CLASS_INSTRCTN,         &&OP_INHERIT_INSTRCTN,
-                     &&OP_GET_SUPER_INSTRCTN,     &&OP_METHOD_INSTRCTN,
-                     &&OP_GET_GLOBAL_INSTRCTN,    &&OP_SET_GLOBAL_INSTRCTN,
-                     &&OP_BUILD_LIST_INSTRCTN,    &&OP_INDEX_GET_INSTRCTN,
-                     &&OP_INDEX_SET_INSTRCTN,     &&OP_FINISH_BEGIN_INSTRCTN,
-                     &&OP_FINISH_END_INSTRCTN,    &&OP_ASYNC_BEGIN_INSTRCTN,
-                     &&OP_ASYNC_END_INSTRCTN,     &&OP_FUTURE_INSTRCTN,
-                     &&OP_GET_FUTURE_INSTRCTN,    &&OP_DUPLICATE_INSTRCTN,
-                     &&OP_REDUCE_BEGIN_INSTRCTN,  &&OP_REDUCE_UPDATE_INSTRCTN};
+  void* targets[] = {
+      &&OP_CONSTANT_INSTRCTN,
+      &&OP_NIL_INSTRCTN,
+      &&OP_TRUE_INSTRCTN,
+      &&OP_FALSE_INSTRCTN,
+      &&OP_EQUAL_INSTRCTN,
+      &&OP_GREATER_INSTRCTN,
+      &&OP_LESS_INSTRCTN,
+      &&OP_RETURN_INSTRCTN,
+      &&OP_NEGATE_INSTRCTN,
+      &&OP_ADD_INSTRCTN,
+      &&OP_SUBTRACT_INSTRCTN,
+      &&OP_MULTIPLY_INSTRCTN,
+      &&OP_DIVIDE_INSTRCTN,
+      &&OP_MODULUS_INSTRCTN,
+      &&OP_NOT_INSTRCTN,
+      &&OP_PRINT_INSTRCTN,
+      &&OP_JUMP_INSTRCTN,
+      &&OP_JUMP_IF_FALSE_INSTRCTN,
+      &&OP_LOOP_INSTRCTN,
+      &&OP_CALL_INSTRCTN,
+      &&OP_INVOKE_INSTRCTN,
+      &&OP_SUPER_INVOKE_INSTRCTN,
+      &&OP_CLOSURE_INSTRCTN,
+      &&OP_GET_UPVALUE_INSTRCTN,
+      &&OP_SET_UPVALUE_INSTRCTN,
+      &&OP_GET_PROPERTY_INSTRCTN,
+      &&OP_SET_PROPERTY_INSTRCTN,
+      &&OP_POP_INSTRCTN,
+      &&OP_GET_LOCAL_INSTRCTN,
+      &&OP_SET_LOCAL_INSTRCTN,
+      &&OP_DEFINE_GLOBAL_INSTRCTN,
+      &&OP_CLOSE_UPVALUE_INSTRCTN,
+      &&OP_CLASS_INSTRCTN,
+      &&OP_INHERIT_INSTRCTN,
+      &&OP_GET_SUPER_INSTRCTN,
+      &&OP_METHOD_INSTRCTN,
+      &&OP_GET_GLOBAL_INSTRCTN,
+      &&OP_SET_GLOBAL_INSTRCTN,
+      &&OP_BUILD_LIST_INSTRCTN,
+      &&OP_INDEX_GET_INSTRCTN,
+      &&OP_INDEX_SET_INSTRCTN,
+      &&OP_FINISH_BEGIN_INSTRCTN,
+      &&OP_FINISH_END_INSTRCTN,
+      &&OP_ASYNC_BEGIN_INSTRCTN,
+      &&OP_ASYNC_END_INSTRCTN,
+      &&OP_FUTURE_INSTRCTN,
+      &&OP_GET_FUTURE_INSTRCTN,
+      &&OP_DUPLICATE_INSTRCTN,
+      &&OP_REDUCE_BEGIN_INSTRCTN,
+      &&OP_REDUCE_UPDATE_INSTRCTN,
+      &&OP_PARALLEL_FOR_BEGIN_INSTRCTN,
+      &&OP_PARALLEL_FOR_END_INSTRCTN,
+      &&OP_EXIT_IF_FALSE_INSTRCTN,
+      &&OP_INCR_ITERATOR_INSTRCTN,
+  };
 
   const auto READ_BYTE = [&frame, this]()
   {
@@ -418,16 +450,18 @@ InterpretResult VM::run()
 #ifdef DEBUG_TRACE_EXECUTION
 #  define NEXT_INSTRCTN() \
     do { \
-      printf("          "); \
-      for (Value* slot = this->stack; slot < this->stackTop; slot++) { \
-        printf("[ "); \
-        printValue(*slot); \
-        printf(" ]"); \
+      if (this->parent == NULL) { \
+        printf("          "); \
+        for (Value* slot = this->stack; slot < this->stackTop; slot++) { \
+          printf("[ "); \
+          printValue(*slot); \
+          printf(" ]"); \
+        } \
+        printf("\n"); \
+        disassembleInstruction( \
+            &frame->closure->function->chunk, \
+            (int)(frame->ip - frame->closure->function->chunk.code)); \
       } \
-      printf("\n"); \
-      disassembleInstruction( \
-          &frame->closure->function->chunk, \
-          (int)(frame->ip - frame->closure->function->chunk.code)); \
       goto* targets[READ_BYTE()]; \
     } while (0)
 
@@ -1070,6 +1104,52 @@ OP_REDUCE_UPDATE_INSTRCTN : {
   NEXT_INSTRCTN();
 }
 
+OP_PARALLEL_FOR_BEGIN_INSTRCTN : {
+  this->finish2StackCount++;
+  auto dispatcher = Dispatcher::getDispatcher();
+  for (int i = 0; i < PARALLEL_COUNT; i++) {
+    dispatcher->dispatch_loop_thread(
+        i, this->finish2Stack[this->finish2StackCount]);
+    // this->finish2Stack[this->finish2StackCount].push_back(res);
+  }
+  auto offset = READ_SHORT();
+  frame->ip += offset;
+  NEXT_INSTRCTN();
+}
+OP_PARALLEL_FOR_END_INSTRCTN : {
+  for (auto& thread : this->finish2Stack[this->finish2StackCount]) {
+    thread.get();
+  }
+  this->finish2Stack[this->finish2StackCount].clear();
+  this->finish2StackCount--;
+  NEXT_INSTRCTN();
+}
+OP_EXIT_IF_FALSE_INSTRCTN : {
+  // exit(0);
+  auto array_value = this->stackTop - 1;
+  if (!IS_LIST(*array_value)) {
+    return INTERPRET_RUNTIME_ERROR;
+  }
+  auto iterator_value = this->stackTop - 2;
+  auto index = this->stackTop - 3;
+  auto printObject(*(this->stackTop - 1));
+
+  ObjList* list = AS_LIST(*array_value);
+  int arr_index = AS_NUMBER(*index);
+  if (!isValidListIndex(list, arr_index)) {
+    return INTERPRET_OK;
+  }
+  auto result = indexFromList(list, arr_index);
+  *iterator_value = result;
+  *index = NUMBER_VAL(arr_index + PARALLEL_COUNT);
+  NEXT_INSTRCTN();
+}
+OP_INCR_ITERATOR_INSTRCTN : {
+  // exit(0);
+
+  NEXT_INSTRCTN();
+}
+
 #undef NEXT_INSTRCTN
 }
 }
@@ -1366,6 +1446,7 @@ void VM::copyParent(VM* parent)
     this->grayStack = NULL;
 
     this->finishStackCount = 0;
+    this->finish2StackCount = 0;
     this->initString = copyString("init", 4);
 
     defineNative("clock", clockNative);

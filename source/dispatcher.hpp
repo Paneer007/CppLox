@@ -1,6 +1,8 @@
 #ifndef cpp_lox_dispatcher
 #define cpp_lox_dispatcher
 
+#include <chrono>
+#include <future>
 #include <mutex>
 #include <thread>
 #include <unordered_map>
@@ -39,6 +41,8 @@ public:
   void terminateAllThreads();
   void set_active_thread(size_t thread_id);
   void free_active_thread(size_t thread_id);
+  void dispatch_loop_thread(int index,
+                                        std::list<std::future<int>>& futures);
 };
 
 #endif
