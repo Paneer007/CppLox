@@ -118,6 +118,7 @@ int64_t test_table(int len)
       std::chrono::duration_cast<std::chrono::nanoseconds>(end - start);
 
   auto x = duration.count();
+  table.getCount();
   table.freeTable();
   return x;
 }
@@ -332,9 +333,9 @@ void test_hash()
   // test_custom_function(HASH_128, "HASH_128");
   // test_custom_function(HASH_512, "HASH_512");
   // test_custom_function(HASH_1024, "HASH_1024");
-  // test_custom_function(HASH_16384, "HASH_16384");
+  test_custom_function(HASH_16384, "HASH_16384");
   // test_custom_function(HASH_262144, "HASH_262144");
-  test_custom_function(HASH_4194304, "HASH_4194304");
+  // test_custom_function(HASH_4194304, "HASH_4194304");
   // test_custom_function(HASH_33554432, "HASH_33554432");
   // test_custom_function(HASH_1000000000, "HASH_1000000000");
 }

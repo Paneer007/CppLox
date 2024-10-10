@@ -122,9 +122,12 @@ int64_t test_table(int len)
   auto end = std::chrono::high_resolution_clock::now();
   auto duration =
       std::chrono::duration_cast<std::chrono::nanoseconds>(end - start);
+  auto x = duration.count();
+  table.getCount();
 
   table.freeTable();
-  auto x = duration.count();
+
+
   return x;
 }
 
