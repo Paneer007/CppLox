@@ -42,7 +42,8 @@ public:
   void set_active_thread(size_t thread_id);
   void free_active_thread(size_t thread_id);
   void dispatch_loop_thread(int index,
-                                        std::list<std::future<int>>& futures);
+                            std::list<std::future<int>>& futures,
+                            int initial_index);
 };
 
 #endif

@@ -1,0 +1,19 @@
+fun main(){
+    var adjMat = [];
+    append(adjMat,1);
+    append(adjMat,2);
+    append(adjMat,3);
+    append(adjMat,4);
+    append(adjMat,5);
+    append(adjMat,6);
+    append(adjMat,7);
+    append(adjMat,8);
+    append(adjMat,9);
+    append(adjMat,10);
+    var a = preduce(var x=2:*; var a: adjMat){
+        x = a;
+    };
+    print a;
+}
+
+main();

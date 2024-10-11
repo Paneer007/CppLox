@@ -172,7 +172,6 @@ TokenType Scanner::identifierType()
       {
         switch (this->start[2]) {
           case 'd':
-
             return this->checkKeyword(3, 3, "uce", TOKEN_REDUCE);
           case 't':
             return this->checkKeyword(3, 3, "urn", TOKEN_RETURN);

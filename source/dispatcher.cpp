@@ -196,7 +196,8 @@ void Dispatcher::terminateAllThreads()
 }
 
 void Dispatcher::dispatch_loop_thread(int index,
-                                      std::list<std::future<int>>& futures)
+                                      std::list<std::future<int>>& futures,
+                                      int initial_index)
 {
   auto parent_vm = this->getVM();
   auto free_vm_index = this->findFreeVM();
@@ -204,12 +205,10 @@ void Dispatcher::dispatch_loop_thread(int index,
   childVM->isFuture = true;
   childVM->copyParent(parent_vm);
   auto frame = &childVM->frames[childVM->frameCount - 1];
-  *(childVM->stackTop - 2) = NUMBER_VAL(index);  // Test this
+  // *(childVM->stackTop - 2) = NUMBER_VAL(index);  // Test this
+  *(childVM->stackTop - initial_index) = NUMBER_VAL(index);  // Test this
   frame->ip += 2;  // Skip jump statement
-  // Launch Future
-  // auto res = std::async(
-  //     std::launch::async, futureTask, parent_vm, childVM, free_vm_index);
-  // child_obj.join();
+
   futures.push_back(std::async(
       std::launch::async, futureTask, parent_vm, childVM, free_vm_index));
 

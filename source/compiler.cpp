@@ -533,11 +533,11 @@ static ObjFunction* endCompiler()
   ObjFunction* function = current->function;
 
 #ifdef DEBUG_PRINT_CODE
-  if (!parser.hadError) {
-    disassembleChunk(
-        currentChunk(),
-        function->name != NULL ? function->name->chars : "<script>");
-  }
+  // if (!parser.hadError) {
+  //   disassembleChunk(
+  //       currentChunk(),
+  //       function->name != NULL ? function->name->chars : "<script>");
+  // }
 #endif
   current = current->enclosing;
   return function;
@@ -1774,7 +1774,72 @@ static void _await(bool canAssign)
   emitByte(OP_GET_FUTURE);
 }
 
-static void _preduce(bool canAssign) {}
+static void _preduce(bool canAssign)
+{
+  beginScope();
+
+  // Result variable (dummy value zero for now)
+  emitConstant(NUMBER_VAL(0));  // To store result
+  emitConstant(NUMBER_VAL(0));  // To store copy of reducer original value
+  emitConstant(NUMBER_VAL(0));  // To store operator type
+  emitConstant(NUMBER_VAL(0));  // To store iterator index
+
+  current->localCount += 3;
+
+  // Reducer Declaration
+  consume(TOKEN_LEFT_PAREN, "Expect '(' after 'preduce'.");
+  consume(TOKEN_VAR, "Expect reducer declaration");
+  uint8_t pglobal = parseVariable("Expect variable name.");
+
+  auto temp_reducer = parser.previous;
+
+  if (match(TOKEN_EQUAL)) {
+    expression();
+  } else {
+    emitByte(OP_NIL);
+  }
+
+  defineVariable(pglobal);
+  emitByte(OP_REDUCE_PARALLEL_INITIALISE);
+
+  // Define another variable on the stack for copy of the reducer variable in
+  // each iterator
+
+  // Operator Declaration
+  consume(TOKEN_COLON, "Expect ':' after variable declaration.");
+  consumeOperator();
+  consume(TOKEN_SEMICOLON, "Expect ';' after operator.");
+
+  consume(TOKEN_VAR, "Expect reducer declaration");
+  uint8_t global = parseVariable("Expect variable name.");
+  emitByte(OP_NIL);
+  consume(TOKEN_COLON, "Expect colon after pfor variable declaration");
+  advance();
+  Token identifierName = parser.previous;
+  defineVariable(global);
+  namedVariable(identifierName, false);
+
+  consume(TOKEN_RIGHT_PAREN, "Expect ')' after 'pfor'.");
+
+  // add iterator for pfor variable begin and incrementing condition
+  auto bfpj =
+      emitJump(OP_PARALLEL_REDUCE_BEGIN);  // main thread jumps and waits for
+                                           // the rest of code to finish
+
+  int loopStart = currentChunk()->count;
+  emitByte(OP_REDUCE_PARALLEL_INCREMENT);
+  statement();
+  emitByte(OP_UPDATE_PARALLEL_REDUCE);
+  emitLoop(loopStart);
+  patchJump(bfpj);
+  emitByte(OP_PARALLEL_FOR_END);
+  endScope();
+  current->localCount -= 3;
+  emitByte(OP_POP);
+  emitByte(OP_POP);
+  emitByte(OP_POP);
+  emitByte(OP_POP);
+}
 
 /**
  * @brief Parses an expression with the given precedence.
