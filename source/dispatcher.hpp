@@ -31,7 +31,7 @@ public:
   static Dispatcher* getDispatcher();
   VM* getVM();
   VM* dispatchThread(VM* parent);  // Sets new VM loop with this
-  std::thread asyncBegin();
+  void asyncBegin(std::list<std::future<int>>& futures);
   void freeVM();
   void setId(size_t thread_id, int vm_id);
 

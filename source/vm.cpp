@@ -246,7 +246,6 @@ void VM::initVM()
   this->globals.initTable();
 
   this->finishStackCount = 0;
-  this->finish2StackCount = 0;
 
   this->initString = copyString("init", 4);
   this->isFuture = false;
@@ -453,7 +452,7 @@ InterpretResult VM::run()
 #ifdef DEBUG_TRACE_EXECUTION
 #  define NEXT_INSTRCTN() \
     do { \
-      if (this->parent == NULL) { \
+      if (this->parent != NULL) { \
         printf("          "); \
         for (Value* slot = this->stack; slot < this->stackTop; slot++) { \
           printf("[ "); \
@@ -819,8 +818,9 @@ OP_GET_LOCAL_INSTRCTN : {
 
 OP_SET_LOCAL_INSTRCTN : {
   auto slot = READ_BYTE();
+  (frame->futureLocalScope[frame->futureLocalScope.size() - 1]);
   if (this->parent != NULL && frame->futureLocalScope.size() > 0
-      && slot <= frame->futureLocalScope[frame->futureLocalScope.size() - 1])
+      && slot < frame->futureLocalScope[frame->futureLocalScope.size() - 1])
   {
     runtimeError(
         "Attempting to access variable outside asychronous code scope. \n");
@@ -1018,9 +1018,7 @@ OP_FINISH_BEGIN_INSTRCTN : {
 }
 OP_FINISH_END_INSTRCTN : {
   for (auto& thread : this->finishStack[this->finishStackCount]) {
-    if (thread->joinable()) {
-      thread->join();
-    }
+    thread.get();
   }
   this->finishStack[this->finishStackCount].clear();
   this->finishStackCount--;
@@ -1032,11 +1030,10 @@ OP_ASYNC_BEGIN_INSTRCTN : {
   int gap = this->stackTop - frame->slots;
   frame->futureLocalScope.push_back(gap);
   auto dispatcher = Dispatcher::getDispatcher();
-  auto new_thread = dispatcher->asyncBegin();
+  dispatcher->asyncBegin(this->finishStack[this->finishStackCount]);
   frame->futureLocalScope.pop_back();
   // new_thread.join();
 
-  this->finishStack[this->finishStackCount].push_back(&new_thread);
   // Start Next line of execution
   auto offset = READ_SHORT();
   frame->ip += offset;
@@ -1108,24 +1105,24 @@ OP_REDUCE_UPDATE_INSTRCTN : {
 }
 
 OP_PARALLEL_FOR_BEGIN_INSTRCTN : {
-  this->finish2StackCount++;
+  this->finishStackCount++;
   auto dispatcher = Dispatcher::getDispatcher();
 
   for (int i = 0; i < PARALLEL_COUNT; i++) {
     dispatcher->dispatch_loop_thread(
-        i, this->finish2Stack[this->finish2StackCount], 2);
-    // this->finish2Stack[this->finish2StackCount].push_back(res);
+        i, this->finishStack[this->finishStackCount], 3);
+    // this->finishStack[this->finishStackCount].push_back(res);
   }
   auto offset = READ_SHORT();
   frame->ip += offset;
   NEXT_INSTRCTN();
 }
 OP_PARALLEL_FOR_END_INSTRCTN : {
-  for (auto& thread : this->finish2Stack[this->finish2StackCount]) {
+  for (auto& thread : this->finishStack[this->finishStackCount]) {
     thread.get();
   }
-  this->finish2Stack[this->finish2StackCount].clear();
-  this->finish2StackCount--;
+  this->finishStack[this->finishStackCount].clear();
+  this->finishStackCount--;
   NEXT_INSTRCTN();
 }
 OP_EXIT_IF_FALSE_INSTRCTN : {
@@ -1158,11 +1155,11 @@ OP_REDUCE_PARALLEL_INITIALISE_INSTRCTN : {
   NEXT_INSTRCTN();
 }
 OP_PARALLEL_REDUCE_BEGIN_INSTRCTN : {
-  this->finish2StackCount++;
+  this->finishStackCount++;
   auto dispatcher = Dispatcher::getDispatcher();
   for (int i = 0; i < PARALLEL_COUNT; i++) {
     dispatcher->dispatch_loop_thread(
-        i, this->finish2Stack[this->finish2StackCount], 4);
+        i, this->finishStack[this->finishStackCount], 4);
   }
   auto offset = READ_SHORT();
   frame->ip += offset;
@@ -1513,7 +1510,7 @@ void VM::copyParent(VM* parent)
     this->grayStack = NULL;
 
     this->finishStackCount = 0;
-    this->finish2StackCount = 0;
+    this->finishStackCount = 0;
     this->initString = copyString("init", 4);
 
     defineNative("clock", clockNative);

@@ -130,10 +130,8 @@ public:
   Obj** grayStack;
   ObjString* initString;
 
-  std::vector<std::thread*> finishStack[256];
-  std::list<std::future<int>> finish2Stack[256];
+  std::list<std::future<int>> finishStack[256];
   int finishStackCount;
-  int finish2StackCount;
 
   VM* parent;
   bool assigned;

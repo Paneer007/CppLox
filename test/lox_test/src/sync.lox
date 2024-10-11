@@ -2,8 +2,7 @@ fun main(){
     finish {
         async {
             var j = 0;
-            for(var i = 1; j < 2; j= j +1){
-                print j;
+            for(var i = 1; j < 1000; j= j +1){
                 if(j % 100 == 0){
                     i = i+1;
                 }

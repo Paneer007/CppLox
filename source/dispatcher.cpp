@@ -139,7 +139,7 @@ Dispatcher* Dispatcher::getDispatcher()
   return Dispatcher::dispatcher;
 }
 
-std::thread Dispatcher::asyncBegin()
+void Dispatcher::asyncBegin(std::list<std::future<int>>& futures)
 {
   auto parent_vm = this->getVM();
   auto free_vm_index = this->findFreeVM();
@@ -148,8 +148,8 @@ std::thread Dispatcher::asyncBegin()
   auto frame = &childVM->frames[childVM->frameCount - 1];
   frame->ip += 2;  // Skip jump
 
-  std::thread child_obj(childMain, parent_vm, childVM, free_vm_index);
-  return child_obj;
+  futures.push_back(std::async(
+      std::launch::async, childMain, parent_vm, childVM, free_vm_index));
 }
 
 int Dispatcher::launchFuture()
