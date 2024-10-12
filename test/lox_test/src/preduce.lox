@@ -11,6 +11,7 @@ fun main(){
     append(adjMat,9);
     append(adjMat,10);
     var a = preduce(var x=2:*; var a: adjMat){
+        print a;
         x = a;
     };
     print a;

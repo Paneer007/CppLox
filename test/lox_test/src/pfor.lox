@@ -3,6 +3,14 @@ fun main(){
     append(adjMat,4);
     append(adjMat,5);
     append(adjMat,6);
+    append(adjMat,7);
+    append(adjMat,8);
+    append(adjMat,9);
+    append(adjMat,10);
+    append(adjMat,11);
+    append(adjMat,12);
+    append(adjMat,13);
+    append(adjMat,14);
     pfor(var a : adjMat){
         print a;
     }
