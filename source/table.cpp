@@ -88,12 +88,12 @@ static Entry* findEntry(Entry* entries,
     // index = (index + 1) % (capacity);
 
     // Quadratic Search
-    // auto n_i = (count + count * count) >> 1;
-    // index = (index + n_i) % (capacity);
-    // count += 1;
+    auto n_i = (count + count * count) >> 1;
+    index = (index + n_i) % (capacity);
+    count += 1;
 
     // Double Hashing
-    index = (index + key->hash2) % (capacity);
+    // index = (index + key->hash2) % (capacity);
     g_count++;
   }
 

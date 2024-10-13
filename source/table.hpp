@@ -7,7 +7,7 @@
 #include "value.hpp"
 #include "vector"
 
-#define THREAD_COUNT 16
+#define THREAD_COUNT 4
 /**
  * @brief Represents an entry in a hash table.
  *
