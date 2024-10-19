@@ -246,20 +246,20 @@ int disassembleInstruction(Chunk* chunk, int offset)
       return simpleInstruction("OP_FUTURE", offset);
     case OP_GET_FUTURE:
       return simpleInstruction("OP_GET_FUTURE", offset);
-    case OP_PARALLEL_FOR_BEGIN:
-      return jumpInstruction("OP_PARALLEL_FOR_BEGIN", 1, chunk, offset);
-    case OP_PARALLEL_FOR_END:
-      return simpleInstruction("OP_PARALLEL_FOR_END", offset);
+    case OP_PFOR_BEGIN:
+      return jumpInstruction("OP_PFOR_BEGIN", 1, chunk, offset);
+    case OP_PFOR_END:
+      return simpleInstruction("OP_PFOR_END", offset);
     case OP_EXIT_IF_FALSE_ITERATOR:
       return simpleInstruction("OP_EXIT_IF_FALSE_ITERATOR", offset);
-    case OP_PARALLEL_REDUCE_BEGIN:
-      return jumpInstruction("OP_PARALLEL_REDUCE_BEGIN", 1, chunk, offset);
-    case OP_UPDATE_PARALLEL_REDUCE:
-      return simpleInstruction("OP_UPDATE_PARALLEL_REDUCE", offset);
-    case OP_REDUCE_PARALLEL_INITIALISE:
-      return jumpInstruction("OP_REDUCE_PARALLEL_INITIALISE", 1, chunk, offset);
-    case OP_REDUCE_PARALLEL_INCREMENT:
-      return simpleInstruction("OP_REDUCE_PARALLEL_INCREMENT", offset);
+    case OP_PREDUCE_BEGIN:
+      return jumpInstruction("OP_PREDUCE_BEGIN", 1, chunk, offset);
+    case OP_PREDUCE_UPDATE:
+      return simpleInstruction("OP_PREDUCE_UPDATE", offset);
+    case OP_PREDUCE_INITIALISE:
+      return jumpInstruction("OP_PREDUCE_INITIALISE", 1, chunk, offset);
+    case OP_PREDUCE_INCREMENT:
+      return simpleInstruction("OP_PREDUCE_INCREMENT", offset);
     default:
       printf("Unknown opcode %d\n", instruction);
       return offset + 1;

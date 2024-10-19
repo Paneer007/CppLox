@@ -1410,16 +1410,14 @@ static void pforStatement()
   consume(TOKEN_RIGHT_PAREN, "Expect ')' after 'pfor'.");
 
   // add iterator for pfor variable begin and incrementing condition
-  auto bfpj =
-      emitJump(OP_PARALLEL_FOR_BEGIN);  // main thread jumps and waits for the
+  auto bfpj = emitJump(OP_PFOR_BEGIN);  // main thread jumps and waits for the
                                         // rest of code to finish
-
   int loopStart = currentChunk()->count;
   emitByte(OP_EXIT_IF_FALSE_ITERATOR);
   statement();
   emitLoop(loopStart);
   patchJump(bfpj);
-  emitByte(OP_PARALLEL_FOR_END);
+  emitByte(OP_PFOR_END);
   emitByte(OP_POP);
   emitByte(OP_POP);
   endScope();
@@ -1800,7 +1798,7 @@ static void _preduce(bool canAssign)
   }
 
   defineVariable(pglobal);
-  emitByte(OP_REDUCE_PARALLEL_INITIALISE);
+  emitByte(OP_PREDUCE_INITIALISE);
 
   // Define another variable on the stack for copy of the reducer variable in
   // each iterator
@@ -1822,17 +1820,16 @@ static void _preduce(bool canAssign)
   consume(TOKEN_RIGHT_PAREN, "Expect ')' after 'pfor'.");
 
   // add iterator for pfor variable begin and incrementing condition
-  auto bfpj =
-      emitJump(OP_PARALLEL_REDUCE_BEGIN);  // main thread jumps and waits for
+  auto bfpj = emitJump(OP_PREDUCE_BEGIN);  // main thread jumps and waits for
                                            // the rest of code to finish
 
   int loopStart = currentChunk()->count;
-  emitByte(OP_REDUCE_PARALLEL_INCREMENT);
+  emitByte(OP_PREDUCE_INCREMENT);
   statement();
-  emitByte(OP_UPDATE_PARALLEL_REDUCE);
+  emitByte(OP_PREDUCE_UPDATE);
   emitLoop(loopStart);
   patchJump(bfpj);
-  emitByte(OP_PARALLEL_FOR_END);
+  emitByte(OP_PFOR_END);
   endScope();
   current->localCount -= 3;
   emitByte(OP_POP);

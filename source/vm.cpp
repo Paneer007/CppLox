@@ -384,63 +384,65 @@ InterpretResult VM::run()
 {
   auto frame = &this->frames[this->frameCount - 1];
 
-  void* targets[] = {&&OP_CONSTANT_INSTRCTN,
-                     &&OP_NIL_INSTRCTN,
-                     &&OP_TRUE_INSTRCTN,
-                     &&OP_FALSE_INSTRCTN,
-                     &&OP_EQUAL_INSTRCTN,
-                     &&OP_GREATER_INSTRCTN,
-                     &&OP_LESS_INSTRCTN,
-                     &&OP_RETURN_INSTRCTN,
-                     &&OP_NEGATE_INSTRCTN,
-                     &&OP_ADD_INSTRCTN,
-                     &&OP_SUBTRACT_INSTRCTN,
-                     &&OP_MULTIPLY_INSTRCTN,
-                     &&OP_DIVIDE_INSTRCTN,
-                     &&OP_MODULUS_INSTRCTN,
-                     &&OP_NOT_INSTRCTN,
-                     &&OP_PRINT_INSTRCTN,
-                     &&OP_JUMP_INSTRCTN,
-                     &&OP_JUMP_IF_FALSE_INSTRCTN,
-                     &&OP_LOOP_INSTRCTN,
-                     &&OP_CALL_INSTRCTN,
-                     &&OP_INVOKE_INSTRCTN,
-                     &&OP_SUPER_INVOKE_INSTRCTN,
-                     &&OP_CLOSURE_INSTRCTN,
-                     &&OP_GET_UPVALUE_INSTRCTN,
-                     &&OP_SET_UPVALUE_INSTRCTN,
-                     &&OP_GET_PROPERTY_INSTRCTN,
-                     &&OP_SET_PROPERTY_INSTRCTN,
-                     &&OP_POP_INSTRCTN,
-                     &&OP_GET_LOCAL_INSTRCTN,
-                     &&OP_SET_LOCAL_INSTRCTN,
-                     &&OP_DEFINE_GLOBAL_INSTRCTN,
-                     &&OP_CLOSE_UPVALUE_INSTRCTN,
-                     &&OP_CLASS_INSTRCTN,
-                     &&OP_INHERIT_INSTRCTN,
-                     &&OP_GET_SUPER_INSTRCTN,
-                     &&OP_METHOD_INSTRCTN,
-                     &&OP_GET_GLOBAL_INSTRCTN,
-                     &&OP_SET_GLOBAL_INSTRCTN,
-                     &&OP_BUILD_LIST_INSTRCTN,
-                     &&OP_INDEX_GET_INSTRCTN,
-                     &&OP_INDEX_SET_INSTRCTN,
-                     &&OP_FINISH_BEGIN_INSTRCTN,
-                     &&OP_FINISH_END_INSTRCTN,
-                     &&OP_ASYNC_BEGIN_INSTRCTN,
-                     &&OP_ASYNC_END_INSTRCTN,
-                     &&OP_FUTURE_INSTRCTN,
-                     &&OP_GET_FUTURE_INSTRCTN,
-                     &&OP_DUPLICATE_INSTRCTN,
-                     &&OP_REDUCE_BEGIN_INSTRCTN,
-                     &&OP_REDUCE_UPDATE_INSTRCTN,
-                     &&OP_PARALLEL_FOR_BEGIN_INSTRCTN,
-                     &&OP_PARALLEL_FOR_END_INSTRCTN,
-                     &&OP_EXIT_IF_FALSE_INSTRCTN,
-                     &&OP_REDUCE_PARALLEL_INITIALISE_INSTRCTN,
-                     &&OP_PARALLEL_REDUCE_BEGIN_INSTRCTN,
-                     &&OP_REDUCE_PARALLEL_INCREMENT_INSTRCTN,
-                     &&OP_UPDATE_PARALLEL_REDUCE_INSTRCTN};
+  void* targets[] = {
+      &&OP_CONSTANT_INSTRCTN,
+      &&OP_NIL_INSTRCTN,
+      &&OP_TRUE_INSTRCTN,
+      &&OP_FALSE_INSTRCTN,
+      &&OP_EQUAL_INSTRCTN,
+      &&OP_GREATER_INSTRCTN,
+      &&OP_LESS_INSTRCTN,
+      &&OP_RETURN_INSTRCTN,
+      &&OP_NEGATE_INSTRCTN,
+      &&OP_ADD_INSTRCTN,
+      &&OP_SUBTRACT_INSTRCTN,
+      &&OP_MULTIPLY_INSTRCTN,
+      &&OP_DIVIDE_INSTRCTN,
+      &&OP_MODULUS_INSTRCTN,
+      &&OP_NOT_INSTRCTN,
+      &&OP_PRINT_INSTRCTN,
+      &&OP_JUMP_INSTRCTN,
+      &&OP_JUMP_IF_FALSE_INSTRCTN,
+      &&OP_LOOP_INSTRCTN,
+      &&OP_CALL_INSTRCTN,
+      &&OP_INVOKE_INSTRCTN,
+      &&OP_SUPER_INVOKE_INSTRCTN,
+      &&OP_CLOSURE_INSTRCTN,
+      &&OP_GET_UPVALUE_INSTRCTN,
+      &&OP_SET_UPVALUE_INSTRCTN,
+      &&OP_GET_PROPERTY_INSTRCTN,
+      &&OP_SET_PROPERTY_INSTRCTN,
+      &&OP_POP_INSTRCTN,
+      &&OP_GET_LOCAL_INSTRCTN,
+      &&OP_SET_LOCAL_INSTRCTN,
+      &&OP_DEFINE_GLOBAL_INSTRCTN,
+      &&OP_CLOSE_UPVALUE_INSTRCTN,
+      &&OP_CLASS_INSTRCTN,
+      &&OP_INHERIT_INSTRCTN,
+      &&OP_GET_SUPER_INSTRCTN,
+      &&OP_METHOD_INSTRCTN,
+      &&OP_GET_GLOBAL_INSTRCTN,
+      &&OP_SET_GLOBAL_INSTRCTN,
+      &&OP_BUILD_LIST_INSTRCTN,
+      &&OP_INDEX_GET_INSTRCTN,
+      &&OP_INDEX_SET_INSTRCTN,
+      &&OP_FINISH_BEGIN_INSTRCTN,
+      &&OP_FINISH_END_INSTRCTN,
+      &&OP_ASYNC_BEGIN_INSTRCTN,
+      &&OP_ASYNC_END_INSTRCTN,
+      &&OP_FUTURE_INSTRCTN,
+      &&OP_GET_FUTURE_INSTRCTN,
+      &&OP_DUPLICATE_INSTRCTN,
+      &&OP_REDUCE_BEGIN_INSTRCTN,
+      &&OP_REDUCE_UPDATE_INSTRCTN,
+      &&OP_PFOR_BEGIN_INSTRCTN,
+      &&OP_PFOR_END_INSTRCTN,
+      &&OP_EXIT_IF_FALSE_INSTRCTN,
+      &&OP_PREDUCE_INITIALISE_INSTRCTN,
+      &&OP_PREDUCE_BEGIN_INSTRCTN,
+      &&OP_PREDUCE_INCREMENT_INSTRCTN,
+      &&OP_PREDUCE_UPDATE_INSTRCTN,
+  };
 
   const auto READ_BYTE = [&frame, this]()
   {
@@ -1104,10 +1106,9 @@ OP_REDUCE_UPDATE_INSTRCTN : {
   NEXT_INSTRCTN();
 }
 
-OP_PARALLEL_FOR_BEGIN_INSTRCTN : {
+OP_PFOR_BEGIN_INSTRCTN : {
   this->finishStackCount++;
   auto dispatcher = Dispatcher::getDispatcher();
-
   for (int i = 0; i < PARALLEL_COUNT; i++) {
     dispatcher->dispatch_loop_thread(
         i, this->finishStack[this->finishStackCount], 3);
@@ -1117,7 +1118,7 @@ OP_PARALLEL_FOR_BEGIN_INSTRCTN : {
   frame->ip += offset;
   NEXT_INSTRCTN();
 }
-OP_PARALLEL_FOR_END_INSTRCTN : {
+OP_PFOR_END_INSTRCTN : {
   for (auto& thread : this->finishStack[this->finishStackCount]) {
     thread.get();
   }
@@ -1126,7 +1127,6 @@ OP_PARALLEL_FOR_END_INSTRCTN : {
   NEXT_INSTRCTN();
 }
 OP_EXIT_IF_FALSE_INSTRCTN : {
-  // exit(0);
   auto array_value = this->stackTop - 1;
   if (!IS_LIST(*array_value)) {
     return INTERPRET_RUNTIME_ERROR;
@@ -1134,7 +1134,6 @@ OP_EXIT_IF_FALSE_INSTRCTN : {
   auto iterator_value = this->stackTop - 2;
   auto index = this->stackTop - 3;
   auto printObject(*(this->stackTop - 1));
-
   ObjList* list = AS_LIST(*array_value);
   int arr_index = AS_NUMBER(*index);
   if (!isValidListIndex(list, arr_index)) {
@@ -1145,7 +1144,7 @@ OP_EXIT_IF_FALSE_INSTRCTN : {
   *index = NUMBER_VAL(arr_index + PARALLEL_COUNT);
   NEXT_INSTRCTN();
 }
-OP_REDUCE_PARALLEL_INITIALISE_INSTRCTN : {
+OP_PREDUCE_INITIALISE_INSTRCTN : {
   this->stackTop[-5] =
       this->stackTop[-1];  // Copying top value to reducer value for result
   this->stackTop[-4] = this->stackTop[-1];  // Copying top value to reducer
@@ -1154,7 +1153,7 @@ OP_REDUCE_PARALLEL_INITIALISE_INSTRCTN : {
   this->stackTop[-3].as.number = top;  // Storing operand type
   NEXT_INSTRCTN();
 }
-OP_PARALLEL_REDUCE_BEGIN_INSTRCTN : {
+OP_PREDUCE_BEGIN_INSTRCTN : {
   this->finishStackCount++;
   auto dispatcher = Dispatcher::getDispatcher();
   for (int i = 0; i < PARALLEL_COUNT; i++) {
@@ -1165,7 +1164,7 @@ OP_PARALLEL_REDUCE_BEGIN_INSTRCTN : {
   frame->ip += offset;
   NEXT_INSTRCTN();
 }
-OP_REDUCE_PARALLEL_INCREMENT_INSTRCTN : {
+OP_PREDUCE_INCREMENT_INSTRCTN : {
   auto array_value = this->stackTop - 1;
   if (!IS_LIST(*array_value)) {
     return INTERPRET_RUNTIME_ERROR;
@@ -1184,7 +1183,7 @@ OP_REDUCE_PARALLEL_INCREMENT_INSTRCTN : {
   *index = NUMBER_VAL(arr_index + PARALLEL_COUNT);
   NEXT_INSTRCTN();
 }
-OP_UPDATE_PARALLEL_REDUCE_INSTRCTN : {
+OP_PREDUCE_UPDATE_INSTRCTN : {
   // add atomics and reference to parallel VM
 
   auto reducer_local_value = AS_NUMBER(*(this->stackTop - 3));
