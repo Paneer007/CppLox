@@ -26,6 +26,7 @@ add_library(
     source/table.cpp
     source/value.cpp
     source/dispatcher.cpp
+    source/threadpool.cpp
     source/vm.cpp
 )
 

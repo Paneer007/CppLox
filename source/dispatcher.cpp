@@ -11,6 +11,7 @@
 
 #include "debug.hpp"
 #include "object.hpp"
+#include "threadpool.hpp"
 
 static int childMain(VM* parent, VM* childVM, int vm_id)
 {
@@ -147,9 +148,8 @@ void Dispatcher::asyncBegin(std::list<std::future<int>>& futures)
   childVM->copyParent(parent_vm);
   auto frame = &childVM->frames[childVM->frameCount - 1];
   frame->ip += 2;  // Skip jump
-
-  futures.push_back(std::async(
-      std::launch::async, childMain, parent_vm, childVM, free_vm_index));
+  auto tp = ThreadPool::getTP();
+  // futures.push_back(tp->enqueue(childMain, parent_vm, childVM, free_vm_index));
 }
 
 int Dispatcher::launchFuture()
@@ -209,8 +209,9 @@ void Dispatcher::dispatch_loop_thread(int index,
   *(childVM->stackTop - initial_index) = NUMBER_VAL(index);  // Test this
   frame->ip += 2;  // Skip jump statement
 
-  futures.push_back(std::async(
-      std::launch::async, futureTask, parent_vm, childVM, free_vm_index));
+  auto tp = ThreadPool::getTP();
+
+  futures.push_back(tp->enqueue(futureTask, parent_vm, childVM, free_vm_index));
 
   return;
 }
