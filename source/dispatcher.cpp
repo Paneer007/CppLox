@@ -149,7 +149,7 @@ void Dispatcher::asyncBegin(std::list<std::future<int>>& futures)
   auto frame = &childVM->frames[childVM->frameCount - 1];
   frame->ip += 2;  // Skip jump
   auto tp = ThreadPool::getTP();
-  // futures.push_back(tp->enqueue(childMain, parent_vm, childVM, free_vm_index));
+  futures.emplace_back(tp->enqueue(childMain, parent_vm, childVM, free_vm_index));
 }
 
 int Dispatcher::launchFuture()
@@ -211,7 +211,7 @@ void Dispatcher::dispatch_loop_thread(int index,
 
   auto tp = ThreadPool::getTP();
 
-  futures.push_back(tp->enqueue(futureTask, parent_vm, childVM, free_vm_index));
+  futures.emplace_back(tp->enqueue(futureTask, parent_vm, childVM, free_vm_index));
 
   return;
 }

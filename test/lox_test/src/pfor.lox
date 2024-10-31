@@ -6,7 +6,7 @@ fun main(){
     append(adjMat,7);
     append(adjMat,8);
     append(adjMat,9);
-    append(adjMat,9);
+    append(adjMat,1010);
     append(adjMat,9);
     append(adjMat,9);
     append(adjMat,9);

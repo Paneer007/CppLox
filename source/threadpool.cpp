@@ -1,6 +1,7 @@
 #include <condition_variable>
 #include <functional>
 #include <future>
+#include <iostream>
 #include <memory>
 #include <mutex>
 #include <queue>
@@ -10,15 +11,17 @@
 
 #include "threadpool.hpp"
 
-inline ThreadPool::ThreadPool(int threads)
+inline ThreadPool::ThreadPool(int threads = std::thread::hardware_concurrency())
 {
+  if (!threads)
+    throw std::invalid_argument("more than zero threads expected");
   this->stop = false;
   for (auto i = 0; i < threads; i++) {
     workers.emplace_back(
         [this]
         {
           while (true) {
-            std::function<int()> task;
+            std::function<void()> task;
             {
               std::unique_lock<std::mutex> lock(this->queue_mutex);
               this->condition.wait(
@@ -30,32 +33,31 @@ inline ThreadPool::ThreadPool(int threads)
               task = std::move(this->task_queue.front());
               this->task_queue.pop();
             }
+            printf("\n Executing task \n");
             task();
+            printf("\n Done task \n");
           }
         });
   }
 }
 
-auto ThreadPool::enqueue(int (&f)(VM*, VM*, int), VM*& a, VM*& b, int& c)
-    -> std::future<int>
-{
-  using return_type = decltype(f(a, b, c));
-  auto task = std::make_shared<std::packaged_task<return_type()>>(
-      std::bind(std::forward<int (&)(VM*, VM*, int)>(f),
-                std::forward<VM*>(a),
-                std::forward<VM*>(b),
-                std::forward<int>(c)));
-  std::future<int> res = task->get_future();
-  {
-    std::unique_lock<std::mutex> lock(queue_mutex);
+// template<class F, class... Args>
+// auto ThreadPool::enqueue(F&& f, Args&&... args)
+//     -> std::future<typename std::result_of<F(Args...)>::type>
+// {
+//   using packaged_task_t =
+//       std::packaged_task<typename std::result_of<F(Args...)>::type()>;
 
-    if (stop)
-      throw std::runtime_error("enqueue on stopped ThreadPool");
-    this->task_queue.emplace([task]() { (*task)(); });
-  }
-  this->condition.notify_one();
-  return res;
-}
+//   std::shared_ptr<packaged_task_t> task(new packaged_task_t(
+//       std::bind(std::forward<F>(f), std::forward<Args>(args)...)));
+//   auto res = task->get_future();
+//   {
+//     std::unique_lock<std::mutex> lock(this->queue_mutex);
+//     this->task_queue.emplace([task]() { (*task)(); });
+//   }
+//   this->condition.notify_one();
+//   return res;
+// }
 
 inline ThreadPool::~ThreadPool()
 {
@@ -73,4 +75,4 @@ auto ThreadPool::getTP() -> ThreadPool*
   return ThreadPool::threadpool;
 }
 
-ThreadPool* ThreadPool::threadpool = new ThreadPool(8);
+ThreadPool* ThreadPool::threadpool = new ThreadPool();
