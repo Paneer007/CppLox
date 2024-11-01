@@ -126,10 +126,11 @@ public:
     auto h1 = H1(hash);
     auto h2 = H2(hash);
     auto elements = metadata.findElementIndex(h1, h2);
-    if (!elements.size()){
+    if (!elements.size()) {
+      // Insert new element
       
-    }else{
-
+    } else {
+      // Update existing element
     }
   }
 
@@ -138,7 +139,6 @@ public:
 
 int main()
 {
-  std::cout << "LOOK HERE" << std::endl;
   auto mp = SSEHashMap();
   std::vector<std::string> arr = {
       "Hello", "World", "Today", "I", "have", "tried", "SSE", "INSTRUCTIONS"};

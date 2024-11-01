@@ -1348,6 +1348,7 @@ static void expressionStatement()
 static void forStatement()
 {
   beginScope();
+
   consume(TOKEN_LEFT_PAREN, "Expect '(' after 'for'.");
   if (match(TOKEN_SEMICOLON)) {
     // No initializer.
@@ -1389,6 +1390,33 @@ static void forStatement()
     emitByte(OP_POP);  // Condition.
   }
 
+  endScope();
+}
+
+static void foreachStatement()
+{
+  beginScope();
+  emitConstant(NUMBER_VAL(0));  // To store index
+  current->localCount += 1;
+  consume(TOKEN_LEFT_PAREN, "Expect '(' after 'foreach'");
+  consume(TOKEN_VAR, "Expect foreach variable declaration");
+  uint8_t global = parseVariable("Expect variable name.");
+  emitByte(OP_NIL);
+  consume(TOKEN_COLON, "Expect colon after pfor variable declaration");
+  advance();
+  Token identifierName = parser.previous;
+  defineVariable(global);
+  namedVariable(identifierName, false);
+
+  consume(TOKEN_RIGHT_PAREN, "Expect ')' after 'pfor'.");
+  int loopStart = currentChunk()->count;
+  auto exitJump = emitJump(OP_JUMP_IF_ITERATOR_EXIST);
+  statement();
+  emitLoop(loopStart);
+  patchJump(exitJump);
+  emitByte(OP_PFOR_END);
+  emitByte(OP_POP);
+  emitByte(OP_POP);
   endScope();
 }
 
@@ -1687,6 +1715,8 @@ static void statement()
     endScope();
   } else if (match(TOKEN_FOR)) {
     forStatement();
+  } else if (match(TOKEN_FOREACH)) {
+    foreachStatement();
   } else if (match(TOKEN_PFOR)) {
     pforStatement();
   } else if (match(TOKEN_WHILE)) {

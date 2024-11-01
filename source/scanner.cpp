@@ -127,6 +127,9 @@ TokenType Scanner::identifierType()
           case 'a':
             return checkKeyword(2, 3, "lse", TOKEN_FALSE);
           case 'o':
+            if (this->current - this->start > 2) {
+              return checkKeyword(2, 5, "reach", TOKEN_FOREACH);
+            }
             return checkKeyword(2, 1, "r", TOKEN_FOR);
           case 'u':
             if (this->current - this->start > 2) {

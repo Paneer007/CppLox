@@ -5,7 +5,7 @@ input_program="./build/CppLox"
 # input_file="./test/lox_test/src/reduce.lox"
 input_file="./test/lox_test/src/pfor.lox"
 
-g++ -Wall ./source/*.cpp -o $input_program  
+# g++ -Wall ./source/*.cpp -o $input_program  
 # gdb -tui --args ./$input_program $input_file
 # gdb -tui ./$input_program
 

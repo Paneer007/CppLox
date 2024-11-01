@@ -442,6 +442,7 @@ InterpretResult VM::run()
       &&OP_PREDUCE_BEGIN_INSTRCTN,
       &&OP_PREDUCE_INCREMENT_INSTRCTN,
       &&OP_PREDUCE_UPDATE_INSTRCTN,
+      &&OP_JUMP_IF_ITERATOR_EXIST_INSTRCTN,
   };
 
   const auto READ_BYTE = [&frame, this]()
@@ -1210,6 +1211,27 @@ OP_PREDUCE_UPDATE_INSTRCTN : {
   m.unlock();
 
   *(this->stackTop - 3) = *(this->stackTop - 6);
+  NEXT_INSTRCTN();
+}
+
+OP_JUMP_IF_ITERATOR_EXIST_INSTRCTN : {
+  auto offset = READ_SHORT();
+
+  auto array_value = this->stackTop - 1;
+  if (!IS_LIST(*array_value)) {
+    return INTERPRET_RUNTIME_ERROR;
+  }
+  auto iterator_value = this->stackTop - 2;
+  auto index = this->stackTop - 3;
+  ObjList* list = AS_LIST(*array_value);
+  int arr_index = AS_NUMBER(*index);
+  if (!isValidListIndex(list, arr_index)) {
+    frame->ip += offset;
+  } else {
+    auto result = indexFromList(list, arr_index);
+    *iterator_value = result;
+    *index = NUMBER_VAL(arr_index + 1);
+  }
   NEXT_INSTRCTN();
 }
 

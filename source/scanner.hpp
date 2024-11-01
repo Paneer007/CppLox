@@ -71,7 +71,9 @@ typedef enum
   TOKEN_COLON,
 
   TOKEN_PREDUCE,
-  TOKEN_PFOR
+  TOKEN_PFOR,
+
+  TOKEN_FOREACH
 
 } TokenType;
 
