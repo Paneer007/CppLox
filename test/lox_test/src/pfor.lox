@@ -16,9 +16,11 @@ fun main(){
     append(adjMat,9);
     append(adjMat,9);
     append(adjMat,9);
-    append(adjMat,9);   append(adjMat,9);
     append(adjMat,9);
-    append(adjMat,9);   append(adjMat,9);
+    append(adjMat,9);
+    append(adjMat,9);
+    append(adjMat,9);   
+    append(adjMat,9);
     append(adjMat,9);
     append(adjMat,9);
     append(adjMat,9);

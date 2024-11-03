@@ -20,16 +20,47 @@ class ThreadPool
   std::mutex queue_mutex;
   std::condition_variable condition;
   std::atomic_bool stop;
+  static ThreadPool* threadpool;
 
 public:
-  ThreadPool(int threads);
   ThreadPool(const ThreadPool&) = delete;
   ThreadPool& operator=(const ThreadPool&) = delete;
   ThreadPool(ThreadPool&&) = delete;
   ThreadPool& operator=(ThreadPool&&) = delete;
-  static ThreadPool* threadpool;
 
-  static auto getTP() -> ThreadPool*;
+  ThreadPool(int threads = std::thread::hardware_concurrency())
+  {
+    if (!threads)
+      throw std::invalid_argument("more than zero threads expected");
+    this->stop = false;
+    // Creating workers
+    for (auto i = 0; i < threads; i++) {
+      // Spawning a thread that basically loops infinitely and
+      // Checks if there a task in the queue
+      // If a task exists, we dequeue it and execute it
+      workers.emplace_back(
+          [this]
+          {
+            while (true) {
+              std::function<void()> task;
+              {
+                std::unique_lock<std::mutex> lock(this->queue_mutex);
+                this->condition.wait(
+                    lock,
+                    [this] { return this->stop || !this->task_queue.empty(); });
+                if (this->stop && this->task_queue.empty()) {
+                  return;
+                }
+                task = std::move(this->task_queue.front());
+                this->task_queue.pop();
+              }
+              task();
+            }
+          });
+    }
+  }
+
+  static auto getTP() -> ThreadPool* { return ThreadPool::threadpool; }
 
   template<class F, class... Args>
   auto enqueue(F&& f, Args&&... args)
@@ -49,7 +80,16 @@ public:
     return res;
   }
 
-  ~ThreadPool();
+  ~ThreadPool()
+  {
+    {
+      std::unique_lock<std::mutex> lock(queue_mutex);
+      this->stop = true;
+    }
+    this->condition.notify_all();
+    for (std::thread& worker : this->workers)
+      worker.join();
+  }
 };
 
 #endif
