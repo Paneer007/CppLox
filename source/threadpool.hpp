@@ -66,16 +66,21 @@ public:
   auto enqueue(F&& f, Args&&... args)
       -> std::future<typename std::result_of<F(Args...)>::type>
   {
+    // Return type of the packaged tasks
     using packaged_task_t =
         std::packaged_task<typename std::result_of<F(Args...)>::type()>;
 
+    // Storing args and function as a parameter
     std::shared_ptr<packaged_task_t> task(new packaged_task_t(
         std::bind(std::forward<F>(f), std::forward<Args>(args)...)));
+
+    // Enqueue the task and return the future object
     auto res = task->get_future();
     {
       std::unique_lock<std::mutex> lock(this->queue_mutex);
       this->task_queue.emplace([task]() { (*task)(); });
     }
+    // update the mutex conditional variable
     this->condition.notify_one();
     return res;
   }
