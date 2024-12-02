@@ -1,10 +1,19 @@
 fun waitForMe(){
+    var j = 0;
+    for(var i = 1; i < 10; j = j +1){
+        if(j % 10000000 == 0){
+            print("One");
+            i = i+1;
+        }
+    }
+    print "see this";
     return 1;
 }
 
 fun main(){
     var x = future waitForMe();
     print x;
+    print "We be ballin";
     var res = await x;
     print res;
 }

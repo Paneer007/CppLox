@@ -145,11 +145,18 @@ void Dispatcher::asyncBegin(std::list<std::future<int>>& futures)
   auto parent_vm = this->getVM();
   auto free_vm_index = this->findFreeVM();
   auto childVM = &this->vm_pool[free_vm_index];
+  // auto start = std::chrono::high_resolution_clock::now();
   childVM->copyParent(parent_vm);
+  // auto end = std::chrono::high_resolution_clock::now();
+  // auto duration =
+  // std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+  // std::cout << "Time taken to run a VM" << duration.count() << std::endl;
+
   auto frame = &childVM->frames[childVM->frameCount - 1];
   frame->ip += 2;  // Skip jump
   auto tp = ThreadPool::getTP();
-  futures.emplace_back(tp->enqueue(childMain, parent_vm, childVM, free_vm_index));
+  futures.emplace_back(
+      tp->enqueue(childMain, parent_vm, childVM, free_vm_index));
 }
 
 int Dispatcher::launchFuture()
@@ -158,12 +165,17 @@ int Dispatcher::launchFuture()
   auto free_vm_index = this->findFreeVM();
   auto childVM = &this->vm_pool[free_vm_index];
   childVM->isFuture = true;
+  // auto start = std::chrono::high_resolution_clock::now();
   childVM->copyParent(parent_vm);
+  // auto end = std::chrono::high_resolution_clock::now();
+  // auto duration =
+  // std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+  // std::cout << "Time taken to run a VM" << duration.count() << std::endl;
   auto frame = &childVM->frames[childVM->frameCount - 1];
   frame->ip += 3;  // Skip call
   // Launch Future
-  futureTask(parent_vm, childVM, free_vm_index);
-
+  auto tp = ThreadPool::getTP();
+  tp->enqueue(futureTask, parent_vm, childVM, free_vm_index);
   return free_vm_index;
 }
 
@@ -199,20 +211,26 @@ void Dispatcher::dispatch_loop_thread(int index,
                                       std::list<std::future<int>>& futures,
                                       int initial_index)
 {
+  // auto start = std::chrono::high_resolution_clock::now();
+
   auto parent_vm = this->getVM();
   auto free_vm_index = this->findFreeVM();
   auto childVM = &this->vm_pool[free_vm_index];
   childVM->isFuture = true;
   childVM->copyParent(parent_vm);
+
   auto frame = &childVM->frames[childVM->frameCount - 1];
   // *(childVM->stackTop - 2) = NUMBER_VAL(index);  // Test this
   *(childVM->stackTop - initial_index) = NUMBER_VAL(index);  // Test this
   frame->ip += 2;  // Skip jump statement
 
   auto tp = ThreadPool::getTP();
-
-  futures.emplace_back(tp->enqueue(futureTask, parent_vm, childVM, free_vm_index));
-
+  futures.emplace_back(
+      tp->enqueue(futureTask, parent_vm, childVM, free_vm_index));
+  // auto end = std::chrono::high_resolution_clock::now();
+  // auto duration =
+  // std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+  // std::cout << "Time taken to run a VM: " << duration.count() << std::endl;
   return;
 }
 

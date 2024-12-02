@@ -1,20 +1,53 @@
-fun main(){
+fun main(){ 
     var adjMat = [];
-    append(adjMat,1);
+    append(adjMat,8);
     append(adjMat,2);
     append(adjMat,3);
     append(adjMat,4);
     append(adjMat,5);
-    append(adjMat,6);
-    append(adjMat,7);
-    append(adjMat,8);
-    append(adjMat,9);
-    append(adjMat,10);
+    // append(adjMat,6);
+    // append(adjMat,7);
+    // append(adjMat,8);
+    // append(adjMat,9);
+    // append(adjMat,10);
+    // append(adjMat,11);
+    // append(adjMat,12);
+    // append(adjMat,13);
+    // append(adjMat,14);
+    // append(adjMat,15);
+    // append(adjMat,16);
+    // append(adjMat,17);
+    // append(adjMat,18);
+    // append(adjMat,19);
+    // append(adjMat,20);   
+    // append(adjMat,21);
+    // append(adjMat,22);
+    // append(adjMat,23);
+    // append(adjMat,24);
+    // append(adjMat,25);
+    // append(adjMat,26);
+    // append(adjMat,27);
+    // append(adjMat,28);
+    // append(adjMat,29);
+    // append(adjMat,30);
+    // append(adjMat,31);
     var a = preduce(var x=2:*; var a: adjMat){
+        // print threadId();
         print a;
+        var z = 0;
+        var i = 1;
+        while( i < 1000){
+            z = z +1;
+            if(z>1000){
+                z = 0;
+                i = i + 1;
+            }
+        }
         x = a;
     };
     print a;
 }
+
+// preduce bug
 
 main();

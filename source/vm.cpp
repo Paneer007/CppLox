@@ -13,6 +13,7 @@
 #include "compiler.hpp"
 #include "debug.hpp"
 #include "dispatcher.hpp"
+#include "lockmanager.hpp"
 #include "memory.hpp"
 #include "object.hpp"
 
@@ -45,6 +46,14 @@ static Value deleteNative(int argCount, Value* args)
 
   deleteFromList(list, index);
   return NIL_VAL;
+}
+
+static Value getThreadID(int argCount, Value*)
+{
+  auto x = static_cast<double>(
+      std::hash<std::thread::id> {}(std::this_thread::get_id()));
+
+  return NUMBER_VAL(x);
 }
 
 static Value strInput(int argCount, Value* args)
@@ -258,6 +267,7 @@ void VM::initVM()
   defineNative("str_input", strInput);
   defineNative("char_input", charInput);
   defineNative("len", objLength);
+  defineNative("threadId", getThreadID);
 }
 
 /**
@@ -455,6 +465,7 @@ InterpretResult VM::run()
 #ifdef DEBUG_TRACE_EXECUTION
 #  define NEXT_INSTRCTN() \
     do { \
+      m.lock(); \
       if (this->parent != NULL) { \
         printf("          "); \
         for (Value* slot = this->stack; slot < this->stackTop; slot++) { \
@@ -467,6 +478,7 @@ InterpretResult VM::run()
             &frame->closure->function->chunk, \
             (int)(frame->ip - frame->closure->function->chunk.code)); \
       } \
+      m.unlock(); \
       goto* targets[READ_BYTE()]; \
     } while (0)
 
@@ -1157,6 +1169,8 @@ OP_PREDUCE_INITIALISE_INSTRCTN : {
 OP_PREDUCE_BEGIN_INSTRCTN : {
   this->finishStackCount++;
   auto dispatcher = Dispatcher::getDispatcher();
+  auto lockmanager = LockManager::getLockManager();
+  lockmanager->create_preduce_mutex(this);
   for (int i = 0; i < PARALLEL_COUNT; i++) {
     dispatcher->dispatch_loop_thread(
         i, this->finishStack[this->finishStackCount], 4);
@@ -1192,8 +1206,12 @@ OP_PREDUCE_UPDATE_INSTRCTN : {
   auto reducer_original_value = AS_NUMBER(*(this->stackTop - 6));
   auto parent_vm = this->parent;
 
+  auto lockmanager = LockManager::getLockManager();
+
   // CRITICAL SECTION
-  m.lock();
+  // m.lock();
+  lockmanager->lock_preduce_mutex(this->parent);
+
   auto reducer_result = AS_NUMBER(*(parent_vm->stackTop - 7));
   // auto reducer_result = AS_NUMBER(*(this->stackTop - 7));
 
@@ -1208,7 +1226,7 @@ OP_PREDUCE_UPDATE_INSTRCTN : {
   }
 
   *(parent_vm->stackTop - 7) = NUMBER_VAL(reducer_result);
-  m.unlock();
+  lockmanager->unlock_preduce_mutex(this->parent);
 
   *(this->stackTop - 3) = *(this->stackTop - 6);
   NEXT_INSTRCTN();
@@ -1502,9 +1520,15 @@ void VM::copyParent(VM* parent)
 {
   if (parent != NULL) {
     std::copy(parent->frames, parent->frames + 2048, this->frames);
+    // auto start = std::chrono::high_resolution_clock::now();
     std::copy(parent->stack,
-              parent->stack + STACK_MAX,
+              parent->stackTop + 1,
               this->stack);  // Synchronize the new jumps
+    // auto end = std::chrono::high_resolution_clock::now();
+    // auto duration =
+    // std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+    // std::cout << "Time taken to copy a VM stack: " << duration.count()
+    // << std::endl;
     auto diff = parent->stackTop - parent->stack;
     this->stackTop = this->stack + diff;
     this->frameCount = parent->frameCount;
@@ -1542,6 +1566,7 @@ void VM::copyParent(VM* parent)
     defineNative("str_input", strInput);
     defineNative("char_input", charInput);
     defineNative("len", objLength);
+    defineNative("threadId", getThreadID);
 
   } else {
     this->initVM();

@@ -28,6 +28,7 @@ add_library(
     source/dispatcher.cpp
     source/threadpool.cpp
     source/vm.cpp
+    source/lockmanager.cpp
 )
 
 target_include_directories(

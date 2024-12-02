@@ -1,38 +1,21 @@
 fun main(){
     var adjMat = [];
-    append(adjMat,4);
-    append(adjMat,5);
-    append(adjMat,6);
-    append(adjMat,7);
-    append(adjMat,8);
-    append(adjMat,9);
-    append(adjMat,1010);
-    append(adjMat,9);
-    append(adjMat,9);
-    append(adjMat,9);
-    append(adjMat,9);
-    append(adjMat,9);
-    append(adjMat,9);
-    append(adjMat,9);
-    append(adjMat,9);
-    append(adjMat,9);
-    append(adjMat,9);
-    append(adjMat,9);
-    append(adjMat,9);
-    append(adjMat,9);   
-    append(adjMat,9);
-    append(adjMat,9);
-    append(adjMat,9);
-    append(adjMat,9);
-    append(adjMat,9);
-    append(adjMat,9);
-    append(adjMat,10);
-    append(adjMat,11);
-    append(adjMat,12);
-    append(adjMat,13);
-    append(adjMat,14);
+    for (var i = 0;i<10;i = i+1){
+        append(adjMat, i);
+    }
     pfor(var a : adjMat){
-        print a;
+        print a;        
+        // print a;
+        var z = 0;
+        var i = 0;
+        while( i < 10){
+            z = z +1;
+            if(z>1000000){
+                z = 0;
+                i = i + 1;
+            }
+
+        }
     }
 }
 

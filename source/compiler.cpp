@@ -1398,17 +1398,18 @@ static void foreachStatement()
   beginScope();
   emitConstant(NUMBER_VAL(0));  // To store index
   current->localCount += 1;
+
   consume(TOKEN_LEFT_PAREN, "Expect '(' after 'foreach'");
   consume(TOKEN_VAR, "Expect foreach variable declaration");
   uint8_t global = parseVariable("Expect variable name.");
   emitByte(OP_NIL);
-  consume(TOKEN_COLON, "Expect colon after pfor variable declaration");
+  consume(TOKEN_COLON, "Expect colon after foreach variable declaration");
   advance();
   Token identifierName = parser.previous;
   defineVariable(global);
   namedVariable(identifierName, false);
-
-  consume(TOKEN_RIGHT_PAREN, "Expect ')' after 'pfor'.");
+  current->localCount += 1;
+  consume(TOKEN_RIGHT_PAREN, "Expect ')' after 'foreach'.");
   int loopStart = currentChunk()->count;
   auto exitJump = emitJump(OP_JUMP_IF_ITERATOR_EXIST);
   statement();
@@ -1434,7 +1435,7 @@ static void pforStatement()
   Token identifierName = parser.previous;
   defineVariable(global);
   namedVariable(identifierName, false);
-
+  current->localCount += 1;
   consume(TOKEN_RIGHT_PAREN, "Expect ')' after 'pfor'.");
 
   // add iterator for pfor variable begin and incrementing condition
@@ -1804,15 +1805,17 @@ static void _await(bool canAssign)
 
 static void _preduce(bool canAssign)
 {
+  // Note we store result, copy of original value, operator type, iterator
+  // index, current result value, value of a, value of array
   beginScope();
 
-  // Result variable (dummy value zero for now)
   emitConstant(NUMBER_VAL(0));  // To store result
   emitConstant(NUMBER_VAL(0));  // To store copy of reducer original value
   emitConstant(NUMBER_VAL(0));  // To store operator type
   emitConstant(NUMBER_VAL(0));  // To store iterator index
-
   current->localCount += 3;
+
+  // Result variable (dummy value zero for now)
 
   // Reducer Declaration
   consume(TOKEN_LEFT_PAREN, "Expect '(' after 'preduce'.");
@@ -1832,7 +1835,6 @@ static void _preduce(bool canAssign)
 
   // Define another variable on the stack for copy of the reducer variable in
   // each iterator
-
   // Operator Declaration
   consume(TOKEN_COLON, "Expect ':' after variable declaration.");
   consumeOperator();
@@ -1841,25 +1843,27 @@ static void _preduce(bool canAssign)
   consume(TOKEN_VAR, "Expect reducer declaration");
   uint8_t global = parseVariable("Expect variable name.");
   emitByte(OP_NIL);
-  consume(TOKEN_COLON, "Expect colon after pfor variable declaration");
+  defineVariable(global);
+  consume(TOKEN_COLON, "Expect colon after preduce variable declaration");
   advance();
   Token identifierName = parser.previous;
-  defineVariable(global);
   namedVariable(identifierName, false);
-
+  // defineVariable(global);
   consume(TOKEN_RIGHT_PAREN, "Expect ')' after 'pfor'.");
-
   // add iterator for pfor variable begin and incrementing condition
   auto bfpj = emitJump(OP_PREDUCE_BEGIN);  // main thread jumps and waits for
                                            // the rest of code to finish
-
   int loopStart = currentChunk()->count;
+
   emitByte(OP_PREDUCE_INCREMENT);
+  current->localCount += 1;
+
   statement();
   emitByte(OP_PREDUCE_UPDATE);
   emitLoop(loopStart);
   patchJump(bfpj);
   emitByte(OP_PFOR_END);
+  current->localCount -= 1;
   endScope();
   current->localCount -= 3;
   emitByte(OP_POP);

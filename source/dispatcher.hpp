@@ -16,12 +16,9 @@ class Dispatcher
 
   std::unordered_map<size_t, int> id_to_vm;  // Make this atomic
   std::mutex id_to_vm_mtx;
-
   VM vm_pool[32];  // Make this atomic
   std::mutex vm_pool_mtx;
-
   std::vector<size_t> thread_arr;
-
   Dispatcher();
   void initDispatcher();
   void freeDispatcher();

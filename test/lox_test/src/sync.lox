@@ -2,8 +2,9 @@ fun main(){
     finish {
         async {
             var j = 0;
-            for(var i = 1; j < 1000; j= j +1){
-                if(j % 100 == 0){
+            for(var i = 1; i < 100000; j = j +1){
+                if(j % 10000000 == 0){
+                    print("One");
                     i = i+1;
                 }
             }
@@ -11,9 +12,23 @@ fun main(){
         }
         print 13;
         async {
+            var j = 0;
+            for(var i = 1; i < 100000; j = j +1){
+                if(j % 5000000 == 0){
+                    print("Two");
+                    i = i+1;
+                }
+            }
             print "Hello World 2";
         }
         async {
+            var j = 0;
+            for(var i = 1; i < 100000; j = j +1){
+                if(j % 2500000 == 0){
+                    print("Three");
+                    i = i+1;
+                }
+            }
             print "Hello World 3";
         }
         print 16;

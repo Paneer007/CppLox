@@ -143,6 +143,32 @@ public:
     return getSetBitIndexes(resultMask);
   }
 
+  std::vector<int> checkAllElement(std::uint64_t h2)
+  {
+    // convert it to a mask value
+    auto h2_mask = h2 << 1;  // Shifting by one bit to allow tag bit in mask
+    h2_mask = h2_mask | 1;  // element must exist by setting tag bit to 1
+    __m256i maskVec = _mm256_set1_epi64x(
+        h2_mask);  // Creating 4 copies of the h2 mask and using this as the 256
+                   // bit vector instruction mask
+    __m256i cmpResult = _mm256_cmpeq_epi64(
+        elements, maskVec);  // comparing each mask and returning 1 if the masks
+                             // match or not
+    auto resultMask = _mm256_movemask_pd(_mm256_castsi256_pd(
+        cmpResult));  // Converting this mask from _m256d to integer
+    resultMask = reverseBits(resultMask);  // For alignment  of indexes
+
+    if (get_mode) {
+      std::cout << "elements: ";
+      Log<long>(elements);
+      std::cout << "mask Vector: ";
+      Log<long>(maskVec);
+      std::cout << "cmp result: ";
+      Log<long>(cmpResult);
+    }
+    return getSetBitIndexes(resultMask);
+  }
+
   int reverseBits(int n)
   {
     return ((n & 0x1) << 3) | ((n & 0x2) << 1) | ((n & 0x4) >> 1)
@@ -279,26 +305,51 @@ public:
     delete metadatagroups;
   }
 
+  // void set(std::string key, std::string value)
+  // {
+  //   auto hash = hashString(key);
+  //   auto h1 = H1(hash);
+  //   auto h2 = H2(hash);
+  //   auto entries = this->findFilledEntryIndexes(h1, h2);
+  //   if (!entries.size()) {
+  //     auto free_entries = this->findFreeEntryIndex(h1, h2);
+  //     auto index = free_entries.first * 4 + free_entries.second;
+  //     this->entries[index].key = key;
+  //     this->entries[index].val = value;
+  //   } else {
+  //     for (auto& x : entries) {
+  //       auto index = x.first * 4 + x.second;
+  //       if (this->entries[index].key == key) {
+  //         this->entries[index].val = value;
+  //         break;
+  //       }
+  //     }
+  //   }
+  // }
+
   void set(std::string key, std::string value)
   {
     auto hash = hashString(key);
     auto h1 = H1(hash);
     auto h2 = H2(hash);
-    auto entries = this->findFilledEntryIndexes(h1, h2);
-    if (!entries.size()) {
-      auto free_entries = this->findFreeEntryIndex(h1, h2);
-      auto index = free_entries.first * 4 + free_entries.second;
-      this->entries[index].key = key;
-      this->entries[index].val = value;
-    } else {
-      for (auto& x : entries) {
-        auto index = x.first * 4 + x.second;
-        if (this->entries[index].key == key) {
-          this->entries[index].val = value;
-          break;
+
+    auto starting_index = h1 % mdg_capacity;
+    starting_index += mdg_capacity;
+    starting_index %= mdg_capacity;
+    auto iter = starting_index;
+
+    do {
+      auto elem = metadatagroups[iter];
+      auto res = elem.checkElement(h2);
+      if (res.size() > 0) {
+        for (auto& x : res) {
+          auto index = iter * 4 + x;
+          if (this->entries[index].key == key) {
+            this->entries[index].val = value;
+          }
         }
       }
-    }
+    } while (iter != starting_index);
   }
 
   std::string get(std::string key)
@@ -328,8 +379,15 @@ int main()
   for (auto& x : arr) {
     mp.set(x, x + "SSE");
   }
-  // get_mode = true;
+  get_mode = true;
   auto res = mp.get("Hello");
   std::cout << res << std::endl;
   return 0;
 }
+
+/**
+ * Possible errors, when set finds element but it doesn't exactly stop there,
+ * i.e need to test all elements then continue. Need to redo it with continuable
+ * indicies. Something like stream indices in a weird way How to do it, think
+ * about it
+ */
