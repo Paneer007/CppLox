@@ -942,16 +942,18 @@ OP_JUMP_IF_FALSE_INSTRCTN : {
 OP_SET_GLOBAL_INSTRCTN : {
   auto name = READ_STRING();
   if (this->globals.tableSet(name, peek(0))) {
+    this->globals.tableDelete(name);
     if (this->parent != NULL) {
       Value value;
       auto curr_parent = this->parent;
       while (curr_parent != NULL) {
         if (curr_parent->globals.tableGet(name, &value)) {
-          runtimeError(
-              "Attempting to modify global variable inside a asynchronous "
-              "block of code '%s'.",
-              name->chars);
-          return INTERPRET_RUNTIME_ERROR;
+          curr_parent->globals.tableSet(name, peek(0));
+          // runtimeError(
+          //     "Attempting to modify global variable inside a asynchronous
+          //     " "block of code '%s'.", name->chars);
+          NEXT_INSTRCTN();
+          // return INTERPRET_RUNTIME_ERROR;
         }
         curr_parent = curr_parent->parent;
       }
@@ -1114,10 +1116,12 @@ OP_INDEX_SET_INSTRCTN : {
 
   NEXT_INSTRCTN();
 }
+
 OP_FINISH_BEGIN_INSTRCTN : {
   this->finishStackCount++;
   NEXT_INSTRCTN();
 }
+
 OP_FINISH_END_INSTRCTN : {
   for (auto& thread : this->finishStack[this->finishStackCount]) {
     thread.get();
@@ -1126,6 +1130,7 @@ OP_FINISH_END_INSTRCTN : {
   this->finishStackCount--;
   NEXT_INSTRCTN();
 }
+
 OP_ASYNC_BEGIN_INSTRCTN : {
   // Prep Thread VM to execute
   // Note: Skip jump in bytecode
@@ -1142,6 +1147,7 @@ OP_ASYNC_BEGIN_INSTRCTN : {
 
   NEXT_INSTRCTN();
 }
+
 OP_ASYNC_END_INSTRCTN : {
   auto dispatcher = Dispatcher::getDispatcher();
   frame->futureLocalScope.pop_back();
@@ -1149,6 +1155,7 @@ OP_ASYNC_END_INSTRCTN : {
   pop();
   return INTERPRET_OK;
 }
+
 OP_FUTURE_INSTRCTN : {
   auto dispatcher = Dispatcher::getDispatcher();
   auto future_vm = dispatcher->launchFuture();
@@ -1156,24 +1163,28 @@ OP_FUTURE_INSTRCTN : {
   push(OBJ_VAL(future_res));
   NEXT_INSTRCTN();
 }
+
 OP_GET_FUTURE_INSTRCTN : {
   auto future_res = AS_FUTURE(peek(0));
   pop();
   auto dispatcher = Dispatcher::getDispatcher();
   auto future_vm = dispatcher->getVMbyId(future_res->vm_id);
   while (future_vm->isFuture) {
-    sleep(10);
+    // sleep(10);
+    future_vm = dispatcher->getVMbyId(future_res->vm_id);
   }
   // free VM spot once done
   auto res = future_vm->futureResultValue;
   push(res);
   NEXT_INSTRCTN();
 }
+
 OP_DUPLICATE_INSTRCTN : {
   auto top = peek(0);
   push(top);
   NEXT_INSTRCTN();
 }
+
 OP_REDUCE_BEGIN_INSTRCTN : {
   this->stackTop[-4] =
       this->stackTop[-1];  // Copying top value to reducer value for result
@@ -1183,6 +1194,7 @@ OP_REDUCE_BEGIN_INSTRCTN : {
   this->stackTop[-2].as.number = top;  // Storing operand type
   NEXT_INSTRCTN();
 }
+
 OP_REDUCE_UPDATE_INSTRCTN : {
   auto reducer_slot = READ_BYTE();
   auto reducer_local_value = AS_NUMBER(frame->slots[reducer_slot]);
@@ -1218,6 +1230,7 @@ OP_PFOR_BEGIN_INSTRCTN : {
   frame->ip += offset;
   NEXT_INSTRCTN();
 }
+
 OP_PFOR_END_INSTRCTN : {
   for (auto& thread : this->finishStack[this->finishStackCount]) {
     thread.get();
@@ -1226,6 +1239,7 @@ OP_PFOR_END_INSTRCTN : {
   this->finishStackCount--;
   NEXT_INSTRCTN();
 }
+
 OP_EXIT_IF_FALSE_INSTRCTN : {
   auto array_value = this->stackTop - 1;
   if (!IS_LIST(*array_value)) {
@@ -1244,6 +1258,7 @@ OP_EXIT_IF_FALSE_INSTRCTN : {
   *index = NUMBER_VAL(arr_index + PARALLEL_COUNT);
   NEXT_INSTRCTN();
 }
+
 OP_PREDUCE_INITIALISE_INSTRCTN : {
   this->stackTop[-5] =
       this->stackTop[-1];  // Copying top value to reducer value for result
@@ -1253,6 +1268,7 @@ OP_PREDUCE_INITIALISE_INSTRCTN : {
   this->stackTop[-3].as.number = top;  // Storing operand type
   NEXT_INSTRCTN();
 }
+
 OP_PREDUCE_BEGIN_INSTRCTN : {
   this->finishStackCount++;
   auto dispatcher = Dispatcher::getDispatcher();
@@ -1266,6 +1282,7 @@ OP_PREDUCE_BEGIN_INSTRCTN : {
   frame->ip += offset;
   NEXT_INSTRCTN();
 }
+
 OP_PREDUCE_INCREMENT_INSTRCTN : {
   auto array_value = this->stackTop - 1;
   if (!IS_LIST(*array_value)) {
@@ -1285,6 +1302,7 @@ OP_PREDUCE_INCREMENT_INSTRCTN : {
   *index = NUMBER_VAL(arr_index + PARALLEL_COUNT);
   NEXT_INSTRCTN();
 }
+
 OP_PREDUCE_UPDATE_INSTRCTN : {
   // add atomics and reference to parallel VM
 
@@ -1606,11 +1624,11 @@ void VM::defineNative(const char* name, NativeFn function)
 void VM::copyParent(VM* parent)
 {
   if (parent != NULL) {
-    std::copy(parent->frames, parent->frames + 2048, this->frames);
+    std::copy(parent->frames, parent->frames + 2048, this->frames);  // Fix this. This is expensive
     // auto start = std::chrono::high_resolution_clock::now();
-    std::copy(parent->stack,
+    std::copy(parent->stack,  // Fix this
               parent->stackTop + 1,
-              this->stack);  // Synchronize the new jumps
+              this->stack);  // Synchronize the new jumps. This is very epensive
     // auto end = std::chrono::high_resolution_clock::now();
     // auto duration =
     // std::chrono::duration_cast<std::chrono::microseconds>(end - start);
@@ -1619,47 +1637,31 @@ void VM::copyParent(VM* parent)
     auto diff = parent->stackTop - parent->stack;
     this->stackTop = this->stack + diff;
     this->parentLastStackElement = diff - 1;
-
     this->frameCount = parent->frameCount;
     this->parent = parent;
-
     auto stack_diff =
         parent->frames[parent->frameCount - 1].slots - parent->stack;
     this->frames[this->frameCount - 1].slots = this->stack + stack_diff;
+    this->strings.initTable();
+    this->globals.initTable();
     // TODO: check if this causes BT in enclosing variables
-    if (this->isFuture) {
-      tableAddAll(&parent->strings, &this->strings);
-      tableAddAll(&parent->globals, &this->globals);
-    } else {
-      this->strings.initTable();
-      this->globals.initTable();
-    }
+    // if (this->isFuture) {
+    //   tableAddAll(&parent->strings, &this->strings);
+    //   tableAddAll(&parent->globals, &this->globals);
+    // } else {
+    //   this->strings.initTable();
+    //   this->globals.initTable();
+    // }
     this->openUpvalues = parent->openUpvalues;
     // Do not mess with GC in child variables
     this->bytesAllocated = 0;
     this->nextGC = 1024 * 1024;
-
     this->grayCount = 0;
     this->grayCapacity = 0;
     this->grayStack = NULL;
-
     this->finishStackCount = 0;
     this->finishStackCount = 0;
-    this->initString = copyString("init", 4);
-
-    defineNative("clock", clockNative);
-    defineNative("rand", randNative);
-    defineNative("append", appendNative);
-    defineNative("delete", deleteNative);
-    defineNative("int_input", intInput);
-    defineNative("str_input", strInput);
-    defineNative("char_input", charInput);
-    defineNative("len", objLength);
-    defineNative("threadId", getThreadID);
-    defineNative("mutex", getMutex);
-    defineNative("lock", lockMutex);
-    defineNative("unlock", unlockMutex);
-
+    // this->initString = copyString("init", 4);
   } else {
     this->initVM();
   }

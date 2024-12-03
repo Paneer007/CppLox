@@ -66,6 +66,13 @@ void Dispatcher::initDispatcher()
   this->id_to_vm = std::unordered_map<size_t, int>();
 }
 
+void Dispatcher::initVMs()
+{
+  for (int i = 0; i < 32; i++) {
+    this->vm_pool[i].initVM();
+  }
+}
+
 void Dispatcher::freeDispatcher()
 {
   for (int i = 0; i < 32; i++) {

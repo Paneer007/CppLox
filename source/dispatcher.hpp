@@ -41,6 +41,8 @@ public:
   void dispatch_loop_thread(int index,
                             std::list<std::future<int>>& futures,
                             int initial_index);
+
+  void initVMs();
 };
 
 #endif

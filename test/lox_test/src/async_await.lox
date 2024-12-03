@@ -1,12 +1,18 @@
+var temp = 0;
+var mut = mutex();
+
 fun waitForMe(){
     var j = 0;
-    for(var i = 1; i < 10; j = j +1){
-        if(j % 10000000 == 0){
-            print("One");
-            i = i+1;
-        }
+    print temp;
+    var adjMat = [];
+    for (var i = 0;i<10000;i = i+1){
+        append(adjMat, i);
     }
-    print "see this";
+    pfor(var a: adjMat){
+        // lock(mut);
+        temp = temp + 1;
+        // unlock(mut);
+    }
     return 1;
 }
 
@@ -14,8 +20,10 @@ fun main(){
     var x = future waitForMe();
     print x;
     print "We be ballin";
+    print temp;
     var res = await x;
     print res;
+    print temp;
 }
 
 main();

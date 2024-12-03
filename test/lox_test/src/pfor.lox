@@ -4,18 +4,7 @@ fun main(){
         append(adjMat, i);
     }
     pfor(var a : adjMat){
-        print a;        
-        // print a;
-        var z = 0;
-        var i = 0;
-        while( i < 10){
-            z = z +1;
-            if(z>1000000){
-                z = 0;
-                i = i + 1;
-            }
-
-        }
+        print rand();
     }
 }
 

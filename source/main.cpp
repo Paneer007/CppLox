@@ -110,7 +110,7 @@ public:
     auto dispatcher_object = Dispatcher::getDispatcher();
     auto vm = dispatcher_object->dispatchThread(NULL);
     vm->initVM();
-
+    dispatcher_object->initVMs();
     switch (argc) {
       case 1:
         repl();
