@@ -1,6 +1,9 @@
 #ifndef clox_object_h
 #define clox_object_h
 
+#include <memory>
+#include <mutex>
+
 #include "chunk.hpp"
 #include "common.hpp"
 #include "table.hpp"
@@ -16,6 +19,7 @@
 #define IS_INSTANCE(value) isObjType(value, OBJ_INSTANCE)
 #define IS_BOUND_METHOD(value) isObjType(value, OBJ_BOUND_METHOD)
 #define IS_LIST(value) isObjType(value, OBJ_LIST)
+#define IS_MUTEX(value) isObjType(value, OBJ_MUTEX)
 
 #define AS_BOUND_METHOD(value) ((ObjBoundMethod*)AS_OBJ(value))
 #define AS_CLASS(value) ((ObjClass*)AS_OBJ(value))
@@ -27,6 +31,7 @@
 #define AS_NATIVE(value) (((ObjNative*)AS_OBJ(value))->function)
 #define AS_INSTANCE(value) ((ObjInstance*)AS_OBJ(value))
 #define AS_LIST(value) ((ObjList*)AS_OBJ(value))
+#define AS_MUTEX(value) ((ObjMutex*)AS_OBJ(value))
 
 /**
  * @brief Enumeration representing object types in the virtual machine.
@@ -55,7 +60,8 @@ typedef enum
   OBJ_NATIVE,
   OBJ_STRING,
   OBJ_UPVALUE,
-  OBJ_LIST
+  OBJ_LIST,
+  OBJ_MUTEX
 } ObjType;
 
 /**
@@ -287,6 +293,15 @@ public:
   NativeFn function;
 };
 
+class ObjMutex : public Obj
+{
+public:
+  int lock_id;
+
+  void lock();
+  void unlock();
+};
+
 /**
  * @brief Checks if a value is of a specific object type.
  *
@@ -347,6 +362,8 @@ ObjFuture* newFuture(int vm_id);
  * @return A pointer to the newly created function object.
  */
 ObjFunction* newFunction();
+
+ObjMutex* newMutex();
 
 /**
  * @brief Creates a new native function object.

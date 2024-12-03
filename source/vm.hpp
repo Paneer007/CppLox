@@ -139,6 +139,7 @@ public:
   Value futureResultValue;
 
   bool threadFailure;
+  int parentLastStackElement;
 
   /**
    * @brief Initializes the virtual machine.

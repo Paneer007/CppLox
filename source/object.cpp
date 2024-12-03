@@ -4,6 +4,7 @@
 #include <string.h>
 
 #include "dispatcher.hpp"
+#include "lockmanager.hpp"
 #include "memory.hpp"
 #include "table.hpp"
 #include "value.hpp"
@@ -199,6 +200,14 @@ ObjFunction* newFunction()
   return function;
 }
 
+ObjMutex* newMutex()
+{
+  auto mutex_obj = ALLOCATE_OBJ<ObjMutex>(OBJ_MUTEX);
+  auto lockmanager = LockManager::getLockManager();
+  mutex_obj->lock_id = lockmanager->create_mutex();
+  return mutex_obj;
+}
+
 /**
  * @brief Creates a new native function object.
  *
@@ -357,6 +366,9 @@ void printObject(Value value)
     case OBJ_FUTURE:
       printf("<future obj>");
       break;
+    case OBJ_MUTEX:
+      printf("<mutex obj>");
+      break;
     case OBJ_LIST:
       printf("[");
       for (int i = 0; i < AS_LIST(value)->count; i++) {
@@ -507,4 +519,16 @@ bool isValidStringIndex(ObjString* string, int index)
     return false;
   }
   return true;
+}
+
+void ObjMutex::lock()
+{
+  auto lockmanager = LockManager::getLockManager();
+  lockmanager->lock_mutex(this->lock_id);
+}
+
+void ObjMutex::unlock()
+{
+  auto lockmanager = LockManager::getLockManager();
+  lockmanager->unlock_mutex(this->lock_id);
 }

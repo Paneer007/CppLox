@@ -1,0 +1,18 @@
+
+fun main(){
+    var adjMat = [];
+    for(var i = 0; i< 10000;i = i+1){
+        append(adjMat,1);
+    }
+    var res = 1;
+    var mut = mutex();
+    print(mut);
+    pfor(var x: adjMat ){
+        lock(mut);
+        res = res + 1;
+        unlock(mut);
+    }    
+    print res;
+}
+
+main();

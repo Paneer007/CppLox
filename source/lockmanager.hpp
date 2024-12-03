@@ -17,14 +17,14 @@ private:
 public:
   static LockManager* getLockManager();
 
-  void create_mutex();
+  int create_mutex();
   void create_preduce_mutex(VM* vm);
-  void lock_mutex();
+  void lock_mutex(int id);
   void lock_preduce_mutex(VM* vm);
-  void unlock_mutex();
+  void unlock_mutex(int id);
   void unlock_preduce_mutex(VM* vm);
 
-  void destroy_mutex();
+  void destroy_mutex(int id);
   void destroy_preduce_mutex(VM* vm);
 };
 

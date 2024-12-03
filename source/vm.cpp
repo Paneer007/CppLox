@@ -21,7 +21,8 @@ static Value appendNative(int argCount, Value* args)
 {
   // Append a value to the end of a list increasing the list's length by 1
   if (argCount != 2 || !IS_LIST(args[0])) {
-    // Handle error
+    // TODO: Handle error
+    exit(0);
   }
   ObjList* list = AS_LIST(args[0]);
   Value item = args[1];
@@ -34,14 +35,16 @@ static Value deleteNative(int argCount, Value* args)
 {
   // Delete an item from a list at the given index.
   if (argCount != 2 || !IS_LIST(args[0]) || !IS_NUMBER(args[1])) {
-    // Handle error
+    // TODO: Handle error
+    exit(0);
   }
 
   ObjList* list = AS_LIST(args[0]);
   int index = AS_NUMBER(args[1]);
 
   if (!isValidListIndex(list, index)) {
-    // Handle error
+    // TODO: Handle error
+    exit(0);
   }
 
   deleteFromList(list, index);
@@ -97,11 +100,11 @@ static Value charInput(int argCount, Value* args)
 static Value intInput(int argCount, Value* args)
 {
   if (argCount > 1) {
-    // Handle error
+    // TODO Handle error
     exit(0);
   }
   if (argCount == 1 && !IS_STRING(args[0])) {
-    // Handle error
+    // TODO Handle error
     exit(0);
   }
   if (argCount == 1 && IS_STRING(args[0])) {
@@ -119,7 +122,7 @@ static Value objLength(int argCount, Value* args)
     exit(0);
   }
   if (!IS_STRING(args[0]) && !IS_LIST(args[0])) {
-    // Handle error
+    // TODO Handle error
     exit(0);
   }
   if (IS_STRING(args[0])) {
@@ -135,6 +138,41 @@ static Value objLength(int argCount, Value* args)
   }
 
   return NUMBER_VAL(-1);
+}
+
+static Value getMutex(int argCount, Value* args)
+{
+  if (argCount != 0) {
+    exit(0);
+  }
+  auto futureObj = newMutex();
+  return OBJ_VAL(futureObj);
+}
+
+static Value lockMutex(int argCount, Value* args)
+{
+  if (argCount != 1) {
+    exit(0);
+  }
+  if (!IS_MUTEX(args[0])) {
+    exit(0);
+  }
+  auto lock = AS_MUTEX(args[0]);
+  lock->lock();
+  return NIL_VAL;
+}
+
+static Value unlockMutex(int argCount, Value* args)
+{
+  if (argCount != 1) {
+    exit(0);
+  }
+  if (!IS_MUTEX(args[0])) {
+    exit(0);
+  }
+  auto lock = AS_MUTEX(args[0]);
+  lock->unlock();
+  return NIL_VAL;
 }
 
 /**
@@ -259,6 +297,8 @@ void VM::initVM()
   this->initString = copyString("init", 4);
   this->isFuture = false;
 
+  this->parentLastStackElement = 0;  // for handling elements
+
   defineNative("clock", clockNative);
   defineNative("rand", randNative);
   defineNative("append", appendNative);
@@ -268,6 +308,9 @@ void VM::initVM()
   defineNative("char_input", charInput);
   defineNative("len", objLength);
   defineNative("threadId", getThreadID);
+  defineNative("mutex", getMutex);
+  defineNative("lock", lockMutex);
+  defineNative("unlock", unlockMutex);
 }
 
 /**
@@ -827,21 +870,65 @@ OP_CLOSE_UPVALUE_INSTRCTN : {
 }
 OP_GET_LOCAL_INSTRCTN : {
   auto slot = READ_BYTE();
-  push(frame->slots[slot]);
+  if (this->parent != NULL) {
+    auto currentVM = this;
+    auto element = &frame->slots[slot];
+    auto gap = element - this->stack;
+    int count = 0;
+    while (true) {
+      auto diff =
+          gap - currentVM->parentLastStackElement;  // Note we are copying
+                                                    // all the elements
+      // printf("diff - %d  count - %d \n", diff, count);
+      count++;
+      if (diff <= 0) {
+        currentVM = this->parent;
+      } else {
+        auto temp_frame = &currentVM->frames[this->frameCount - 1];
+        push(temp_frame->slots[slot]);
+        break;
+      }
+    }
+  } else {
+    push(frame->slots[slot]);
+  }
+  // auto slot = READ_BYTE();
+  // push(frame->slots[slot]);
   NEXT_INSTRCTN();
 }
 
 OP_SET_LOCAL_INSTRCTN : {
   auto slot = READ_BYTE();
-  (frame->futureLocalScope[frame->futureLocalScope.size() - 1]);
-  if (this->parent != NULL && frame->futureLocalScope.size() > 0
-      && slot < frame->futureLocalScope[frame->futureLocalScope.size() - 1])
-  {
-    runtimeError(
-        "Attempting to access variable outside asychronous code scope. \n");
-    return INTERPRET_RUNTIME_ERROR;
+  // (frame->futureLocalScope[frame->futureLocalScope.size() - 1]);
+  // if (this->parent != NULL && frame->futureLocalScope.size() > 0
+  //     && slot < frame->futureLocalScope[frame->futureLocalScope.size() - 1])
+  // {
+  //   runtimeError(
+  //       "Attempting to access variable outside asychronous code scope. \n");
+  //   return INTERPRET_RUNTIME_ERROR;
+  // }
+  if (this->parent != NULL) {
+    auto currentVM = this;
+    auto element = &frame->slots[slot];
+    auto gap = element - this->stack;
+    int count = 0;
+    while (true) {
+      auto diff =
+          gap - currentVM->parentLastStackElement;  // Note we are copying
+                                                    // all the elements
+      // printf("diff - %d  count - %d \n", diff, count);
+      count++;
+      if (diff <= 0) {
+        currentVM = this->parent;
+      } else {
+        auto temp_frame = &currentVM->frames[this->frameCount - 1];
+        temp_frame->slots[slot] = peek(0);
+        break;
+      }
+    }
+  } else {
+    frame->slots[slot] = peek(0);
   }
-  frame->slots[slot] = peek(0);
   NEXT_INSTRCTN();
 }
 
@@ -1531,6 +1618,8 @@ void VM::copyParent(VM* parent)
     // << std::endl;
     auto diff = parent->stackTop - parent->stack;
     this->stackTop = this->stack + diff;
+    this->parentLastStackElement = diff - 1;
+
     this->frameCount = parent->frameCount;
     this->parent = parent;
 
@@ -1567,6 +1656,9 @@ void VM::copyParent(VM* parent)
     defineNative("char_input", charInput);
     defineNative("len", objLength);
     defineNative("threadId", getThreadID);
+    defineNative("mutex", getMutex);
+    defineNative("lock", lockMutex);
+    defineNative("unlock", unlockMutex);
 
   } else {
     this->initVM();

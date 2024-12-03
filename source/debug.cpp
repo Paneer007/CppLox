@@ -20,6 +20,12 @@ static int simpleInstruction(const char* name, int offset)
   return offset + 1;
 }
 
+static int buildListInstruction(const char* name, Chunk* chunk, int offset)
+{
+  printf("%s %d \n", name, chunk->code[offset + 1]);
+  return offset + 2;
+}
+
 /**
  * @brief Prints a jump instruction with its target address.
 
@@ -71,7 +77,7 @@ static int constantInstruction(const char* name, Chunk* chunk, int offset)
 {
   uint8_t constant = chunk->code[offset + 1];
   printf("%-16s %4d '", name, constant);
-  printValue(chunk->constants.values[constant]);
+  // printValue(chunk->constants.values[constant]);
   printf("'\n");
   return offset + 2;
 }
@@ -237,7 +243,7 @@ int disassembleInstruction(Chunk* chunk, int offset)
       return invokeInstruction("OP_INVOKE", chunk, offset);
       // TODO: fix debugging of this instructions
     case OP_BUILD_LIST:
-      return simpleInstruction("OP_BUILD_LIST", offset);
+      return buildListInstruction("OP_BUILD_LIST", chunk, offset);
     case OP_INDEX_GET:
       return simpleInstruction("OP_INDEX_GET", offset);
     case OP_INDEX_SET:
