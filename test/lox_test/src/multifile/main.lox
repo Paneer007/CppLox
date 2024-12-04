@@ -1,0 +1,9 @@
+import "temp.lox"
+
+fun main(){
+    print "Called from main";
+    print hello;
+    tempWorld();
+}
+
+main();

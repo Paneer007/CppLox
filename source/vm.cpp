@@ -339,9 +339,9 @@ void VM::freeVM()
  * @return The interpretation result, indicating success, compile error, or
  * runtime error.
  */
-InterpretResult VM::interpret(const char* source)
+InterpretResult VM::interpret(const char* source, const char* path)
 {
-  auto function = compile(source);
+  auto function = compile(source, path);
   if (function == NULL)
     return INTERPRET_COMPILE_ERROR;
 
@@ -509,7 +509,7 @@ InterpretResult VM::run()
 #  define NEXT_INSTRCTN() \
     do { \
       m.lock(); \
-      if (this->parent != NULL) { \
+      if (this->parent == NULL) { \
         printf("          "); \
         for (Value* slot = this->stack; slot < this->stackTop; slot++) { \
           printf("[ "); \
@@ -1624,7 +1624,9 @@ void VM::defineNative(const char* name, NativeFn function)
 void VM::copyParent(VM* parent)
 {
   if (parent != NULL) {
-    std::copy(parent->frames, parent->frames + 2048, this->frames);  // Fix this. This is expensive
+    std::copy(parent->frames,
+              parent->frames + 2048,
+              this->frames);  // Fix this. This is expensive
     // auto start = std::chrono::high_resolution_clock::now();
     std::copy(parent->stack,  // Fix this
               parent->stackTop + 1,

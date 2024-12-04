@@ -1,3 +1,7 @@
+#include <fstream>
+#include <iostream>
+#include <string>
+
 #include "compiler.hpp"
 
 #include <stdio.h>
@@ -1675,6 +1679,87 @@ static void synchronize()
   }
 }
 
+static void importDeclaration()
+{
+  try {
+    consume(TOKEN_STRING, "expected string");
+    auto relativePath =
+        std::string(parser.previous.start + 1, parser.previous.length - 2);
+
+    auto old_current = parser.current;
+    auto old_previous = parser.previous;
+
+    auto scanner = Scanner::getScanner();
+    std::filesystem::path base(scanner->pwd);
+    base = base.parent_path();
+    std::filesystem::path relative(relativePath);
+
+    auto fullPath = base / relative;
+    fullPath = std::filesystem::weakly_canonical(fullPath);
+
+    fullPath = std::filesystem::absolute(fullPath);
+
+    std::ifstream file(fullPath, std::ios::binary | std::ios::ate);
+
+    // std::string line;
+    // while (std::getline(file, line)) {
+    //   std::cout << line << std::endl;
+    // }
+
+    if (!file) {
+      std::cerr << "Error: Unable to open file: " << fullPath << std::endl;
+      parser.panicMode = true;
+      return;
+    }
+
+    // Get the size of the file
+    std::streamsize fileSize = file.tellg();
+    file.seekg(0, std::ios::beg);
+
+    // Allocate memory to hold the file contents
+    char* buffer = new char[fileSize + 1];  // +1 for null-terminator
+    if (!file.read(buffer, fileSize)) {
+      std::cerr << "Error: Unable to read file contents." << std::endl;
+      delete[] buffer;
+      parser.panicMode = true;
+      return;
+    }
+
+    // Null-terminate the buffer
+    buffer[fileSize] = '\0';
+
+    scanner->start_stack.push_back(scanner->start);
+    scanner->current_stack.push_back(scanner->current);
+    scanner->line_stack.push_back(scanner->line);
+
+    scanner->initScanner(buffer, fullPath.string().c_str());
+
+    parser.hadError = false;
+    parser.panicMode = false;
+
+    advance();
+    while (!match(TOKEN_EOF)) {
+      declaration();
+    }
+
+    scanner->start = scanner->start_stack.back();
+    scanner->line = scanner->line_stack.back();
+    scanner->current = scanner->current_stack.back();
+
+    scanner->start_stack.pop_back();
+    scanner->line_stack.pop_back();
+    scanner->current_stack.pop_back();
+    parser.current = old_current;
+    parser.previous = old_previous;
+
+    // Close the file and return the buffer
+    file.close();
+  } catch (const std::exception& e) {
+    parser.panicMode = true;
+    return;
+  }
+}
+
 /**
  * @brief Parses a declaration or statement.
  *
@@ -1689,6 +1774,8 @@ static void declaration()
     funDeclaration();
   } else if (match(TOKEN_VAR)) {
     varDeclaration();
+  } else if (match(TOKEN_IMPORT)) {
+    importDeclaration();
   } else {
     statement();
   }
@@ -2036,10 +2123,10 @@ static ParseRule* getRule(TokenType type)
  * @param source The source code to compile.
  * @return The compiled function object, or NULL on error.
  */
-ObjFunction* compile(const char* source)
+ObjFunction* compile(const char* source, const char* path)
 {
   auto scanner = Scanner::getScanner();
-  scanner->initScanner(source);
+  scanner->initScanner(source, path);
   Compiler compiler;
   initCompiler(&compiler, TYPE_SCRIPT);
 
@@ -2050,7 +2137,6 @@ ObjFunction* compile(const char* source)
   while (!match(TOKEN_EOF)) {
     declaration();
   }
-
   ObjFunction* function = endCompiler();
   return parser.hadError ? NULL : function;
 }

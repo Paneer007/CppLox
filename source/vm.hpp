@@ -177,7 +177,7 @@ public:
    * @return The interpretation result, indicating success, compile error, or
    * runtime error.
    */
-  InterpretResult interpret(const char* source);
+  InterpretResult interpret(const char* source, const char* path);
 
   /**
    * @brief Executes the bytecode in the current call frame.

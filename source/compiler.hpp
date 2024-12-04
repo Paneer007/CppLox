@@ -12,6 +12,6 @@
  * @param source The source code to be compiled.
  * @return A pointer to the compiled function object, or NULL on error.
  */
-ObjFunction* compile(const char* source);
+ObjFunction* compile(const char* source, const char* path);
 
 #endif

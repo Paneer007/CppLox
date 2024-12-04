@@ -1,6 +1,10 @@
 #ifndef clox_scanner_h
 #define clox_scanner_h
 
+#include <filesystem>
+#include <string>
+#include <vector>
+
 /**
  * @brief Enumeration representing token types used by the scanner.
  *
@@ -69,11 +73,10 @@ typedef enum
   TOKEN_AWAIT,
   TOKEN_REDUCE,
   TOKEN_COLON,
-
   TOKEN_PREDUCE,
   TOKEN_PFOR,
-
-  TOKEN_FOREACH
+  TOKEN_FOREACH,
+  TOKEN_IMPORT
 
 } TokenType;
 
@@ -107,6 +110,12 @@ class Scanner
   Scanner() {}
 
 public:
+  std::vector<const char*> start_stack;
+  std::vector<const char*> current_stack;
+  std::vector<int> line_stack;
+
+  const char* pwd;
+
   /**
    * @brief The singleton scanner instance.
    */
@@ -132,7 +141,7 @@ public:
    *
    * @param source The source code to be scanned.
    */
-  void initScanner(const char* source);
+  void initScanner(const char* source, const char* path);
 
   /**
    * Scans the next token from the input stream.

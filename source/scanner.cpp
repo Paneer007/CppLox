@@ -13,11 +13,12 @@
  *
  * @param source The source code to be scanned.
  */
-void Scanner::initScanner(const char* source)
+void Scanner::initScanner(const char* source, const char* path)
 {
   this->start = source;
   this->current = source;
   this->line = 1;
+  this->pwd = path;
 }
 
 /**
@@ -146,6 +147,12 @@ TokenType Scanner::identifierType()
       }
       break;
     case 'i':
+      if (this->current - this->start > 1) {
+        switch (this->start[1]) {
+          case 'm':
+            return this->checkKeyword(2, 4, "port", TOKEN_IMPORT);
+        }
+      }
       return this->checkKeyword(1, 1, "f", TOKEN_IF);
     case 'l':
       return this->checkKeyword(1, 5, "ambda", TOKEN_LAMBDA);

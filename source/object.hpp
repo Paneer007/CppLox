@@ -302,6 +302,11 @@ public:
   void unlock();
 };
 
+class ObjChannel : public Obj
+{
+  
+};
+
 /**
  * @brief Checks if a value is of a specific object type.
  *

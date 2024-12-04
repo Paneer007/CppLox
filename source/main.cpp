@@ -1,3 +1,4 @@
+#include <filesystem>
 #include <iostream>
 #include <thread>
 
@@ -10,6 +11,24 @@
 #include "debug.hpp"
 #include "dispatcher.hpp"
 #include "vm.hpp"
+
+const char* getExecutableDirectory()
+{
+  try {
+    // Get the path of the current executable
+    std::filesystem::path executablePath = std::filesystem::current_path();
+
+    // Resolve the directory
+    // std::filesystem::path executableDir = executablePath.parent_path();
+
+    // Convert the directory path to a string and return as const char*
+    static std::string directory = executablePath.string();
+    return directory.c_str();
+  } catch (const std::exception& e) {
+    std::cerr << "Error: " << e.what() << std::endl;
+    return nullptr;
+  }
+}
 
 /**
  * @brief The CppLox Interpreter Class
@@ -34,7 +53,7 @@ private:
         break;
       }
 
-      vm->interpret(line);
+      vm->interpret(line, "");
     }
   }
 
@@ -89,7 +108,7 @@ private:
     auto dispatcher = Dispatcher::getDispatcher();
     auto vm = dispatcher->getVM();
     auto source = this->readFile(path);
-    InterpretResult result = vm->interpret(source);
+    InterpretResult result = vm->interpret(source, path);
     delete[] source;
     if (result == INTERPRET_COMPILE_ERROR)
       exit(65);
