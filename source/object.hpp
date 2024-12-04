@@ -4,6 +4,7 @@
 #include <memory>
 #include <mutex>
 
+#include "channel.hpp"
 #include "chunk.hpp"
 #include "common.hpp"
 #include "table.hpp"
@@ -20,6 +21,7 @@
 #define IS_BOUND_METHOD(value) isObjType(value, OBJ_BOUND_METHOD)
 #define IS_LIST(value) isObjType(value, OBJ_LIST)
 #define IS_MUTEX(value) isObjType(value, OBJ_MUTEX)
+#define IS_CHANNEL(value) isObjType(value, OBJ_CHANNEL)
 
 #define AS_BOUND_METHOD(value) ((ObjBoundMethod*)AS_OBJ(value))
 #define AS_CLASS(value) ((ObjClass*)AS_OBJ(value))
@@ -32,6 +34,7 @@
 #define AS_INSTANCE(value) ((ObjInstance*)AS_OBJ(value))
 #define AS_LIST(value) ((ObjList*)AS_OBJ(value))
 #define AS_MUTEX(value) ((ObjMutex*)AS_OBJ(value))
+#define AS_CHANNEL(value) ((ObjChannel*)AS_OBJ(value))
 
 /**
  * @brief Enumeration representing object types in the virtual machine.
@@ -61,7 +64,8 @@ typedef enum
   OBJ_STRING,
   OBJ_UPVALUE,
   OBJ_LIST,
-  OBJ_MUTEX
+  OBJ_MUTEX,
+  OBJ_CHANNEL
 } ObjType;
 
 /**
@@ -304,7 +308,8 @@ public:
 
 class ObjChannel : public Obj
 {
-  
+public:
+  ThreadChannel channel;
 };
 
 /**
@@ -423,6 +428,8 @@ ObjInstance* newInstance(ObjClass* klass);
  * @return A pointer to the newly created bound method object.
  */
 ObjBoundMethod* newBoundMethod(Value receiver, ObjClosure* method);
+
+ObjChannel* newChannel();
 
 /**
  * @brief Prints a human-readable representation of a value.

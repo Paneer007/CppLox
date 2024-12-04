@@ -165,6 +165,13 @@ ObjBoundMethod* newBoundMethod(Value receiver, ObjClosure* method)
   return bound;
 }
 
+ObjChannel* newChannel()
+{
+  auto channel = ALLOCATE_OBJ<ObjChannel>(OBJ_CHANNEL);
+  channel->channel.initChannel();
+  return channel;
+}
+
 /**
  * @brief Creates a new class object.
  *
@@ -368,6 +375,9 @@ void printObject(Value value)
       break;
     case OBJ_MUTEX:
       printf("<mutex obj>");
+      break;
+    case OBJ_CHANNEL:
+      printf("<channel obj>");
       break;
     case OBJ_LIST:
       printf("[");

@@ -29,6 +29,7 @@ add_library(
     source/threadpool.cpp
     source/vm.cpp
     source/lockmanager.cpp
+    source/channel.cpp
 )
 
 target_include_directories(

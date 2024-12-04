@@ -145,8 +145,60 @@ static Value getMutex(int argCount, Value* args)
   if (argCount != 0) {
     exit(0);
   }
-  auto futureObj = newMutex();
-  return OBJ_VAL(futureObj);
+  auto mutexObj = newMutex();
+  return OBJ_VAL(mutexObj);
+}
+
+static Value getChannel(int argCount, Value* args)
+{
+  if (argCount != 0) {
+    exit(0);
+  }
+  auto channelObj = newChannel();
+  return OBJ_VAL(channelObj);
+}
+
+static Value pushChannel(int argCount, Value* args)
+{
+  if (argCount != 2) {
+    exit(0);
+  }
+  if (!IS_CHANNEL(args[0])) {
+    exit(0);
+  }
+  auto channel_object = AS_CHANNEL(args[0]);
+  channel_object->channel.send(args[1]);
+  return NIL_VAL;
+}
+
+static Value receiveChannel(int argCount, Value* args)
+{
+  if (argCount != 1) {
+    exit(0);
+  }
+  if (!IS_CHANNEL(args[0])) {
+    exit(0);
+  }
+  auto channel_object = AS_CHANNEL(args[0]);
+  auto opt_value = channel_object->channel.receive();
+  if (opt_value.has_value()) {
+    return opt_value.value();
+  } else {
+    return NIL_VAL;
+  }
+}
+
+static Value closeChannel(int argCount, Value* args)
+{
+  if (argCount != 1) {
+    exit(0);
+  }
+  if (!IS_CHANNEL(args[0])) {
+    exit(0);
+  }
+  auto channel_object = AS_CHANNEL(args[0]);
+  channel_object->channel.close();
+  return NIL_VAL;
 }
 
 static Value lockMutex(int argCount, Value* args)
@@ -311,6 +363,10 @@ void VM::initVM()
   defineNative("mutex", getMutex);
   defineNative("lock", lockMutex);
   defineNative("unlock", unlockMutex);
+  defineNative("channel", getChannel);
+  defineNative("send", pushChannel);
+  defineNative("recv", receiveChannel);
+  defineNative("close", closeChannel);
 }
 
 /**

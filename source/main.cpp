@@ -15,13 +15,7 @@
 const char* getExecutableDirectory()
 {
   try {
-    // Get the path of the current executable
     std::filesystem::path executablePath = std::filesystem::current_path();
-
-    // Resolve the directory
-    // std::filesystem::path executableDir = executablePath.parent_path();
-
-    // Convert the directory path to a string and return as const char*
     static std::string directory = executablePath.string();
     return directory.c_str();
   } catch (const std::exception& e) {

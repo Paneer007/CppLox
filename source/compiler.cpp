@@ -1701,11 +1701,6 @@ static void importDeclaration()
 
     std::ifstream file(fullPath, std::ios::binary | std::ios::ate);
 
-    // std::string line;
-    // while (std::getline(file, line)) {
-    //   std::cout << line << std::endl;
-    // }
-
     if (!file) {
       std::cerr << "Error: Unable to open file: " << fullPath << std::endl;
       parser.panicMode = true;

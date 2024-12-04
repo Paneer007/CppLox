@@ -12,6 +12,7 @@ private:
   static LockManager* lockmanager;
 
   std::unordered_map<int, std::unique_ptr<std::mutex>> mutex_map;
+  std::unordered_map<int, std::unique_ptr<std::condition_variable>> cv_map;
   std::unordered_map<VM*, int> vm_map;
 
 public:
@@ -19,8 +20,10 @@ public:
 
   int create_mutex();
   void create_preduce_mutex(VM* vm);
+
   void lock_mutex(int id);
   void lock_preduce_mutex(VM* vm);
+
   void unlock_mutex(int id);
   void unlock_preduce_mutex(VM* vm);
 
