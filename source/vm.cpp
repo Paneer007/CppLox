@@ -998,6 +998,7 @@ OP_JUMP_IF_FALSE_INSTRCTN : {
 OP_SET_GLOBAL_INSTRCTN : {
   auto name = READ_STRING();
   if (this->globals.tableSet(name, peek(0))) {
+    printf("I am inside here \n");
     this->globals.tableDelete(name);
     if (this->parent != NULL) {
       Value value;
@@ -1017,8 +1018,9 @@ OP_SET_GLOBAL_INSTRCTN : {
       runtimeError("Undefined variable '%s'.", name->chars);
       return INTERPRET_RUNTIME_ERROR;
     }
-    NEXT_INSTRCTN();
   }
+  NEXT_INSTRCTN();
+}
 
 OP_LOOP_INSTRCTN : {
   auto offset = READ_SHORT();
@@ -1415,7 +1417,6 @@ OP_JUMP_IF_ITERATOR_EXIST_INSTRCTN : {
 }
 
 #undef NEXT_INSTRCTN
-}
 }
 /**
  * @brief Gets the singleton virtual machine instance.

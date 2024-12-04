@@ -38,9 +38,11 @@ std::optional<Value> ThreadChannel::receive()
   if (buffer.empty()) {
     return std::nullopt;  // Channel is closed and empty
   }
-
+  auto lockmanager = LockManager::getLockManager();
+  lockmanager->lock_mutex(this->mutex_id);
   auto value = buffer.front();
   buffer.pop();
+  lockmanager->unlock_mutex(this->mutex_id);
   return value;
 }
 
