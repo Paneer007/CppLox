@@ -3,10 +3,10 @@
 input_program="./build/CppLox"
 # input_file="./benchmark/src/binary-tree.lox"
 # input_file="./test/lox_test/src/reduce.lox"
-input_file="./test/lox_test/src/channel.lox"
+input_file="./test/lox_test/src/preduce_fib.lox"
 
 # g++ ./source/*.cpp -o $input_program  
-g++ -Wall -g ./source/*.cpp -o $input_program  
+# g++ -Wall -g ./source/*.cpp -o $input_program  
 
 gdb -tui --args ./$input_program $input_file
 # gdb -tui ./$input_program

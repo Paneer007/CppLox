@@ -19,7 +19,6 @@ fun waitForMe(){
 fun main(){
     var x = future waitForMe();
     print x;
-    print "We be ballin";
     print temp;
     var res = await x;
     print res;

@@ -13,6 +13,8 @@
 
 #include "vm.hpp"
 
+// static void evict_thread();
+
 class ThreadPool
 {
   std::vector<std::thread> workers;
@@ -58,6 +60,9 @@ public:
             }
           });
     }
+
+    // Thread to evict current thread of execution
+    // workers.emplace_back(evict_thread);
   }
 
   static auto getTP() -> ThreadPool* { return ThreadPool::threadpool; }
@@ -96,5 +101,14 @@ public:
       worker.join();
   }
 };
+
+// static void evict_thread()
+// {
+//   auto sleep_time = 1000;
+//   while (true) {
+//     printf("This is going great. \n");
+//     std::this_thread::sleep_for(std::chrono::milliseconds(sleep_time));
+//   }
+// }
 
 #endif

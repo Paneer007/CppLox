@@ -16,6 +16,6 @@
 // #define ENABLE_MP
 
 constexpr int UINT8_COUNT = (UINT8_MAX + 1);
-constexpr int PARALLEL_COUNT = 3;
+constexpr int PARALLEL_COUNT = 4;
 
 #endif

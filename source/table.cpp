@@ -32,7 +32,7 @@ void WorkList::initWorkList()
 
 void WorkList::writeWorkList(ObjString* key, Value value)
 {
-  auto temp = *key;
+  // auto temp = *key;
   if (this->capacity < this->count + 1) {
     int old_capacity = this->capacity;
     this->capacity = GROW_CAPACITY(old_capacity);
@@ -167,8 +167,8 @@ void Table::adjustCapacity(int capacity)
     new_entries[i].key = NULL;
     new_entries[i].value = NIL_VAL;
   }
-  auto old_count = this->count;
 #ifdef ENABLE_MP
+  auto old_count = this->count;
 
   int n_items = this->capacity;
   // Parallel insert stuff

@@ -183,6 +183,9 @@ static void blackenObject(Obj* object)
       }
       break;
     }
+    case OBJ_FUTURE:
+    case OBJ_MUTEX:
+    case OBJ_CHANNEL:
     case OBJ_NATIVE:
     case OBJ_STRING:
       break;
@@ -249,6 +252,10 @@ static void freeObject(Obj* object)
       FREE<ObjList>(object);
       break;
     }
+    case OBJ_FUTURE:
+    case OBJ_MUTEX:
+    case OBJ_CHANNEL:
+      break;
   }
 }
 
@@ -287,6 +294,7 @@ static void markRoots()
   for (auto slot = vm->stack; slot < vm->stackTop; slot++) {
     markValue(*slot);
   }
+  // TODO: fix this with VM
   for (int i = 0; i < vm->frameCount; i++) {
     markObject((Obj*)vm->frames[i].closure);
   }

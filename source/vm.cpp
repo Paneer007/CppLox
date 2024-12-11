@@ -348,6 +348,8 @@ void VM::initVM()
 
   this->initString = copyString("init", 4);
   this->isFuture = false;
+  this->evictThread = false;
+  this->priority = -1;
 
   this->parentLastStackElement = 0;  // for handling elements
 
@@ -998,7 +1000,6 @@ OP_JUMP_IF_FALSE_INSTRCTN : {
 OP_SET_GLOBAL_INSTRCTN : {
   auto name = READ_STRING();
   if (this->globals.tableSet(name, peek(0))) {
-    printf("I am inside here \n");
     this->globals.tableDelete(name);
     if (this->parent != NULL) {
       Value value;
@@ -1257,7 +1258,7 @@ OP_REDUCE_UPDATE_INSTRCTN : {
   auto reducer_slot = READ_BYTE();
   auto reducer_local_value = AS_NUMBER(frame->slots[reducer_slot]);
   auto reducer_operator = AS_NUMBER(frame->slots[reducer_slot - 1]);
-  auto reducer_original_value = AS_NUMBER(frame->slots[reducer_slot - 2]);
+  // auto reducer_original_value = AS_NUMBER(frame->slots[reducer_slot - 2]);
   auto reducer_result = AS_NUMBER(frame->slots[reducer_slot - 3]);
 
   if (reducer_operator == ('+' - 0)) {
@@ -1281,7 +1282,7 @@ OP_PFOR_BEGIN_INSTRCTN : {
   auto dispatcher = Dispatcher::getDispatcher();
   for (int i = 0; i < PARALLEL_COUNT; i++) {
     dispatcher->dispatch_loop_thread(
-        i, this->finishStack[this->finishStackCount], 3);
+        i, this->finishStack[this->finishStackCount], 3, false);
     // this->finishStack[this->finishStackCount].push_back(res);
   }
   auto offset = READ_SHORT();
@@ -1313,7 +1314,7 @@ OP_EXIT_IF_FALSE_INSTRCTN : {
   }
   auto result = indexFromList(list, arr_index);
   *iterator_value = result;
-  *index = NUMBER_VAL(arr_index + PARALLEL_COUNT);
+  *index = NUMBER_VAL(static_cast<double>(arr_index + PARALLEL_COUNT));
   NEXT_INSTRCTN();
 }
 
@@ -1334,7 +1335,7 @@ OP_PREDUCE_BEGIN_INSTRCTN : {
   lockmanager->create_preduce_mutex(this);
   for (int i = 0; i < PARALLEL_COUNT; i++) {
     dispatcher->dispatch_loop_thread(
-        i, this->finishStack[this->finishStackCount], 4);
+        i, this->finishStack[this->finishStackCount], 4, true);
   }
   auto offset = READ_SHORT();
   frame->ip += offset;
@@ -1357,7 +1358,7 @@ OP_PREDUCE_INCREMENT_INSTRCTN : {
   }
   auto result = indexFromList(list, arr_index);
   *iterator_value = result;
-  *index = NUMBER_VAL(arr_index + PARALLEL_COUNT);
+  *index = NUMBER_VAL(static_cast<double>(arr_index + PARALLEL_COUNT));
   NEXT_INSTRCTN();
 }
 
@@ -1366,7 +1367,7 @@ OP_PREDUCE_UPDATE_INSTRCTN : {
 
   auto reducer_local_value = AS_NUMBER(*(this->stackTop - 3));
   auto reducer_operator = AS_NUMBER(*(this->stackTop - 5));
-  auto reducer_original_value = AS_NUMBER(*(this->stackTop - 6));
+  // auto reducer_original_value = AS_NUMBER(*(this->stackTop - 6));
   auto parent_vm = this->parent;
 
   auto lockmanager = LockManager::getLockManager();
@@ -1411,7 +1412,7 @@ OP_JUMP_IF_ITERATOR_EXIST_INSTRCTN : {
   } else {
     auto result = indexFromList(list, arr_index);
     *iterator_value = result;
-    *index = NUMBER_VAL(arr_index + 1);
+    *index = NUMBER_VAL(static_cast<double>(arr_index + 1));
   }
   NEXT_INSTRCTN();
 }
@@ -1644,7 +1645,7 @@ void VM::runtimeError(const char* format, ...)
   vfprintf(stderr, format, args);
   va_end(args);
   fputs("\n", stderr);
-
+  // TODO: fix this with threads
   for (int i = this->frameCount - 1; i >= 0; i--) {
     CallFrame* frame = &this->frames[i];
     ObjFunction* function = frame->closure->function;
@@ -1681,26 +1682,34 @@ void VM::defineNative(const char* name, NativeFn function)
 void VM::copyParent(VM* parent)
 {
   if (parent != NULL) {
-    std::copy(parent->frames,
-              parent->frames + 2048,
-              this->frames);  // Fix this. This is expensive
     // auto start = std::chrono::high_resolution_clock::now();
-    std::copy(parent->stack,  // Fix this
-              parent->stackTop + 1,
-              this->stack);  // Synchronize the new jumps. This is very epensive
+    *(this->frames + parent->frameCount - 1) =
+        *(parent->frames + parent->frameCount - 1);
+    // std::copy(parent->frames,
+    //           parent->frames + 2048,
+    //           this->frames);  // Fix this. This is very expensive
+
+    // std::copy(parent->stack,  // Fix this
+    //           parent->stackTop + 1,
+    //           this->stack);  // Synchronize the new jumps. This is expensive
+
     // auto end = std::chrono::high_resolution_clock::now();
     // auto duration =
-    // std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+    //     std::chrono::duration_cast<std::chrono::microseconds>(end - start);
     // std::cout << "Time taken to copy a VM stack: " << duration.count()
-    // << std::endl;
+    //           << std::endl;
+
     auto diff = parent->stackTop - parent->stack;
     this->stackTop = this->stack + diff;
     this->parentLastStackElement = diff - 1;
     this->frameCount = parent->frameCount;
     this->parent = parent;
+
     auto stack_diff =
         parent->frames[parent->frameCount - 1].slots - parent->stack;
+
     this->frames[this->frameCount - 1].slots = this->stack + stack_diff;
+
     this->strings.initTable();
     this->globals.initTable();
     // TODO: check if this causes BT in enclosing variables
@@ -1711,6 +1720,7 @@ void VM::copyParent(VM* parent)
     //   this->strings.initTable();
     //   this->globals.initTable();
     // }
+
     this->openUpvalues = parent->openUpvalues;
     // Do not mess with GC in child variables
     this->bytesAllocated = 0;

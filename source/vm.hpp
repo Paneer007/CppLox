@@ -139,6 +139,8 @@ public:
   Value futureResultValue;
 
   bool threadFailure;
+  bool evictThread;
+  int priority;
   int parentLastStackElement;
 
   /**

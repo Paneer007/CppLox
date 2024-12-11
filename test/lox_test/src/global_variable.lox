@@ -1,15 +1,15 @@
+var res = 1;
 
 fun main(){
     var adjMat = [];
-    for(var i = 0; i< 100000;i = i+1){
+    for(var i =0 ; i< 100;i = i+1){
         append(adjMat,1);
     }
-    var res = 1;
-    var mut = mutex();
+    var mtx = mutex();
     pfor(var x: adjMat ){
-        // lock(mut);
+        // lock(mtx);
         res = res + 1;
-        // unlock(mut);
+        // unlock(mtx);
     }    
     print res;
 }

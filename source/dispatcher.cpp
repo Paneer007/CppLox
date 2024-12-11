@@ -19,7 +19,6 @@ static int childMain(VM* parent, VM* childVM, int vm_id)
   auto thread_id = std::hash<std::thread::id> {}(std::this_thread::get_id());
   dispatcher->setId(thread_id, vm_id);
   dispatcher->set_active_thread(thread_id);
-  auto frame = &childVM->frames[childVM->frameCount - 1];
 
   auto res = childVM->run();
   if (res == INTERPRET_RUNTIME_ERROR) {
@@ -31,20 +30,20 @@ static int childMain(VM* parent, VM* childVM, int vm_id)
   return 0;
 }
 
-static int futureTask(VM* parent, VM* childVM, int vm_id)
+static int futureTask(VM* parent, VM* childVM, int vm_id, bool isFuture)
 {
   auto dispatcher = Dispatcher::getDispatcher();
   auto thread_id = std::hash<std::thread::id> {}(std::this_thread::get_id());
   dispatcher->setId(thread_id, vm_id);
   dispatcher->set_active_thread(thread_id);
-  childVM->isFuture = true;
+  childVM->isFuture = isFuture;
   auto vm_res = childVM->run();
   if (vm_res == INTERPRET_RUNTIME_ERROR) {
     dispatcher->terminateAllThreads();
     exit(0);
     return 1;
   }
-  auto res = childVM->pop();
+  childVM->pop();
   dispatcher->free_active_thread(thread_id);
   childVM->isFuture = false;
   return 0;
@@ -182,7 +181,7 @@ int Dispatcher::launchFuture()
   frame->ip += 3;  // Skip call
   // Launch Future
   auto tp = ThreadPool::getTP();
-  tp->enqueue(futureTask, parent_vm, childVM, free_vm_index);
+  tp->enqueue(futureTask, parent_vm, childVM, free_vm_index, true);
   return free_vm_index;
 }
 
@@ -216,24 +215,42 @@ void Dispatcher::terminateAllThreads()
 
 void Dispatcher::dispatch_loop_thread(int index,
                                       std::list<std::future<int>>& futures,
-                                      int initial_index)
+                                      int initial_index,
+                                      bool preduce)
 {
   // auto start = std::chrono::high_resolution_clock::now();
 
   auto parent_vm = this->getVM();
   auto free_vm_index = this->findFreeVM();
   auto childVM = &this->vm_pool[free_vm_index];
-  childVM->isFuture = true;
+  // childVM->isFuture = true;
   childVM->copyParent(parent_vm);
+
+  if (preduce) {
+    // Copying last stack elements:
+    int diff = parent_vm->stackTop - parent_vm->stack;
+    std::copy(parent_vm->stack + diff - 7,
+              parent_vm->stackTop,
+              childVM->stack + diff - 7);
+    childVM->parentLastStackElement -= 4;
+  } else {
+    // Copying last stack elements:
+    int diff = parent_vm->stackTop - parent_vm->stack;
+    std::copy(parent_vm->stack + diff - 3,
+              parent_vm->stackTop,
+              childVM->stack + diff - 3);
+    childVM->parentLastStackElement -= 3;
+  }
 
   auto frame = &childVM->frames[childVM->frameCount - 1];
   // *(childVM->stackTop - 2) = NUMBER_VAL(index);  // Test this
-  *(childVM->stackTop - initial_index) = NUMBER_VAL(index);  // Test this
+  *(childVM->stackTop - initial_index) =
+      NUMBER_VAL(static_cast<double>(index));  // Test this
   frame->ip += 2;  // Skip jump statement
 
   auto tp = ThreadPool::getTP();
   futures.emplace_back(
-      tp->enqueue(futureTask, parent_vm, childVM, free_vm_index));
+      tp->enqueue(futureTask, parent_vm, childVM, free_vm_index, false));
   // auto end = std::chrono::high_resolution_clock::now();
   // auto duration =
   // std::chrono::duration_cast<std::chrono::microseconds>(end - start);

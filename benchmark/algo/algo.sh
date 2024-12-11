@@ -1,9 +1,9 @@
 #!/bin/bash
 
 input_program="./benchmark/CppLox"
-program_type="cycle_list"
-input_lox_file="./benchmark/algo/cycle_list/cycle_list.lox"
-input_file="./benchmark/algo/cycle_list/cycle_list.txt"
+program_type="coin_combination"
+input_lox_file="./benchmark/algo/coin_combination/coin_combination.lox"
+input_file="./benchmark/algo/coin_combination/coin_combination.txt"
 output_profile="./benchmark/profile_output.txt"
 output_gmon_file="./gmon.out"
 

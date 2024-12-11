@@ -1,4 +1,7 @@
+import "temp2.lox"
+
 fun tempWorld(){
+    HelloWorld2();
     print "invoked from temp";
 }
 var hello = 10;

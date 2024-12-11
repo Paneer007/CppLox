@@ -1,0 +1,26 @@
+fun fib(n){
+    if(n <= 1){
+        return n;
+    }
+    return fib(n-1)+ fib(n-2);
+}
+
+fun main(){ 
+    var adjMat = [];
+    append(adjMat,1);
+    // append(adjMat,2);
+    // append(adjMat,3);
+    append(adjMat,4);
+    append(adjMat,5);
+    // print(adjMat);
+    var a = preduce(var sum=0:+; var a: adjMat){
+        // print(a);
+        sum = fib(a);
+        // print(sum);
+    };
+    print a;
+}
+
+// preduce bug
+
+main();

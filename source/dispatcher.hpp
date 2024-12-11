@@ -13,7 +13,6 @@
 class Dispatcher
 {
   static Dispatcher* dispatcher;
-
   std::unordered_map<size_t, int> id_to_vm;  // Make this atomic
   std::mutex id_to_vm_mtx;
   VM vm_pool[32];  // Make this atomic
@@ -40,7 +39,8 @@ public:
   void free_active_thread(size_t thread_id);
   void dispatch_loop_thread(int index,
                             std::list<std::future<int>>& futures,
-                            int initial_index);
+                            int initial_index,
+                            bool preduce);
 
   void initVMs();
 };

@@ -1,3 +1,4 @@
+#include <cstring>
 #include <fstream>
 #include <iostream>
 #include <string>
@@ -558,22 +559,6 @@ static void endScope()
 {
   current->scopeDepth--;
   while (current->localCount > 0
-         && current->locals[current->localCount - 1].depth
-             > current->scopeDepth)
-  {
-    if (current->locals[current->localCount - 1].isCaptured) {
-      emitByte(OP_CLOSE_UPVALUE);
-    } else {
-      emitByte(OP_POP);
-    }
-    current->localCount--;
-  }
-}
-
-static void endReducer()
-{
-  current->scopeDepth--;
-  while (current->localCount > 1
          && current->locals[current->localCount - 1].depth
              > current->scopeDepth)
   {
@@ -1727,7 +1712,7 @@ static void importDeclaration()
     scanner->current_stack.push_back(scanner->current);
     scanner->line_stack.push_back(scanner->line);
 
-    scanner->initScanner(buffer, fullPath.string().c_str());
+    scanner->initScanner(buffer, scanner->pwd);
 
     parser.hadError = false;
     parser.panicMode = false;
@@ -1740,7 +1725,8 @@ static void importDeclaration()
     scanner->start = scanner->start_stack.back();
     scanner->line = scanner->line_stack.back();
     scanner->current = scanner->current_stack.back();
-
+    // scanner->pwd = scanner->pwd_stack.back();
+    // printf("doone here \n");
     scanner->start_stack.pop_back();
     scanner->line_stack.pop_back();
     scanner->current_stack.pop_back();
@@ -1897,14 +1883,10 @@ static void _preduce(bool canAssign)
   emitConstant(NUMBER_VAL(0));  // To store iterator index
   current->localCount += 3;
 
-  // Result variable (dummy value zero for now)
-
   // Reducer Declaration
   consume(TOKEN_LEFT_PAREN, "Expect '(' after 'preduce'.");
   consume(TOKEN_VAR, "Expect reducer declaration");
   uint8_t pglobal = parseVariable("Expect variable name.");
-
-  auto temp_reducer = parser.previous;
 
   if (match(TOKEN_EQUAL)) {
     expression();

@@ -1,0 +1,27 @@
+fun main(){
+    finish {
+        print 13;
+        async {
+            print "Hello World 1";
+        }
+        print 14;
+        async {
+            print "Hello World 2";
+        }
+        print 15;
+        async {
+            print "Hello World 3";
+        }
+        var j =0 ;
+        for(var i = 1; i < 100000; j = j +1){
+            if(j % 100 == 0){
+                i = i+1;
+            }
+        }
+        print 16;
+    }
+    print "done";
+}
+
+main();
+

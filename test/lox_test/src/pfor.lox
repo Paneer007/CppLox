@@ -4,7 +4,8 @@ fun main(){
         append(adjMat, i);
     }
     pfor(var a : adjMat){
-        print rand();
+        print a;
+        print adjMat;
     }
 }
 

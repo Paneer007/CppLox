@@ -103,6 +103,7 @@ private:
     auto vm = dispatcher->getVM();
     auto source = this->readFile(path);
     InterpretResult result = vm->interpret(source, path);
+    
     delete[] source;
     if (result == INTERPRET_COMPILE_ERROR)
       exit(65);

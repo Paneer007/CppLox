@@ -113,6 +113,7 @@ public:
   std::vector<const char*> start_stack;
   std::vector<const char*> current_stack;
   std::vector<int> line_stack;
+  std::vector<const char*> pwd_stack;
 
   const char* pwd;
 

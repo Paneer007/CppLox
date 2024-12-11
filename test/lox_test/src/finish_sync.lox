@@ -1,0 +1,39 @@
+fun main(){
+    var temporary = 10;
+    finish {
+        async {
+            var j = 0;
+            // for(var i = 1; i < 100000; j = j +1){
+            //     if(j % 10 == 0){
+            //         i = i+1;
+            //     }
+            // }
+            print "before";
+            print temporary;
+            print "Hello World 1";
+        }
+        // print 13;
+        // async {
+        //     var j = 0;
+        //     for(var i = 1; i < 100000; j = j +1){
+        //         if(j % 50 == 0){
+        //             i = i+1;
+        //         }
+        //     }
+        //     print "Hello World 2";
+        // }
+        // async {
+        //     var j = 0;
+        //     for(var i = 1; i < 100000; j = j +1){
+        //         if(j % 25 == 0){
+        //             i = i+1;
+        //         }
+        //     }
+        //     print "Hello World 3";
+        // }
+        print 16;
+    }
+}
+
+main();
+

@@ -1,44 +1,25 @@
 var chnl = channel();
-
-class Hello {
-
-}
 fun sender(){
-    print "Here i am in sender";
-
     for(var x = 0; x< 10; x = x+1){
-        for(var i = 1; i< 10000; i = i+1){
-            // Kill time
-        }
-        var helloWorld = Hello(); 
-        send(chnl, helloWorld);
         send(chnl, x);
     }
-
     close(chnl);
-
-    
-    print "done";
 }
-
 fun receiver(){
-    print "Here i am in receiver";
     var flag = true;
     while(flag){
         var res = recv(chnl);
-        print res;
         if(res == nil){
             flag = false;
+        }else{
+            print res;
         }
     }
 }
-
 fun main(){
     var x = future sender();
     var y = future receiver();
-
     await x;
     await y; 
 }
-
 main();

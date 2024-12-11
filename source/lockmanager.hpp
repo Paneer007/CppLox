@@ -12,7 +12,6 @@ private:
   static LockManager* lockmanager;
 
   std::unordered_map<int, std::unique_ptr<std::mutex>> mutex_map;
-  std::unordered_map<int, std::unique_ptr<std::condition_variable>> cv_map;
   std::unordered_map<VM*, int> vm_map;
 
 public:
