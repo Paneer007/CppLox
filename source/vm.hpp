@@ -59,6 +59,15 @@ typedef enum
   INTERPRET_CONTINUE
 } InterpretResult;
 
+typedef enum
+{
+  STATE_NEW,
+  STATE_READY,
+  STATE_RUNNING,
+  STATE_WAITING,
+  STATE_TERMINATED
+} TaskState;
+
 class VM
 {
 private:
@@ -142,6 +151,7 @@ public:
   bool evictThread;
   int priority;
   int parentLastStackElement;
+  TaskState state;
 
   /**
    * @brief Initializes the virtual machine.

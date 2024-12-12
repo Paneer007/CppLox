@@ -252,10 +252,23 @@ static void freeObject(Obj* object)
       FREE<ObjList>(object);
       break;
     }
-    case OBJ_FUTURE:
-    case OBJ_MUTEX:
-    case OBJ_CHANNEL:
+    case OBJ_FUTURE: {
+      auto futureObj = (ObjFuture*)object;
+      // TODO: call dispatcher to free lock resources if any
+      FREE<ObjFuture>(futureObj);
       break;
+    }
+    case OBJ_MUTEX: {
+      auto mutexObj = (ObjMutex*)object;
+      // TODO: call lockmanager to free resources if any
+      FREE<ObjMutex>(mutexObj);
+      break;
+    }
+    case OBJ_CHANNEL: {
+      auto channelObj = (ObjChannel*)object;
+      FREE<ObjChannel>(channelObj);
+      break;
+    }
   }
 }
 

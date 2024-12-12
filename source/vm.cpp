@@ -22,7 +22,8 @@ static Value appendNative(int argCount, Value* args)
   // Append a value to the end of a list increasing the list's length by 1
   if (argCount != 2 || !IS_LIST(args[0])) {
     // TODO: Handle error
-    exit(0);
+    return ERR_VAL("Expected two arguments and a list for first argument.");
+    // exit(0);
   }
   ObjList* list = AS_LIST(args[0]);
   Value item = args[1];
@@ -36,7 +37,9 @@ static Value deleteNative(int argCount, Value* args)
   // Delete an item from a list at the given index.
   if (argCount != 2 || !IS_LIST(args[0]) || !IS_NUMBER(args[1])) {
     // TODO: Handle error
-    exit(0);
+    return ERR_VAL(
+        "Expected two arguments and a list for first argument and an "
+        "integer for second argument.");
   }
 
   ObjList* list = AS_LIST(args[0]);
@@ -44,7 +47,7 @@ static Value deleteNative(int argCount, Value* args)
 
   if (!isValidListIndex(list, index)) {
     // TODO: Handle error
-    exit(0);
+    return ERR_VAL("Invalid list index");
   }
 
   deleteFromList(list, index);
@@ -64,11 +67,11 @@ static Value strInput(int argCount, Value* args)
   // Append a value to the end of a list increasing the list's length by 1
   if (argCount > 1) {
     // Handle error
-    exit(0);
+    return ERR_VAL("Expected atmost one argument.");
   }
   if (argCount == 1 && !IS_STRING(args[0])) {
     // Handle error
-    exit(0);
+    return ERR_VAL("Expected string argument.");
   }
   if (argCount == 1 && IS_STRING(args[0])) {
     printf("%s", AS_CSTRING(args[0]));
@@ -83,11 +86,11 @@ static Value charInput(int argCount, Value* args)
   // Append a value to the end of a list increasing the list's length by 1
   if (argCount > 1) {
     // Handle error
-    exit(0);
+    return ERR_VAL("Expected atmost one argument.");
   }
   if (argCount == 1 && !IS_STRING(args[0])) {
     // Handle error
-    exit(0);
+    return ERR_VAL("Expected string argument.");
   }
   if (argCount == 1 && IS_STRING(args[0])) {
     printf("%s", AS_CSTRING(args[0]));
@@ -101,11 +104,11 @@ static Value intInput(int argCount, Value* args)
 {
   if (argCount > 1) {
     // TODO Handle error
-    exit(0);
+    return ERR_VAL("Expected atmost one argument.");
   }
   if (argCount == 1 && !IS_STRING(args[0])) {
     // TODO Handle error
-    exit(0);
+    return ERR_VAL("Expected string argument.");
   }
   if (argCount == 1 && IS_STRING(args[0])) {
     printf("%s", AS_CSTRING(args[0]));
@@ -119,11 +122,11 @@ static Value intInput(int argCount, Value* args)
 static Value objLength(int argCount, Value* args)
 {
   if (argCount != 1) {
-    exit(0);
+    return ERR_VAL("Expected one argument.");
   }
   if (!IS_STRING(args[0]) && !IS_LIST(args[0])) {
     // TODO Handle error
-    exit(0);
+    return ERR_VAL("Expected string or list argument.");
   }
   if (IS_STRING(args[0])) {
     auto x = AS_STRING(args[0]);
@@ -143,7 +146,7 @@ static Value objLength(int argCount, Value* args)
 static Value getMutex(int argCount, Value* args)
 {
   if (argCount != 0) {
-    exit(0);
+    return ERR_VAL("Expected no arguments.");
   }
   auto mutexObj = newMutex();
   return OBJ_VAL(mutexObj);
@@ -152,7 +155,7 @@ static Value getMutex(int argCount, Value* args)
 static Value getChannel(int argCount, Value* args)
 {
   if (argCount != 0) {
-    exit(0);
+    return ERR_VAL("Expected no arguments.");
   }
   auto channelObj = newChannel();
   return OBJ_VAL(channelObj);
@@ -161,10 +164,10 @@ static Value getChannel(int argCount, Value* args)
 static Value pushChannel(int argCount, Value* args)
 {
   if (argCount != 2) {
-    exit(0);
+    return ERR_VAL("Expected two arguments.");
   }
   if (!IS_CHANNEL(args[0])) {
-    exit(0);
+    return ERR_VAL("Expected first argument to be a channel.");
   }
   auto channel_object = AS_CHANNEL(args[0]);
   channel_object->channel.send(args[1]);
@@ -174,10 +177,10 @@ static Value pushChannel(int argCount, Value* args)
 static Value receiveChannel(int argCount, Value* args)
 {
   if (argCount != 1) {
-    exit(0);
+    return ERR_VAL("Expected one argument.");
   }
   if (!IS_CHANNEL(args[0])) {
-    exit(0);
+    return ERR_VAL("Expected argument to be a channel.");
   }
   auto channel_object = AS_CHANNEL(args[0]);
   auto opt_value = channel_object->channel.receive();
@@ -191,10 +194,10 @@ static Value receiveChannel(int argCount, Value* args)
 static Value closeChannel(int argCount, Value* args)
 {
   if (argCount != 1) {
-    exit(0);
+    return ERR_VAL("Expected one argument.");
   }
   if (!IS_CHANNEL(args[0])) {
-    exit(0);
+    return ERR_VAL("Expected argument to be a channel.");
   }
   auto channel_object = AS_CHANNEL(args[0]);
   channel_object->channel.close();
@@ -204,10 +207,10 @@ static Value closeChannel(int argCount, Value* args)
 static Value lockMutex(int argCount, Value* args)
 {
   if (argCount != 1) {
-    exit(0);
+    return ERR_VAL("Expected one argument.");
   }
   if (!IS_MUTEX(args[0])) {
-    exit(0);
+    return ERR_VAL("Expected argument to be a mutex.");
   }
   auto lock = AS_MUTEX(args[0]);
   lock->lock();
@@ -217,10 +220,10 @@ static Value lockMutex(int argCount, Value* args)
 static Value unlockMutex(int argCount, Value* args)
 {
   if (argCount != 1) {
-    exit(0);
+    return ERR_VAL("Expected one argument.");
   }
   if (!IS_MUTEX(args[0])) {
-    exit(0);
+    return ERR_VAL("Expected argument to be a mutex.");
   }
   auto lock = AS_MUTEX(args[0]);
   lock->unlock();
@@ -1554,6 +1557,10 @@ bool VM::callValue(Value callee, int argCount)
       case OBJ_NATIVE: {
         NativeFn native = AS_NATIVE(callee);
         Value result = native(argCount, this->stackTop - argCount);
+        if (IS_ERR(result)) {
+          runtimeError(AS_ERR(result));
+          return false;
+        }
         this->stackTop -= argCount + 1;
         push(result);
         return true;
