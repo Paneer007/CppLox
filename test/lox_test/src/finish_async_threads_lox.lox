@@ -1,0 +1,76 @@
+fun main(){
+    var temporary = 10;
+    finish {
+            async{
+                for(var j = 0;j<10000;j = j+1){
+                        if(j % 1000 == 0){
+                            print 1;
+                        }
+                    }
+                }
+            
+            async{
+                for(var j = 0;j<10000;j = j+1){
+                        if(j % 1000 == 0){
+                            print 2;
+                        }
+                    }
+                }
+
+            async{
+                for(var j = 0;j<10000;j = j+1){
+                        if(j % 1000 == 0){
+                            print 3;
+                        }
+                    }
+                }
+
+            async{
+                for(var j = 0;j<10000;j = j+1){
+                        if(j % 1000 == 0){
+                            print 4;
+                        }
+                    }
+                }
+
+            async{
+                for(var j = 0;j<10000;j = j+1){
+                        if(j % 1000 == 0){
+                            print 5;
+                        }
+                    }
+                }
+            
+            async{
+                for(var j = 0;j<10000;j = j+1){
+                        if(j % 1000 == 0){
+                            print 6;
+                        }
+                    }
+                }
+       
+        // print 13;
+        // async {
+        //     var j = 0;
+        //     for(var i = 1; i < 10000; j = j +1){
+        //         if(j % 50 == 0){
+        //             i = i+1;
+        //         }
+        //     }
+        //     print "Hello World 2";
+        // }
+        // async {
+        //     var j = 0;
+        //     for(var i = 1; i < 10000; j = j +1){
+        //         if(j % 25 == 0){
+        //             i = i+1;
+        //         }
+        //     }
+        //     print "Hello World 3";
+        // }
+    }
+    print "done";
+}
+
+main();
+

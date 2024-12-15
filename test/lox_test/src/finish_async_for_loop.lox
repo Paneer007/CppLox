@@ -1,0 +1,45 @@
+var lck = mutex();
+fun main(){
+    var temporary = 0;
+    finish {
+            for(var i = 0;i<80; i = i+1){
+                async{
+                    lock(lck);
+                    var temp = temporary;
+                    temporary = temporary +1;
+                    unlock(lck);
+                    for(var j = 0;j<30000;j = j+1){
+                        if(j % 1000 == 0){
+                            print temp;
+                        }
+                    }
+                }
+            }
+           
+            
+           
+        // print 13;
+        // async {
+        //     var j = 0;
+        //     for(var i = 1; i < 10000; j = j +1){
+        //         if(j % 50 == 0){
+        //             i = i+1;
+        //         }
+        //     }
+        //     print "Hello World 2";
+        // }
+        // async {
+        //     var j = 0;
+        //     for(var i = 1; i < 10000; j = j +1){
+        //         if(j % 25 == 0){
+        //             i = i+1;
+        //         }
+        //     }
+        //     print "Hello World 3";
+        // }
+    }
+    print "done";
+}
+
+main();
+

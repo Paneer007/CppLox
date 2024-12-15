@@ -1,0 +1,3994 @@
+Running command iteration 1...
+68
+
+
+Running command iteration 2...
+60
+
+
+Running command iteration 3...
+80
+
+
+Running command iteration 4...
+62
+
+
+Running command iteration 5...
+70
+
+
+Running command iteration 6...
+53
+
+
+Running command iteration 7...
+61
+
+
+Running command iteration 8...
+60
+
+
+Running command iteration 9...
+62
+
+
+Running command iteration 10...
+44
+
+
+Running command iteration 11...
+78
+
+
+Running command iteration 12...
+55
+
+
+Running command iteration 13...
+48
+
+
+Running command iteration 14...
+68
+
+
+Running command iteration 15...
+73
+
+
+Running command iteration 16...
+51
+
+
+Running command iteration 17...
+75
+
+
+Running command iteration 18...
+68
+
+
+Running command iteration 19...
+77
+
+
+Running command iteration 20...
+63
+
+
+Running command iteration 21...
+69
+
+
+Running command iteration 22...
+72
+
+
+Running command iteration 23...
+75
+
+
+Running command iteration 24...
+91
+
+
+Running command iteration 25...
+76
+
+
+Running command iteration 26...
+67
+
+
+Running command iteration 27...
+66
+
+
+Running command iteration 28...
+68
+
+
+Running command iteration 29...
+60
+
+
+Running command iteration 30...
+65
+
+
+Running command iteration 31...
+43
+
+
+Running command iteration 32...
+63
+
+
+Running command iteration 33...
+61
+
+
+Running command iteration 34...
+76
+
+
+Running command iteration 35...
+60
+
+
+Running command iteration 36...
+69
+
+
+Running command iteration 37...
+72
+
+
+Running command iteration 38...
+101
+
+
+Running command iteration 39...
+65
+
+
+Running command iteration 40...
+82
+
+
+Running command iteration 41...
+61
+
+
+Running command iteration 42...
+65
+
+
+Running command iteration 43...
+54
+
+
+Running command iteration 44...
+74
+
+
+Running command iteration 45...
+69
+
+
+Running command iteration 46...
+68
+
+
+Running command iteration 47...
+63
+
+
+Running command iteration 48...
+62
+
+
+Running command iteration 49...
+67
+
+
+Running command iteration 50...
+93
+
+
+Running command iteration 51...
+81
+
+
+Running command iteration 52...
+58
+
+
+Running command iteration 53...
+79
+
+
+Running command iteration 54...
+66
+
+
+Running command iteration 55...
+58
+
+
+Running command iteration 56...
+85
+
+
+Running command iteration 57...
+101
+
+
+Running command iteration 58...
+55
+
+
+Running command iteration 59...
+62
+
+
+Running command iteration 60...
+61
+
+
+Running command iteration 61...
+62
+
+
+Running command iteration 62...
+69
+
+
+Running command iteration 63...
+52
+
+
+Running command iteration 64...
+66
+
+
+Running command iteration 65...
+74
+
+
+Running command iteration 66...
+59
+
+
+Running command iteration 67...
+55
+
+
+Running command iteration 68...
+90
+
+
+Running command iteration 69...
+70
+
+
+Running command iteration 70...
+53
+
+
+Running command iteration 71...
+80
+
+
+Running command iteration 72...
+84
+
+
+Running command iteration 73...
+78
+
+
+Running command iteration 74...
+62
+
+
+Running command iteration 75...
+82
+
+
+Running command iteration 76...
+62
+
+
+Running command iteration 77...
+57
+
+
+Running command iteration 78...
+53
+
+
+Running command iteration 79...
+50
+
+
+Running command iteration 80...
+55
+
+
+Running command iteration 81...
+72
+
+
+Running command iteration 82...
+60
+
+
+Running command iteration 83...
+95
+
+
+Running command iteration 84...
+61
+
+
+Running command iteration 85...
+56
+
+
+Running command iteration 86...
+51
+
+
+Running command iteration 87...
+68
+
+
+Running command iteration 88...
+68
+
+
+Running command iteration 89...
+72
+
+
+Running command iteration 90...
+66
+
+
+Running command iteration 91...
+52
+
+
+Running command iteration 92...
+72
+
+
+Running command iteration 93...
+65
+
+
+Running command iteration 94...
+62
+
+
+Running command iteration 95...
+61
+
+
+Running command iteration 96...
+76
+
+
+Running command iteration 97...
+67
+
+
+Running command iteration 98...
+56
+
+
+Running command iteration 99...
+56
+
+
+Running command iteration 100...
+53
+
+
+Running command iteration 101...
+77
+
+
+Running command iteration 102...
+87
+
+
+Running command iteration 103...
+63
+
+
+Running command iteration 104...
+43
+
+
+Running command iteration 105...
+63
+
+
+Running command iteration 106...
+63
+
+
+Running command iteration 107...
+57
+
+
+Running command iteration 108...
+70
+
+
+Running command iteration 109...
+57
+
+
+Running command iteration 110...
+70
+
+
+Running command iteration 111...
+66
+
+
+Running command iteration 112...
+66
+
+
+Running command iteration 113...
+67
+
+
+Running command iteration 114...
+75
+
+
+Running command iteration 115...
+63
+
+
+Running command iteration 116...
+83
+
+
+Running command iteration 117...
+65
+
+
+Running command iteration 118...
+49
+
+
+Running command iteration 119...
+60
+
+
+Running command iteration 120...
+66
+
+
+Running command iteration 121...
+64
+
+
+Running command iteration 122...
+60
+
+
+Running command iteration 123...
+
+
+Running command iteration 124...
+58
+
+
+Running command iteration 125...
+68
+
+
+Running command iteration 126...
+62
+
+
+Running command iteration 127...
+79
+
+
+Running command iteration 128...
+69
+
+
+Running command iteration 129...
+61
+
+
+Running command iteration 130...
+55
+
+
+Running command iteration 131...
+62
+
+
+Running command iteration 132...
+48
+
+
+Running command iteration 133...
+55
+
+
+Running command iteration 134...
+79
+
+
+Running command iteration 135...
+65
+
+
+Running command iteration 136...
+70
+
+
+Running command iteration 137...
+65
+
+
+Running command iteration 138...
+60
+
+
+Running command iteration 139...
+62
+
+
+Running command iteration 140...
+55
+
+
+Running command iteration 141...
+71
+
+
+Running command iteration 142...
+72
+
+
+Running command iteration 143...
+81
+
+
+Running command iteration 144...
+56
+
+
+Running command iteration 145...
+62
+
+
+Running command iteration 146...
+65
+
+
+Running command iteration 147...
+Operand must be a number.
+[line 11] in main()
+
+
+Running command iteration 148...
+60
+
+
+Running command iteration 149...
+65
+
+
+Running command iteration 150...
+64
+
+
+Running command iteration 151...
+46
+
+
+Running command iteration 152...
+58
+
+
+Running command iteration 153...
+69
+
+
+Running command iteration 154...
+63
+
+
+Running command iteration 155...
+68
+
+
+Running command iteration 156...
+70
+
+
+Running command iteration 157...
+60
+
+
+Running command iteration 158...
+86
+
+
+Running command iteration 159...
+61
+
+
+Running command iteration 160...
+68
+
+
+Running command iteration 161...
+61
+
+
+Running command iteration 162...
+59
+
+
+Running command iteration 163...
+65
+
+
+Running command iteration 164...
+59
+
+
+Running command iteration 165...
+57
+
+
+Running command iteration 166...
+68
+
+
+Running command iteration 167...
+63
+
+
+Running command iteration 168...
+57
+
+
+Running command iteration 169...
+54
+
+
+Running command iteration 170...
+91
+
+
+Running command iteration 171...
+55
+
+
+Running command iteration 172...
+63
+
+
+Running command iteration 173...
+68
+
+
+Running command iteration 174...
+58
+
+
+Running command iteration 175...
+74
+
+
+Running command iteration 176...
+56
+
+
+Running command iteration 177...
+72
+
+
+Running command iteration 178...
+47
+
+
+Running command iteration 179...
+79
+
+
+Running command iteration 180...
+63
+
+
+Running command iteration 181...
+52
+
+
+Running command iteration 182...
+70
+
+
+Running command iteration 183...
+60
+
+
+Running command iteration 184...
+60
+
+
+Running command iteration 185...
+55
+
+
+Running command iteration 186...
+74
+
+
+Running command iteration 187...
+79
+
+
+Running command iteration 188...
+62
+
+
+Running command iteration 189...
+66
+
+
+Running command iteration 190...
+87
+
+
+Running command iteration 191...
+66
+
+
+Running command iteration 192...
+75
+
+
+Running command iteration 193...
+71
+
+
+Running command iteration 194...
+53
+
+
+Running command iteration 195...
+93
+
+
+Running command iteration 196...
+50
+
+
+Running command iteration 197...
+60
+
+
+Running command iteration 198...
+78
+
+
+Running command iteration 199...
+91
+
+
+Running command iteration 200...
+82
+
+
+Running command iteration 201...
+65
+
+
+Running command iteration 202...
+71
+
+
+Running command iteration 203...
+62
+
+
+Running command iteration 204...
+69
+
+
+Running command iteration 205...
+94
+
+
+Running command iteration 206...
+55
+
+
+Running command iteration 207...
+54
+
+
+Running command iteration 208...
+75
+
+
+Running command iteration 209...
+65
+
+
+Running command iteration 210...
+81
+
+
+Running command iteration 211...
+65
+
+
+Running command iteration 212...
+64
+
+
+Running command iteration 213...
+62
+
+
+Running command iteration 214...
+44
+
+
+Running command iteration 215...
+76
+
+
+Running command iteration 216...
+78
+
+
+Running command iteration 217...
+79
+
+
+Running command iteration 218...
+61
+
+
+Running command iteration 219...
+73
+
+
+Running command iteration 220...
+70
+
+
+Running command iteration 221...
+59
+
+
+Running command iteration 222...
+63
+
+
+Running command iteration 223...
+67
+
+
+Running command iteration 224...
+78
+
+
+Running command iteration 225...
+98
+
+
+Running command iteration 226...
+63
+
+
+Running command iteration 227...
+65
+
+
+Running command iteration 228...
+60
+
+
+Running command iteration 229...
+70
+
+
+Running command iteration 230...
+88
+
+
+Running command iteration 231...
+75
+
+
+Running command iteration 232...
+71
+
+
+Running command iteration 233...
+67
+
+
+Running command iteration 234...
+69
+
+
+Running command iteration 235...
+51
+
+
+Running command iteration 236...
+53
+
+
+Running command iteration 237...
+66
+
+
+Running command iteration 238...
+69
+
+
+Running command iteration 239...
+69
+
+
+Running command iteration 240...
+60
+
+
+Running command iteration 241...
+101
+
+
+Running command iteration 242...
+55
+
+
+Running command iteration 243...
+59
+
+
+Running command iteration 244...
+77
+
+
+Running command iteration 245...
+74
+
+
+Running command iteration 246...
+57
+
+
+Running command iteration 247...
+58
+
+
+Running command iteration 248...
+61
+
+
+Running command iteration 249...
+51
+
+
+Running command iteration 250...
+55
+
+
+Running command iteration 251...
+59
+
+
+Running command iteration 252...
+84
+
+
+Running command iteration 253...
+69
+
+
+Running command iteration 254...
+90
+
+
+Running command iteration 255...
+88
+
+
+Running command iteration 256...
+73
+
+
+Running command iteration 257...
+60
+
+
+Running command iteration 258...
+52
+
+
+Running command iteration 259...
+77
+
+
+Running command iteration 260...
+63
+
+
+Running command iteration 261...
+63
+
+
+Running command iteration 262...
+51
+
+
+Running command iteration 263...
+85
+
+
+Running command iteration 264...
+66
+
+
+Running command iteration 265...
+93
+
+
+Running command iteration 266...
+68
+
+
+Running command iteration 267...
+97
+
+
+Running command iteration 268...
+55
+
+
+Running command iteration 269...
+88
+
+
+Running command iteration 270...
+62
+
+
+Running command iteration 271...
+58
+
+
+Running command iteration 272...
+84
+
+
+Running command iteration 273...
+72
+
+
+Running command iteration 274...
+53
+
+
+Running command iteration 275...
+71
+
+
+Running command iteration 276...
+75
+
+
+Running command iteration 277...
+65
+
+
+Running command iteration 278...
+66
+
+
+Running command iteration 279...
+45
+
+
+Running command iteration 280...
+67
+
+
+Running command iteration 281...
+66
+
+
+Running command iteration 282...
+52
+
+
+Running command iteration 283...
+52
+
+
+Running command iteration 284...
+76
+
+
+Running command iteration 285...
+62
+
+
+Running command iteration 286...
+69
+
+
+Running command iteration 287...
+80
+
+
+Running command iteration 288...
+64
+
+
+Running command iteration 289...
+54
+
+
+Running command iteration 290...
+67
+
+
+Running command iteration 291...
+70
+
+
+Running command iteration 292...
+61
+
+
+Running command iteration 293...
+66
+
+
+Running command iteration 294...
+57
+
+
+Running command iteration 295...
+60
+
+
+Running command iteration 296...
+53
+
+
+Running command iteration 297...
+89
+
+
+Running command iteration 298...
+89
+
+
+Running command iteration 299...
+67
+
+
+Running command iteration 300...
+76
+
+
+Running command iteration 301...
+73
+
+
+Running command iteration 302...
+57
+
+
+Running command iteration 303...
+75
+
+
+Running command iteration 304...
+75
+
+
+Running command iteration 305...
+68
+
+
+Running command iteration 306...
+68
+
+
+Running command iteration 307...
+59
+
+
+Running command iteration 308...
+65
+
+
+Running command iteration 309...
+62
+
+
+Running command iteration 310...
+58
+
+
+Running command iteration 311...
+84
+
+
+Running command iteration 312...
+78
+
+
+Running command iteration 313...
+61
+
+
+Running command iteration 314...
+41
+
+
+Running command iteration 315...
+60
+
+
+Running command iteration 316...
+87
+
+
+Running command iteration 317...
+60
+
+
+Running command iteration 318...
+82
+
+
+Running command iteration 319...
+Operand must be a number.
+[line 11] in main()
+
+
+Running command iteration 320...
+67
+
+
+Running command iteration 321...
+59
+
+
+Running command iteration 322...
+85
+
+
+Running command iteration 323...
+75
+
+
+Running command iteration 324...
+99
+
+
+Running command iteration 325...
+55
+
+
+Running command iteration 326...
+74
+
+
+Running command iteration 327...
+66
+
+
+Running command iteration 328...
+43
+
+
+Running command iteration 329...
+79
+
+
+Running command iteration 330...
+48
+
+
+Running command iteration 331...
+85
+
+
+Running command iteration 332...
+73
+
+
+Running command iteration 333...
+62
+
+
+Running command iteration 334...
+77
+
+
+Running command iteration 335...
+58
+
+
+Running command iteration 336...
+67
+
+
+Running command iteration 337...
+55
+
+
+Running command iteration 338...
+58
+
+
+Running command iteration 339...
+69
+
+
+Running command iteration 340...
+55
+
+
+Running command iteration 341...
+50
+
+
+Running command iteration 342...
+62
+
+
+Running command iteration 343...
+70
+
+
+Running command iteration 344...
+85
+
+
+Running command iteration 345...
+48
+
+
+Running command iteration 346...
+60
+
+
+Running command iteration 347...
+90
+
+
+Running command iteration 348...
+73
+
+
+Running command iteration 349...
+51
+
+
+Running command iteration 350...
+55
+
+
+Running command iteration 351...
+63
+
+
+Running command iteration 352...
+57
+
+
+Running command iteration 353...
+74
+
+
+Running command iteration 354...
+48
+
+
+Running command iteration 355...
+66
+
+
+Running command iteration 356...
+66
+
+
+Running command iteration 357...
+59
+
+
+Running command iteration 358...
+75
+
+
+Running command iteration 359...
+70
+
+
+Running command iteration 360...
+56
+
+
+Running command iteration 361...
+60
+
+
+Running command iteration 362...
+65
+
+
+Running command iteration 363...
+72
+
+
+Running command iteration 364...
+71
+
+
+Running command iteration 365...
+52
+
+
+Running command iteration 366...
+75
+
+
+Running command iteration 367...
+62
+
+
+Running command iteration 368...
+75
+
+
+Running command iteration 369...
+61
+
+
+Running command iteration 370...
+73
+
+
+Running command iteration 371...
+69
+
+
+Running command iteration 372...
+72
+
+
+Running command iteration 373...
+55
+
+
+Running command iteration 374...
+67
+
+
+Running command iteration 375...
+63
+
+
+Running command iteration 376...
+63
+
+
+Running command iteration 377...
+58
+
+
+Running command iteration 378...
+74
+
+
+Running command iteration 379...
+65
+
+
+Running command iteration 380...
+67
+
+
+Running command iteration 381...
+56
+
+
+Running command iteration 382...
+60
+
+
+Running command iteration 383...
+66
+
+
+Running command iteration 384...
+76
+
+
+Running command iteration 385...
+70
+
+
+Running command iteration 386...
+53
+
+
+Running command iteration 387...
+65
+
+
+Running command iteration 388...
+37
+
+
+Running command iteration 389...
+81
+
+
+Running command iteration 390...
+54
+
+
+Running command iteration 391...
+54
+
+
+Running command iteration 392...
+82
+
+
+Running command iteration 393...
+62
+
+
+Running command iteration 394...
+74
+
+
+Running command iteration 395...
+70
+
+
+Running command iteration 396...
+65
+
+
+Running command iteration 397...
+56
+
+
+Running command iteration 398...
+73
+
+
+Running command iteration 399...
+67
+
+
+Running command iteration 400...
+44
+
+
+Running command iteration 401...
+88
+
+
+Running command iteration 402...
+74
+
+
+Running command iteration 403...
+76
+
+
+Running command iteration 404...
+69
+
+
+Running command iteration 405...
+57
+
+
+Running command iteration 406...
+65
+
+
+Running command iteration 407...
+59
+
+
+Running command iteration 408...
+70
+
+
+Running command iteration 409...
+63
+
+
+Running command iteration 410...
+59
+
+
+Running command iteration 411...
+72
+
+
+Running command iteration 412...
+68
+
+
+Running command iteration 413...
+71
+
+
+Running command iteration 414...
+75
+
+
+Running command iteration 415...
+65
+
+
+Running command iteration 416...
+63
+
+
+Running command iteration 417...
+64
+
+
+Running command iteration 418...
+76
+
+
+Running command iteration 419...
+83
+
+
+Running command iteration 420...
+67
+
+
+Running command iteration 421...
+52
+
+
+Running command iteration 422...
+78
+
+
+Running command iteration 423...
+63
+
+
+Running command iteration 424...
+64
+
+
+Running command iteration 425...
+78
+
+
+Running command iteration 426...
+69
+
+
+Running command iteration 427...
+57
+
+
+Running command iteration 428...
+86
+
+
+Running command iteration 429...
+71
+
+
+Running command iteration 430...
+41
+
+
+Running command iteration 431...
+81
+
+
+Running command iteration 432...
+47
+
+
+Running command iteration 433...
+42
+
+
+Running command iteration 434...
+65
+
+
+Running command iteration 435...
+65
+
+
+Running command iteration 436...
+75
+
+
+Running command iteration 437...
+72
+
+
+Running command iteration 438...
+55
+
+
+Running command iteration 439...
+82
+
+
+Running command iteration 440...
+86
+
+
+Running command iteration 441...
+74
+
+
+Running command iteration 442...
+72
+
+
+Running command iteration 443...
+58
+
+
+Running command iteration 444...
+78
+
+
+Running command iteration 445...
+69
+
+
+Running command iteration 446...
+70
+
+
+Running command iteration 447...
+53
+
+
+Running command iteration 448...
+62
+
+
+Running command iteration 449...
+70
+
+
+Running command iteration 450...
+67
+
+
+Running command iteration 451...
+77
+
+
+Running command iteration 452...
+94
+
+
+Running command iteration 453...
+63
+
+
+Running command iteration 454...
+88
+
+
+Running command iteration 455...
+77
+
+
+Running command iteration 456...
+101
+
+
+Running command iteration 457...
+57
+
+
+Running command iteration 458...
+62
+
+
+Running command iteration 459...
+63
+
+
+Running command iteration 460...
+76
+
+
+Running command iteration 461...
+61
+
+
+Running command iteration 462...
+51
+
+
+Running command iteration 463...
+44
+
+
+Running command iteration 464...
+72
+
+
+Running command iteration 465...
+64
+
+
+Running command iteration 466...
+62
+
+
+Running command iteration 467...
+61
+
+
+Running command iteration 468...
+47
+
+
+Running command iteration 469...
+76
+
+
+Running command iteration 470...
+82
+
+
+Running command iteration 471...
+70
+
+
+Running command iteration 472...
+87
+
+
+Running command iteration 473...
+73
+
+
+Running command iteration 474...
+76
+
+
+Running command iteration 475...
+48
+
+
+Running command iteration 476...
+75
+
+
+Running command iteration 477...
+67
+
+
+Running command iteration 478...
+74
+
+
+Running command iteration 479...
+71
+
+
+Running command iteration 480...
+58
+
+
+Running command iteration 481...
+51
+
+
+Running command iteration 482...
+64
+
+
+Running command iteration 483...
+56
+
+
+Running command iteration 484...
+82
+
+
+Running command iteration 485...
+60
+
+
+Running command iteration 486...
+68
+
+
+Running command iteration 487...
+55
+
+
+Running command iteration 488...
+52
+
+
+Running command iteration 489...
+63
+
+
+Running command iteration 490...
+89
+
+
+Running command iteration 491...
+66
+
+
+Running command iteration 492...
+86
+
+
+Running command iteration 493...
+51
+
+
+Running command iteration 494...
+51
+
+
+Running command iteration 495...
+101
+
+
+Running command iteration 496...
+68
+
+
+Running command iteration 497...
+67
+
+
+Running command iteration 498...
+50
+
+
+Running command iteration 499...
+69
+
+
+Running command iteration 500...
+61
+
+
+Running command iteration 501...
+55
+
+
+Running command iteration 502...
+77
+
+
+Running command iteration 503...
+54
+
+
+Running command iteration 504...
+58
+
+
+Running command iteration 505...
+57
+
+
+Running command iteration 506...
+52
+
+
+Running command iteration 507...
+75
+
+
+Running command iteration 508...
+69
+
+
+Running command iteration 509...
+64
+
+
+Running command iteration 510...
+60
+
+
+Running command iteration 511...
+60
+
+
+Running command iteration 512...
+79
+
+
+Running command iteration 513...
+74
+
+
+Running command iteration 514...
+67
+
+
+Running command iteration 515...
+66
+
+
+Running command iteration 516...
+65
+
+
+Running command iteration 517...
+62
+
+
+Running command iteration 518...
+55
+
+
+Running command iteration 519...
+88
+
+
+Running command iteration 520...
+60
+
+
+Running command iteration 521...
+56
+
+
+Running command iteration 522...
+57
+
+
+Running command iteration 523...
+65
+
+
+Running command iteration 524...
+70
+
+
+Running command iteration 525...
+67
+
+
+Running command iteration 526...
+67
+
+
+Running command iteration 527...
+65
+
+
+Running command iteration 528...
+63
+
+
+Running command iteration 529...
+53
+
+
+Running command iteration 530...
+49
+
+
+Running command iteration 531...
+56
+
+
+Running command iteration 532...
+61
+
+
+Running command iteration 533...
+67
+
+
+Running command iteration 534...
+59
+
+
+Running command iteration 535...
+59
+
+
+Running command iteration 536...
+57
+
+
+Running command iteration 537...
+56
+
+
+Running command iteration 538...
+79
+
+
+Running command iteration 539...
+81
+
+
+Running command iteration 540...
+65
+
+
+Running command iteration 541...
+60
+
+
+Running command iteration 542...
+65
+
+
+Running command iteration 543...
+68
+
+
+Running command iteration 544...
+64
+
+
+Running command iteration 545...
+61
+
+
+Running command iteration 546...
+61
+
+
+Running command iteration 547...
+62
+
+
+Running command iteration 548...
+56
+
+
+Running command iteration 549...
+83
+
+
+Running command iteration 550...
+69
+
+
+Running command iteration 551...
+63
+
+
+Running command iteration 552...
+72
+
+
+Running command iteration 553...
+101
+
+
+Running command iteration 554...
+62
+
+
+Running command iteration 555...
+77
+
+
+Running command iteration 556...
+82
+
+
+Running command iteration 557...
+67
+
+
+Running command iteration 558...
+60
+
+
+Running command iteration 559...
+67
+
+
+Running command iteration 560...
+73
+
+
+Running command iteration 561...
+91
+
+
+Running command iteration 562...
+62
+
+
+Running command iteration 563...
+70
+
+
+Running command iteration 564...
+55
+
+
+Running command iteration 565...
+56
+
+
+Running command iteration 566...
+62
+
+
+Running command iteration 567...
+62
+
+
+Running command iteration 568...
+49
+
+
+Running command iteration 569...
+101
+
+
+Running command iteration 570...
+65
+
+
+Running command iteration 571...
+61
+
+
+Running command iteration 572...
+68
+
+
+Running command iteration 573...
+65
+
+
+Running command iteration 574...
+64
+
+
+Running command iteration 575...
+61
+
+
+Running command iteration 576...
+70
+
+
+Running command iteration 577...
+73
+
+
+Running command iteration 578...
+78
+
+
+Running command iteration 579...
+60
+
+
+Running command iteration 580...
+72
+
+
+Running command iteration 581...
+54
+
+
+Running command iteration 582...
+61
+
+
+Running command iteration 583...
+81
+
+
+Running command iteration 584...
+58
+
+
+Running command iteration 585...
+71
+
+
+Running command iteration 586...
+99
+
+
+Running command iteration 587...
+60
+
+
+Running command iteration 588...
+50
+
+
+Running command iteration 589...
+55
+
+
+Running command iteration 590...
+54
+
+
+Running command iteration 591...
+52
+
+
+Running command iteration 592...
+58
+
+
+Running command iteration 593...
+91
+
+
+Running command iteration 594...
+63
+
+
+Running command iteration 595...
+51
+
+
+Running command iteration 596...
+101
+
+
+Running command iteration 597...
+82
+
+
+Running command iteration 598...
+50
+
+
+Running command iteration 599...
+58
+
+
+Running command iteration 600...
+73
+
+
+Running command iteration 601...
+60
+
+
+Running command iteration 602...
+87
+
+
+Running command iteration 603...
+72
+
+
+Running command iteration 604...
+67
+
+
+Running command iteration 605...
+58
+
+
+Running command iteration 606...
+55
+
+
+Running command iteration 607...
+71
+
+
+Running command iteration 608...
+63
+
+
+Running command iteration 609...
+69
+
+
+Running command iteration 610...
+94
+
+
+Running command iteration 611...
+68
+
+
+Running command iteration 612...
+75
+
+
+Running command iteration 613...
+67
+
+
+Running command iteration 614...
+56
+
+
+Running command iteration 615...
+69
+
+
+Running command iteration 616...
+69
+
+
+Running command iteration 617...
+59
+
+
+Running command iteration 618...
+59
+
+
+Running command iteration 619...
+71
+
+
+Running command iteration 620...
+69
+
+
+Running command iteration 621...
+62
+
+
+Running command iteration 622...
+68
+
+
+Running command iteration 623...
+69
+
+
+Running command iteration 624...
+53
+
+
+Running command iteration 625...
+52
+
+
+Running command iteration 626...
+60
+
+
+Running command iteration 627...
+53
+
+
+Running command iteration 628...
+55
+
+
+Running command iteration 629...
+60
+
+
+Running command iteration 630...
+52
+
+
+Running command iteration 631...
+73
+
+
+Running command iteration 632...
+70
+
+
+Running command iteration 633...
+59
+
+
+Running command iteration 634...
+64
+
+
+Running command iteration 635...
+101
+
+
+Running command iteration 636...
+76
+
+
+Running command iteration 637...
+101
+
+
+Running command iteration 638...
+51
+
+
+Running command iteration 639...
+68
+
+
+Running command iteration 640...
+47
+
+
+Running command iteration 641...
+61
+
+
+Running command iteration 642...
+59
+
+
+Running command iteration 643...
+47
+
+
+Running command iteration 644...
+64
+
+
+Running command iteration 645...
+78
+
+
+Running command iteration 646...
+56
+
+
+Running command iteration 647...
+84
+
+
+Running command iteration 648...
+70
+
+
+Running command iteration 649...
+58
+
+
+Running command iteration 650...
+63
+
+
+Running command iteration 651...
+64
+
+
+Running command iteration 652...
+55
+
+
+Running command iteration 653...
+55
+
+
+Running command iteration 654...
+73
+
+
+Running command iteration 655...
+68
+
+
+Running command iteration 656...
+73
+
+
+Running command iteration 657...
+64
+
+
+Running command iteration 658...
+67
+
+
+Running command iteration 659...
+73
+
+
+Running command iteration 660...
+59
+
+
+Running command iteration 661...
+50
+
+
+Running command iteration 662...
+73
+
+
+Running command iteration 663...
+56
+
+
+Running command iteration 664...
+81
+
+
+Running command iteration 665...
+72
+
+
+Running command iteration 666...
+75
+
+
+Running command iteration 667...
+78
+
+
+Running command iteration 668...
+41
+
+
+Running command iteration 669...
+42
+
+
+Running command iteration 670...
+80
+
+
+Running command iteration 671...
+67
+
+
+Running command iteration 672...
+63
+
+
+Running command iteration 673...
+57
+
+
+Running command iteration 674...
+64
+
+
+Running command iteration 675...
+55
+
+
+Running command iteration 676...
+51
+
+
+Running command iteration 677...
+64
+
+
+Running command iteration 678...
+57
+
+
+Running command iteration 679...
+71
+
+
+Running command iteration 680...
+64
+
+
+Running command iteration 681...
+53
+
+
+Running command iteration 682...
+66
+
+
+Running command iteration 683...
+66
+
+
+Running command iteration 684...
+48
+
+
+Running command iteration 685...
+60
+
+
+Running command iteration 686...
+71
+
+
+Running command iteration 687...
+64
+
+
+Running command iteration 688...
+71
+
+
+Running command iteration 689...
+71
+
+
+Running command iteration 690...
+73
+
+
+Running command iteration 691...
+49
+
+
+Running command iteration 692...
+77
+
+
+Running command iteration 693...
+64
+
+
+Running command iteration 694...
+67
+
+
+Running command iteration 695...
+55
+
+
+Running command iteration 696...
+81
+
+
+Running command iteration 697...
+45
+
+
+Running command iteration 698...
+62
+
+
+Running command iteration 699...
+68
+
+
+Running command iteration 700...
+61
+
+
+Running command iteration 701...
+59
+
+
+Running command iteration 702...
+62
+
+
+Running command iteration 703...
+73
+
+
+Running command iteration 704...
+78
+
+
+Running command iteration 705...
+67
+
+
+Running command iteration 706...
+57
+
+
+Running command iteration 707...
+67
+
+
+Running command iteration 708...
+671
+
+
+Running command iteration 711...
+52
+
+
+Running command iteration 712...
+60
+
+
+Running command iteration 713...
+75
+
+
+Running command iteration 714...
+81
+
+
+Running command iteration 715...
+74
+
+
+Running command iteration 716...
+73
+
+
+Running command iteration 717...
+78
+
+
+Running command iteration 718...
+54
+
+
+Running command iteration 719...
+95
+
+
+Running command iteration 720...
+67
+
+
+Running command iteration 721...
+68
+
+
+Running command iteration 722...
+87
+
+
+Running command iteration 723...
+58
+
+
+Running command iteration 724...
+66
+
+
+Running command iteration 725...
+101
+
+
+Running command iteration 726...
+80
+
+
+Running command iteration 727...
+67
+
+
+Running command iteration 728...
+64
+
+
+Running command iteration 729...
+73
+
+
+Running command iteration 730...
+59
+
+
+Running command iteration 731...
+68
+
+
+Running command iteration 732...
+59
+
+
+Running command iteration 733...
+76
+
+
+Running command iteration 734...
+75
+
+
+Running command iteration 735...
+72
+
+
+Running command iteration 736...
+55
+
+
+Running command iteration 737...
+73
+
+
+Running command iteration 738...
+53
+
+
+Running command iteration 739...
+67
+
+
+Running command iteration 740...
+73
+
+
+Running command iteration 741...
+61
+
+
+Running command iteration 742...
+60
+
+
+Running command iteration 743...
+71
+
+
+Running command iteration 744...
+61
+
+
+Running command iteration 745...
+61
+
+
+Running command iteration 746...
+77
+
+
+Running command iteration 747...
+63
+
+
+Running command iteration 748...
+101
+
+
+Running command iteration 749...
+76
+
+
+Running command iteration 750...
+56
+
+
+Running command iteration 751...
+64
+
+
+Running command iteration 752...
+43
+
+
+Running command iteration 753...
+58
+
+
+Running command iteration 754...
+51
+
+
+Running command iteration 755...
+82
+
+
+Running command iteration 756...
+101
+
+
+Running command iteration 757...
+75
+
+
+Running command iteration 758...
+75
+
+
+Running command iteration 759...
+101
+
+
+Running command iteration 760...
+72
+
+
+Running command iteration 761...
+101
+
+
+Running command iteration 762...
+79
+
+
+Running command iteration 763...
+98
+
+
+Running command iteration 764...
+83
+
+
+Running command iteration 765...
+101
+
+
+Running command iteration 766...
+69
+
+
+Running command iteration 767...
+53
+
+
+Running command iteration 768...
+72
+
+
+Running command iteration 769...
+61
+
+
+Running command iteration 770...
+80
+
+
+Running command iteration 771...
+70
+
+
+Running command iteration 772...
+70
+
+
+Running command iteration 773...
+101
+
+
+Running command iteration 774...
+70
+
+
+Running command iteration 775...
+70
+
+
+Running command iteration 776...
+71
+
+
+Running command iteration 777...
+101
+
+
+Running command iteration 778...
+72
+
+
+Running command iteration 779...
+72
+
+
+Running command iteration 780...
+63
+
+
+Running command iteration 781...
+66
+
+
+Running command iteration 782...
+67
+
+
+Running command iteration 783...
+70
+
+
+Running command iteration 784...
+53
+
+
+Running command iteration 785...
+70
+
+
+Running command iteration 786...
+95
+
+
+Running command iteration 787...
+61
+
+
+Running command iteration 788...
+90
+
+
+Running command iteration 789...
+57
+
+
+Running command iteration 790...
+73
+
+
+Running command iteration 791...
+69
+
+
+Running command iteration 792...
+88
+
+
+Running command iteration 793...
+56
+
+
+Running command iteration 794...
+96
+
+
+Running command iteration 795...
+59
+
+
+Running command iteration 796...
+44
+
+
+Running command iteration 797...
+58
+
+
+Running command iteration 798...
+75
+
+
+Running command iteration 799...
+80
+
+
+Running command iteration 800...
+58
+
+
+Running command iteration 801...
+94
+
+
+Running command iteration 802...
+101
+
+
+Running command iteration 803...
+101
+
+
+Running command iteration 804...
+86
+
+
+Running command iteration 805...
+64
+
+
+Running command iteration 806...
+65
+
+
+Running command iteration 807...
+67
+
+
+Running command iteration 808...
+54
+
+
+Running command iteration 809...
+63
+
+
+Running command iteration 810...
+52
+
+
+Running command iteration 811...
+60
+
+
+Running command iteration 812...
+77
+
+
+Running command iteration 813...
+76
+
+
+Running command iteration 814...
+77
+
+
+Running command iteration 815...
+65
+
+
+Running command iteration 816...
+Undefined variable 'res'.
+Undefined variable 'res'.
+
+
+Running command iteration 817...
+91
+
+
+Running command iteration 818...
+92
+
+
+Running command iteration 819...
+62
+
+
+Running command iteration 820...
+82
+
+
+Running command iteration 821...
+44
+
+
+Running command iteration 822...
+78
+
+
+Running command iteration 823...
+66
+
+
+Running command iteration 824...
+54
+
+
+Running command iteration 825...
+92
+
+
+Running command iteration 826...
+64
+
+
+Running command iteration 827...
+66
+
+
+Running command iteration 828...
+51
+
+
+Running command iteration 829...
+78
+
+
+Running command iteration 830...
+59
+
+
+Running command iteration 831...
+89
+
+
+Running command iteration 832...
+53
+
+
+Running command iteration 833...
+63
+
+
+Running command iteration 834...
+57
+
+
+Running command iteration 835...
+90
+
+
+Running command iteration 836...
+93
+
+
+Running command iteration 837...
+73
+
+
+Running command iteration 838...
+55
+
+
+Running command iteration 839...
+65
+
+
+Running command iteration 840...
+73
+
+
+Running command iteration 841...
+74
+
+
+Running command iteration 842...
+75
+
+
+Running command iteration 843...
+63
+
+
+Running command iteration 844...
+63
+
+
+Running command iteration 845...
+87
+
+
+Running command iteration 846...
+65
+
+
+Running command iteration 847...
+79
+
+
+Running command iteration 848...
+83
+
+
+Running command iteration 849...
+66
+
+
+Running command iteration 850...
+63
+
+
+Running command iteration 851...
+66
+
+
+Running command iteration 852...
+77
+
+
+Running command iteration 853...
+50
+
+
+Running command iteration 854...
+60
+
+
+Running command iteration 855...
+62
+
+
+Running command iteration 856...
+91
+
+
+Running command iteration 857...
+59
+
+
+Running command iteration 858...
+65
+
+
+Running command iteration 859...
+74
+
+
+Running command iteration 860...
+56
+
+
+Running command iteration 861...
+58
+
+
+Running command iteration 862...
+48
+
+
+Running command iteration 863...
+74
+
+
+Running command iteration 864...
+62
+
+
+Running command iteration 865...
+74
+
+
+Running command iteration 866...
+60
+
+
+Running command iteration 867...
+77
+
+
+Running command iteration 868...
+81
+
+
+Running command iteration 869...
+65
+
+
+Running command iteration 870...
+68
+
+
+Running command iteration 871...
+72
+
+
+Running command iteration 872...
+80
+
+
+Running command iteration 873...
+64
+
+
+Running command iteration 874...
+51
+
+
+Running command iteration 875...
+101
+
+
+Running command iteration 876...
+54
+
+
+Running command iteration 877...
+48
+
+
+Running command iteration 878...
+57
+
+
+Running command iteration 879...
+59
+
+
+Running command iteration 880...
+71
+
+
+Running command iteration 881...
+87
+
+
+Running command iteration 882...
+66
+
+
+Running command iteration 883...
+46
+
+
+Running command iteration 884...
+82
+
+
+Running command iteration 885...
+59
+
+
+Running command iteration 886...
+57
+
+
+Running command iteration 887...
+53
+
+
+Running command iteration 888...
+59
+
+
+Running command iteration 889...
+57
+
+
+Running command iteration 890...
+64
+
+
+Running command iteration 891...
+76
+
+
+Running command iteration 892...
+67
+
+
+Running command iteration 893...
+41
+
+
+Running command iteration 894...
+64
+
+
+Running command iteration 895...
+76
+
+
+Running command iteration 896...
+77
+
+
+Running command iteration 897...
+74
+
+
+Running command iteration 898...
+92
+
+
+Running command iteration 899...
+61
+
+
+Running command iteration 900...
+67
+
+
+Running command iteration 901...
+50
+
+
+Running command iteration 902...
+50
+
+
+Running command iteration 903...
+71
+
+
+Running command iteration 904...
+83
+
+
+Running command iteration 905...
+72
+
+
+Running command iteration 906...
+91
+
+
+Running command iteration 907...
+51
+
+
+Running command iteration 908...
+60
+
+
+Running command iteration 909...
+52
+
+
+Running command iteration 910...
+55
+
+
+Running command iteration 911...
+80
+
+
+Running command iteration 912...
+81
+
+
+Running command iteration 913...
+65
+
+
+Running command iteration 914...
+67
+
+
+Running command iteration 915...
+75
+
+
+Running command iteration 916...
+98
+
+
+Running command iteration 917...
+72
+
+
+Running command iteration 918...
+54
+
+
+Running command iteration 919...
+72
+
+
+Running command iteration 920...
+73
+
+
+Running command iteration 921...
+55
+
+
+Running command iteration 922...
+85
+
+
+Running command iteration 923...
+62
+
+
+Running command iteration 924...
+53
+
+
+Running command iteration 925...
+100
+
+
+Running command iteration 926...
+56
+
+
+Running command iteration 927...
+101
+
+
+Running command iteration 928...
+74
+
+
+Running command iteration 929...
+63
+
+
+Running command iteration 930...
+71
+
+
+Running command iteration 931...
+70
+
+
+Running command iteration 932...
+79
+
+
+Running command iteration 933...
+71
+
+
+Running command iteration 934...
+50
+
+
+Running command iteration 935...
+57
+
+
+Running command iteration 936...
+63
+
+
+Running command iteration 937...
+77
+
+
+Running command iteration 938...
+67
+
+
+Running command iteration 939...
+68
+
+
+Running command iteration 940...
+67
+
+
+Running command iteration 941...
+75
+
+
+Running command iteration 942...
+55
+
+
+Running command iteration 943...
+70
+
+
+Running command iteration 944...
+81
+
+
+Running command iteration 945...
+75
+
+
+Running command iteration 946...
+66
+
+
+Running command iteration 947...
+68
+
+
+Running command iteration 948...
+47
+
+
+Running command iteration 949...
+63
+
+
+Running command iteration 950...
+51
+
+
+Running command iteration 951...
+56
+
+
+Running command iteration 952...
+70
+
+
+Running command iteration 953...
+54
+
+
+Running command iteration 954...
+54
+
+
+Running command iteration 955...
+56
+
+
+Running command iteration 956...
+83
+
+
+Running command iteration 957...
+78
+
+
+Running command iteration 958...
+60
+
+
+Running command iteration 959...
+101
+
+
+Running command iteration 960...
+79
+
+
+Running command iteration 961...
+63
+
+
+Running command iteration 962...
+86
+
+
+Running command iteration 963...
+68
+
+
+Running command iteration 964...
+76
+
+
+Running command iteration 965...
+47
+
+
+Running command iteration 966...
+83
+
+
+Running command iteration 967...
+69
+
+
+Running command iteration 968...
+77
+
+
+Running command iteration 969...
+72
+
+
+Running command iteration 970...
+59
+
+
+Running command iteration 971...
+101
+
+
+Running command iteration 972...
+53
+
+
+Running command iteration 973...
+62
+
+
+Running command iteration 974...
+101
+
+
+Running command iteration 975...
+69
+
+
+Running command iteration 976...
+65
+
+
+Running command iteration 977...
+66
+
+
+Running command iteration 978...
+76
+
+
+Running command iteration 979...
+70
+
+
+Running command iteration 980...
+49
+
+
+Running command iteration 981...
+65
+
+
+Running command iteration 982...
+62
+
+
+Running command iteration 983...
+66
+
+
+Running command iteration 984...
+71
+
+
+Running command iteration 985...
+70
+
+
+Running command iteration 986...
+74
+
+
+Running command iteration 987...
+53
+
+
+Running command iteration 988...
+101
+
+
+Running command iteration 989...
+69
+
+
+Running command iteration 990...
+61
+
+
+Running command iteration 991...
+90
+
+
+Running command iteration 992...
+73
+
+
+Running command iteration 993...
+67
+
+
+Running command iteration 994...
+73
+
+
+Running command iteration 995...
+78
+
+
+Running command iteration 996...
+78
+
+
+Running command iteration 997...
+77
+
+
+Running command iteration 998...
+92
+
+
+Running command iteration 999...
+72
+
+
+Running command iteration 1000...
+61
+
+

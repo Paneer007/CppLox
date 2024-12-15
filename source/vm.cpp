@@ -23,7 +23,6 @@ static Value appendNative(int argCount, Value* args)
   if (argCount != 2 || !IS_LIST(args[0])) {
     // TODO: Handle error
     return ERR_VAL("Expected two arguments and a list for first argument.");
-    // exit(0);
   }
   ObjList* list = AS_LIST(args[0]);
   Value item = args[1];
@@ -570,7 +569,7 @@ InterpretResult VM::run()
 #  define NEXT_INSTRCTN() \
     do { \
       m.lock(); \
-      if (this->parent == NULL) { \
+      if (this->parent != NULL) { \
         printf("          "); \
         for (Value* slot = this->stack; slot < this->stackTop; slot++) { \
           printf("[ "); \
@@ -583,11 +582,20 @@ InterpretResult VM::run()
             (int)(frame->ip - frame->closure->function->chunk.code)); \
       } \
       m.unlock(); \
+      if (this->evictThread) { \
+        return INTERPRET_EVICT; \
+      } \
       goto* targets[READ_BYTE()]; \
     } while (0)
 
 #else
-#  define NEXT_INSTRCTN() goto* targets[READ_BYTE()];
+#  define NEXT_INSTRCTN() \
+    do { \
+      if (this->evictThread) { \
+        return INTERPRET_EVICT; \
+      } \
+      goto* targets[READ_BYTE()]; \
+    } while (0)
 #endif
 
   const auto READ_SHORT = [&frame]()
@@ -1185,8 +1193,9 @@ OP_FINISH_BEGIN_INSTRCTN : {
 }
 
 OP_FINISH_END_INSTRCTN : {
-  for (auto& thread : this->finishStack[this->finishStackCount]) {
-    thread.get();
+  // printf("waiting for thread to be done \n");
+  for (auto task : this->finishStack[this->finishStackCount]) {
+    task.wait();
   }
   this->finishStack[this->finishStackCount].clear();
   this->finishStackCount--;
@@ -1197,10 +1206,8 @@ OP_ASYNC_BEGIN_INSTRCTN : {
   // Prep Thread VM to execute
   // Note: Skip jump in bytecode
   int gap = this->stackTop - frame->slots;
-  frame->futureLocalScope.push_back(gap);
   auto dispatcher = Dispatcher::getDispatcher();
-  dispatcher->asyncBegin(this->finishStack[this->finishStackCount]);
-  frame->futureLocalScope.pop_back();
+  this->finishStack[this->finishStackCount].push_back(dispatcher->asyncBegin());
   // new_thread.join();
 
   // Start Next line of execution
@@ -1212,7 +1219,6 @@ OP_ASYNC_BEGIN_INSTRCTN : {
 
 OP_ASYNC_END_INSTRCTN : {
   auto dispatcher = Dispatcher::getDispatcher();
-  frame->futureLocalScope.pop_back();
   dispatcher->freeVM();
   pop();
   return INTERPRET_OK;
@@ -1230,13 +1236,17 @@ OP_GET_FUTURE_INSTRCTN : {
   auto future_res = AS_FUTURE(peek(0));
   pop();
   auto dispatcher = Dispatcher::getDispatcher();
-  auto future_vm = dispatcher->getVMbyId(future_res->vm_id);
-  while (future_vm->isFuture) {
-    // sleep(10);
-    future_vm = dispatcher->getVMbyId(future_res->vm_id);
-  }
-  // free VM spot once done
-  auto res = future_vm->futureResultValue;
+  auto res = future_res->task.get();
+  // auto future_vm = dispatcher->getVMbyId(future_res->);
+  // // printf(" i am waiting here: %d \n", future_res->vm_id);
+  // while (future_vm->isFuture) {
+  //   // sleep(10);
+  //   // printf("I am waiting here \n");
+  //   future_vm = dispatcher->getVMbyId(future_res->vm_id);
+  // }
+  // printf(" done waiting \n");
+  // TODO: free VM spot once done
+  // auto res = future_vm->futureResultValue;
   push(res);
   NEXT_INSTRCTN();
 }
@@ -1283,9 +1293,11 @@ OP_REDUCE_UPDATE_INSTRCTN : {
 OP_PFOR_BEGIN_INSTRCTN : {
   this->finishStackCount++;
   auto dispatcher = Dispatcher::getDispatcher();
+  // TODO: FIX THIS
+
   for (int i = 0; i < PARALLEL_COUNT; i++) {
-    dispatcher->dispatch_loop_thread(
-        i, this->finishStack[this->finishStackCount], 3, false);
+    this->finishStack[this->finishStackCount].push_back(
+        dispatcher->dispatch_loop_thread(i, 3, false));
     // this->finishStack[this->finishStackCount].push_back(res);
   }
   auto offset = READ_SHORT();
@@ -1294,9 +1306,11 @@ OP_PFOR_BEGIN_INSTRCTN : {
 }
 
 OP_PFOR_END_INSTRCTN : {
-  for (auto& thread : this->finishStack[this->finishStackCount]) {
-    thread.get();
+  for (auto task : this->finishStack[this->finishStackCount]) {
+    // printf("waiting... \n");
+    task.wait();
   }
+  // printf("done waiting at pfor \n");
   this->finishStack[this->finishStackCount].clear();
   this->finishStackCount--;
   NEXT_INSTRCTN();
@@ -1336,9 +1350,11 @@ OP_PREDUCE_BEGIN_INSTRCTN : {
   auto dispatcher = Dispatcher::getDispatcher();
   auto lockmanager = LockManager::getLockManager();
   lockmanager->create_preduce_mutex(this);
+
+  // TODO: FIX THIS
   for (int i = 0; i < PARALLEL_COUNT; i++) {
-    dispatcher->dispatch_loop_thread(
-        i, this->finishStack[this->finishStackCount], 4, true);
+    this->finishStack[this->finishStackCount].push_back(
+        dispatcher->dispatch_loop_thread(i, 4, true));
   }
   auto offset = READ_SHORT();
   frame->ip += offset;

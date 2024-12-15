@@ -13,41 +13,9 @@
 #include "object.hpp"
 #include "threadpool.hpp"
 
-static int childMain(VM* parent, VM* childVM, int vm_id)
-{
-  auto dispatcher = Dispatcher::getDispatcher();
-  auto thread_id = std::hash<std::thread::id> {}(std::this_thread::get_id());
-  dispatcher->setId(thread_id, vm_id);
-  dispatcher->set_active_thread(thread_id);
-
-  auto res = childVM->run();
-  if (res == INTERPRET_RUNTIME_ERROR) {
-    dispatcher->terminateAllThreads();
-    exit(0);
-    return 1;
-  }
-  dispatcher->free_active_thread(thread_id);
-  return 0;
-}
-
-static int futureTask(VM* parent, VM* childVM, int vm_id, bool isFuture)
-{
-  auto dispatcher = Dispatcher::getDispatcher();
-  auto thread_id = std::hash<std::thread::id> {}(std::this_thread::get_id());
-  dispatcher->setId(thread_id, vm_id);
-  dispatcher->set_active_thread(thread_id);
-  childVM->isFuture = isFuture;
-  auto vm_res = childVM->run();
-  if (vm_res == INTERPRET_RUNTIME_ERROR) {
-    dispatcher->terminateAllThreads();
-    exit(0);
-    return 1;
-  }
-  childVM->pop();
-  dispatcher->free_active_thread(thread_id);
-  childVM->isFuture = false;
-  return 0;
-}
+static inline bool VMExecution(VM* childVM);
+static int voidVMExecution(VM* childVM, int vm_id);
+static int futureTask(VM* childVM, int vm_id, bool isFuture);
 
 Dispatcher::Dispatcher()
 {
@@ -63,18 +31,19 @@ void Dispatcher::setId(size_t thread_id, int vm_id)
 void Dispatcher::initDispatcher()
 {
   this->id_to_vm = std::unordered_map<size_t, int>();
+  this->thread_arr = std::vector<size_t>();
 }
 
 void Dispatcher::initVMs()
 {
-  for (int i = 0; i < 32; i++) {
+  for (int i = 0; i < MAX_TASK; i++) {
     this->vm_pool[i].initVM();
   }
 }
 
 void Dispatcher::freeDispatcher()
 {
-  for (int i = 0; i < 32; i++) {
+  for (int i = 0; i < MAX_TASK; i++) {
     this->vm_pool[i].freeVM();
   }
   this->id_to_vm.clear();
@@ -83,8 +52,9 @@ void Dispatcher::freeDispatcher()
 int Dispatcher::findFreeVM()
 {
   std::lock_guard<std::mutex> lock(this->vm_pool_mtx);
-  for (int i = 0; i < 32; i++) {
+  for (int i = 0; i < MAX_TASK; i++) {
     if (this->vm_pool[i].assigned == false) {
+      // printf("vm_id: %d is assigned \n", i);
       this->vm_pool[i].assigned = true;
       return i;
     }
@@ -146,43 +116,48 @@ Dispatcher* Dispatcher::getDispatcher()
   return Dispatcher::dispatcher;
 }
 
-void Dispatcher::asyncBegin(std::list<std::future<int>>& futures)
+ThreadTask Dispatcher::asyncBegin()
 {
   auto parent_vm = this->getVM();
   auto free_vm_index = this->findFreeVM();
   auto childVM = &this->vm_pool[free_vm_index];
+  auto thread_task = ThreadTask(free_vm_index);
   // auto start = std::chrono::high_resolution_clock::now();
   childVM->copyParent(parent_vm);
   // auto end = std::chrono::high_resolution_clock::now();
   // auto duration =
   // std::chrono::duration_cast<std::chrono::microseconds>(end - start);
-  // std::cout << "Time taken to run a VM" << duration.count() << std::endl;
+  // std::cout << "Time taken to run a VM" << duration.count() <<
+  // std::endl;
 
   auto frame = &childVM->frames[childVM->frameCount - 1];
   frame->ip += 2;  // Skip jump
   auto tp = ThreadPool::getTP();
-  futures.emplace_back(
-      tp->enqueue(childMain, parent_vm, childVM, free_vm_index));
+  tp->enqueue(voidVMExecution, childVM, free_vm_index);
+  return thread_task;
 }
 
-int Dispatcher::launchFuture()
+ThreadTask Dispatcher::launchFuture()
 {
   auto parent_vm = this->getVM();
   auto free_vm_index = this->findFreeVM();
   auto childVM = &this->vm_pool[free_vm_index];
+  auto thread_task = ThreadTask(free_vm_index);
+
   childVM->isFuture = true;
   // auto start = std::chrono::high_resolution_clock::now();
   childVM->copyParent(parent_vm);
   // auto end = std::chrono::high_resolution_clock::now();
   // auto duration =
   // std::chrono::duration_cast<std::chrono::microseconds>(end - start);
-  // std::cout << "Time taken to run a VM" << duration.count() << std::endl;
+  // std::cout << "Time taken to run a VM" << duration.count() <<
+  // std::endl;
   auto frame = &childVM->frames[childVM->frameCount - 1];
   frame->ip += 3;  // Skip call
   // Launch Future
   auto tp = ThreadPool::getTP();
-  tp->enqueue(futureTask, parent_vm, childVM, free_vm_index, true);
-  return free_vm_index;
+  tp->enqueue(futureTask, childVM, free_vm_index, true);
+  return thread_task;
 }
 
 VM* Dispatcher::getVMbyId(int vm_id)
@@ -192,11 +167,13 @@ VM* Dispatcher::getVMbyId(int vm_id)
 
 void Dispatcher::set_active_thread(size_t thread_id)
 {
+  std::unique_lock<std::mutex> lock(this->dispatcher_mutex);
   this->thread_arr.push_back(thread_id);
 }
 
 void Dispatcher::free_active_thread(size_t thread_id)
 {
+  std::unique_lock<std::mutex> lock(this->dispatcher_mutex);
   auto it =
       std::find(this->thread_arr.begin(), this->thread_arr.end(), thread_id);
 
@@ -213,17 +190,16 @@ void Dispatcher::terminateAllThreads()
   }
 }
 
-void Dispatcher::dispatch_loop_thread(int index,
-                                      std::list<std::future<int>>& futures,
-                                      int initial_index,
-                                      bool preduce)
+ThreadTask Dispatcher::dispatch_loop_thread(int index,
+                                            int initial_index,
+                                            bool preduce)
 {
   // auto start = std::chrono::high_resolution_clock::now();
 
   auto parent_vm = this->getVM();
   auto free_vm_index = this->findFreeVM();
   auto childVM = &this->vm_pool[free_vm_index];
-  // childVM->isFuture = true;
+  auto thread_task = ThreadTask(free_vm_index);
   childVM->copyParent(parent_vm);
 
   if (preduce) {
@@ -249,13 +225,148 @@ void Dispatcher::dispatch_loop_thread(int index,
   frame->ip += 2;  // Skip jump statement
 
   auto tp = ThreadPool::getTP();
-  futures.emplace_back(
-      tp->enqueue(futureTask, parent_vm, childVM, free_vm_index, false));
+  tp->enqueue(futureTask, childVM, free_vm_index, false);
   // auto end = std::chrono::high_resolution_clock::now();
   // auto duration =
   // std::chrono::duration_cast<std::chrono::microseconds>(end - start);
-  // std::cout << "Time taken to run a VM: " << duration.count() << std::endl;
-  return;
+  // std::cout << "Time taken to run a VM: " << duration.count() <<
+  // std::endl;
+  return thread_task;
+}
+
+void Dispatcher::flagVM(size_t thread_id)
+{
+  std::unique_lock<std::mutex> lock(this->dispatcher_mutex);
+  auto vm_id = id_to_vm[thread_id];
+  // printf("vm_id: %d is flagged \n", vm_id);
+  auto vm = &this->vm_pool[vm_id];
+  vm->evictThread = true;
+}
+
+void Dispatcher::deleteId(size_t thread_id)
+{
+  std::unique_lock<std::mutex> lock(this->dispatcher_mutex);
+
+  auto it =
+      std::find(this->thread_arr.begin(), this->thread_arr.end(), thread_id);
+
+  if (it != this->thread_arr.end()) {
+    this->thread_arr.erase(it);
+  }
+}
+
+static inline bool VMExecution(VM* childVM)
+{
+  childVM->state = TaskState::STATE_RUNNING;
+  while (childVM->state != TaskState::STATE_TERMINATED) {
+    // printf("before running guys \n");
+    auto res = childVM->run();
+    // printf("after running guys \n");
+    switch (res) {
+      case INTERPRET_RUNTIME_ERROR:
+        childVM->state = TaskState::STATE_TERMINATED;
+        return true;
+        break;
+      case INTERPRET_EVICT:
+        childVM->state = TaskState::STATE_READY;
+        // printf("here I am again bois \n");
+        return false;
+        break;
+      case INTERPRET_OK:
+        childVM->state = TaskState::STATE_TERMINATED;
+        return false;
+      default:
+        printf("Unexpected error \n");
+        exit(0);
+    }
+  }
+  return false;
+}
+
+static int voidVMExecution(VM* childVM, int vm_id)
+{
+  auto dispatcher = Dispatcher::getDispatcher();
+  auto thread_id = std::hash<std::thread::id> {}(std::this_thread::get_id());
+  dispatcher->setId(thread_id, vm_id);
+  dispatcher->set_active_thread(thread_id);
+  childVM->evictThread = false;
+
+  if (VMExecution(childVM)) {
+    dispatcher->terminateAllThreads();
+    printf("unexpected error \n");
+    exit(0);
+    return 1;
+  }
+
+  switch (childVM->state) {
+    case TaskState::STATE_NEW:
+    case TaskState::STATE_RUNNING:
+    case TaskState::STATE_WAITING:
+      // All are unexpected states
+      break;
+    case TaskState::STATE_TERMINATED:
+      dispatcher->free_active_thread(thread_id);
+      dispatcher->deleteId(thread_id);
+      return 0;
+      break;
+    case TaskState::STATE_READY:
+      auto tp = ThreadPool::getTP();
+      dispatcher->free_active_thread(thread_id);
+      dispatcher->deleteId(thread_id);
+      tp->enqueue(voidVMExecution, childVM, vm_id);
+      // printf("done enqueing thread \n");
+      return 0;
+      break;
+  }
+
+  dispatcher->free_active_thread(thread_id);
+  return 0;
+}
+
+static int futureTask(VM* childVM, int vm_id, bool isFuture)
+{
+  auto dispatcher = Dispatcher::getDispatcher();
+  auto thread_id = std::hash<std::thread::id> {}(std::this_thread::get_id());
+  dispatcher->setId(thread_id, vm_id);
+  dispatcher->set_active_thread(thread_id);
+  childVM->evictThread = false;
+  childVM->isFuture = isFuture;
+
+  if (VMExecution(childVM)) {
+    dispatcher->terminateAllThreads();
+    // printf("unexpected error \n");
+    exit(0);
+    return 1;
+  }
+
+  switch (childVM->state) {
+    case TaskState::STATE_NEW:
+    case TaskState::STATE_RUNNING:
+    case TaskState::STATE_WAITING:
+      // All are unexpected states
+      break;
+    case TaskState::STATE_TERMINATED:
+      childVM->pop();
+      dispatcher->free_active_thread(thread_id);
+      dispatcher->deleteId(thread_id);
+      // printf("terminated VM ID: %d \n", vm_id);
+      childVM->isFuture = false;
+      // printf("done element \n");
+      return 0;
+      break;
+    case TaskState::STATE_READY:
+      auto tp = ThreadPool::getTP();
+      dispatcher->free_active_thread(thread_id);
+      dispatcher->deleteId(thread_id);
+      tp->enqueue(futureTask, childVM, vm_id, isFuture);
+      // printf("done enqueing thread \n");
+      return 0;
+      break;
+  }
+  // childVM->pop();
+  // dispatcher->free_active_thread(thread_id);
+  // childVM->isFuture = false;
+  return 0;
 }
 
 Dispatcher* Dispatcher::dispatcher = new Dispatcher;

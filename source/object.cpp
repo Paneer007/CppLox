@@ -434,10 +434,10 @@ ObjClosure* newClosure(ObjFunction* function)
   return closure;
 }
 
-ObjFuture* newFuture(int vm_id)
+ObjFuture* newFuture(ThreadTask task)
 {
   auto future = ALLOCATE_OBJ<ObjFuture>(OBJ_FUTURE);
-  future->vm_id = vm_id;
+  future->task = task;
   return future;
 }
 

@@ -8,6 +8,7 @@
 #include "atomic"
 #include "object.hpp"
 #include "table.hpp"
+#include "threadtask.hpp"
 
 constexpr int FRAMES_MAX = 2048;
 constexpr int FINISH_MAX = 32;
@@ -56,7 +57,8 @@ typedef enum
   INTERPRET_OK,
   INTERPRET_COMPILE_ERROR,
   INTERPRET_RUNTIME_ERROR,
-  INTERPRET_CONTINUE
+  INTERPRET_CONTINUE,
+  INTERPRET_EVICT
 } InterpretResult;
 
 typedef enum
@@ -139,7 +141,7 @@ public:
   Obj** grayStack;
   ObjString* initString;
 
-  std::list<std::future<int>> finishStack[256];
+  std::list<ThreadTask> finishStack[256];
   int finishStackCount;
 
   VM* parent;

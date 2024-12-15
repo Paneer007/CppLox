@@ -30,6 +30,7 @@ add_library(
     source/vm.cpp
     source/lockmanager.cpp
     source/channel.cpp
+    source/threadtask.cpp
 )
 
 target_include_directories(

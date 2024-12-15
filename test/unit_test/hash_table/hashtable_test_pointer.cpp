@@ -11,6 +11,8 @@
 #include "../../../source/compiler.hpp"
 #include "../../../source/debug.cpp"
 #include "../../../source/debug.hpp"
+#include "../../../source/dispatcher.cpp"
+#include "../../../source/dispatcher.hpp"
 #include "../../../source/memory.cpp"
 #include "../../../source/memory.hpp"
 #include "../../../source/object.cpp"
@@ -65,7 +67,7 @@ static ObjString* temp_allocateString(char* chars,
   string->length = length;
   string->chars = chars;
   string->hash = hash;
-#ifdef ENABLE_MP
+#ifdef ENABLE_MTHM
   string->hash2 = hash2;
 #endif
   return string;
@@ -85,7 +87,7 @@ int64_t test_table(int len)
     char* chars = &key[0];
     int length = key.size();
     uint32_t hash = hashString(chars, KEY_SIZE);
-#ifdef ENABLE_MP
+#ifdef ENABLE_MTHM
     uint32_t hash2 = hash2ndString(chars, KEY_SIZE);
 #else
     uint32_t hash2 = 0;
@@ -102,7 +104,9 @@ int64_t test_table(int len)
     table.tableSet(temp, OBJ_VAL(temp));
   }
 
-  // Execute search logic
+  // printf("search now \n");
+
+  // // Execute search logic
   for (int i = 0; i < len / 4; i++) {
     auto obj_key = obj_keys[rand() % keys.size()];
     auto value = OBJ_VAL(obj_key);
@@ -113,7 +117,6 @@ int64_t test_table(int len)
   auto duration =
       std::chrono::duration_cast<std::chrono::nanoseconds>(end - start);
 
-  table.freeTable();
   auto x = duration.count();
   return x;
 }
@@ -174,6 +177,7 @@ int64_t test_map(int len)
       std::chrono::duration_cast<std::chrono::nanoseconds>(end - start);
 
   auto x = duration.count();
+
   return x;
 }
 
@@ -321,16 +325,16 @@ static void test_map_function(TestType func, const char* msg)
 
 void test_hash()
 {
-  test_custom_function(HASH_8, "HASH_8");
-  test_custom_function(HASH_16, "HASH_16");
-  test_custom_function(HASH_32, "HASH_32");
-  test_custom_function(HASH_128, "HASH_128");
-  test_custom_function(HASH_512, "HASH_512");
-  test_custom_function(HASH_1024, "HASH_1024");
+  // test_custom_function(HASH_8, "HASH_8");
+  // test_custom_function(HASH_16, "HASH_16");
+  // test_custom_function(HASH_32, "HASH_32");
+  // test_custom_function(HASH_128, "HASH_128");
+  // test_custom_function(HASH_512, "HASH_512");
+  // test_custom_function(HASH_1024, "HASH_1024");
   test_custom_function(HASH_16384, "HASH_16384");
-  test_custom_function(HASH_262144, "HASH_262144");
-  test_custom_function(HASH_4194304, "HASH_4194304");
-  test_custom_function(HASH_33554432, "HASH_33554432");
+  // test_custom_function(HASH_262144, "HASH_262144");
+  // test_custom_function(HASH_4194304, "HASH_4194304");
+  // test_custom_function(HASH_33554432, "HASH_33554432");
   // test_custom_function(HASH_1000000000, "HASH_1000000000");
 }
 
@@ -366,11 +370,11 @@ void test_map() {}
 
 int main()
 {
-  // std::cout << "====== HASH TEST ======" << std::endl;
-  // test_hash();
-  std::cout << "====== VECTOR TEST ======" << std::endl;
-  test_vector();
-  std::cout << "====== SET TEST ======" << std::endl;
-  test_mapr();
+  std::cout << "====== HASH TEST ======" << std::endl;
+  test_hash();
+  // std::cout << "====== VECTOR TEST ======" << std::endl;
+  // test_vector();
+  // std::cout << "====== SET TEST ======" << std::endl;
+  // test_mapr();
   return 0;
 }

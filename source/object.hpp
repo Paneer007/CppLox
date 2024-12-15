@@ -8,6 +8,7 @@
 #include "chunk.hpp"
 #include "common.hpp"
 #include "table.hpp"
+#include "threadtask.hpp"
 #include "value.hpp"
 
 #define OBJ_TYPE(value) (AS_OBJ(value)->type)
@@ -95,7 +96,7 @@ public:
 class ObjFuture : public Obj
 {
 public:
-  int vm_id;
+  ThreadTask task;
 };
 
 /**
@@ -362,7 +363,7 @@ ObjString* copyString(const char* chars, int length);
  */
 ObjString* takeString(char* chars, int length);
 
-ObjFuture* newFuture(int vm_id);
+ObjFuture* newFuture(ThreadTask task);
 
 /**
  * @brief Creates a new function object.

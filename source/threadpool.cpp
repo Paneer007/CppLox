@@ -11,4 +11,4 @@
 
 #include "threadpool.hpp"
 
-ThreadPool* ThreadPool::threadpool = new ThreadPool();
+ThreadPool* ThreadPool::threadpool = NULL;
