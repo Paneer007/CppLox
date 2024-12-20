@@ -563,24 +563,30 @@ InterpretResult VM::run()
     if (this->threadFailure) {
       exit(0);
     };
+    if (frame == NULL) {
+      printf("Skill issue \n");
+      exit(0);
+    }
+    if (frame->ip == NULL) {
+      printf("More Skill issue \n");
+      exit(0);
+    }
     return *frame->ip++;
   };
 #ifdef DEBUG_TRACE_EXECUTION
 #  define NEXT_INSTRCTN() \
     do { \
       m.lock(); \
-      if (this->parent != NULL) { \
-        printf("          "); \
-        for (Value* slot = this->stack; slot < this->stackTop; slot++) { \
-          printf("[ "); \
-          printValue(*slot); \
-          printf(" ]"); \
-        } \
-        printf("\n"); \
-        disassembleInstruction( \
-            &frame->closure->function->chunk, \
-            (int)(frame->ip - frame->closure->function->chunk.code)); \
+      printf("          "); \
+      for (Value* slot = this->stack; slot < this->stackTop; slot++) { \
+        printf("[ "); \
+        printValue(*slot); \
+        printf(" ]"); \
       } \
+      printf("\n"); \
+      disassembleInstruction( \
+          &frame->closure->function->chunk, \
+          (int)(frame->ip - frame->closure->function->chunk.code)); \
       m.unlock(); \
       if (this->evictThread) { \
         return INTERPRET_EVICT; \
@@ -879,7 +885,7 @@ OP_GET_GLOBAL_INSTRCTN : {
         curr_parent = curr_parent->parent;
       }
     }
-    runtimeError("Undefined variable '%s'.", name->chars);
+    runtimeError("Undefined variable in get global '%s'.", name->chars);
     return INTERPRET_RUNTIME_ERROR;
   }
   push(value);
@@ -1219,7 +1225,7 @@ OP_ASYNC_BEGIN_INSTRCTN : {
 
 OP_ASYNC_END_INSTRCTN : {
   auto dispatcher = Dispatcher::getDispatcher();
-  dispatcher->freeVM();
+  // dispatcher->freeVM();
   pop();
   return INTERPRET_OK;
 }
@@ -1296,7 +1302,6 @@ OP_PFOR_BEGIN_INSTRCTN : {
   // TODO: FIX THIS
 
   for (int i = 0; i < PARALLEL_COUNT; i++) {
-    
     this->finishStack[this->finishStackCount].push_back(
         dispatcher->dispatch_loop_thread(i, 3, false));
     // this->finishStack[this->finishStackCount].push_back(res);
@@ -1709,6 +1714,10 @@ void VM::copyParent(VM* parent)
     // auto start = std::chrono::high_resolution_clock::now();
     *(this->frames + parent->frameCount - 1) =
         *(parent->frames + parent->frameCount - 1);
+    *(this->frames + parent->frameCount) =
+        *(parent->frames + parent->frameCount);
+    *(this->frames + parent->frameCount - 2) =
+        *(parent->frames + parent->frameCount - 2);
     // std::copy(parent->frames,
     //           parent->frames + 2048,
     //           this->frames);  // Fix this. This is very expensive
@@ -1755,6 +1764,22 @@ void VM::copyParent(VM* parent)
     this->finishStackCount = 0;
     this->finishStackCount = 0;
     // this->initString = copyString("init", 4);
+    // defineNative("clock", clockNative);
+    // defineNative("rand", randNative);
+    // defineNative("append", appendNative);
+    // defineNative("delete", deleteNative);
+    // defineNative("int_input", intInput);
+    // defineNative("str_input", strInput);
+    // defineNative("char_input", charInput);
+    // defineNative("len", objLength);
+    // defineNative("threadId", getThreadID);
+    // defineNative("mutex", getMutex);
+    // defineNative("lock", lockMutex);
+    // defineNative("unlock", unlockMutex);
+    // defineNative("channel", getChannel);
+    // defineNative("send", pushChannel);
+    defineNative("recv", receiveChannel);
+    defineNative("close", closeChannel);
   } else {
     this->initVM();
   }

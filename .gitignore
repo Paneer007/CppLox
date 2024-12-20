@@ -14,3 +14,4 @@ benchmark/profile_output.txt
 docs/pages
 test/__pycache__
 gmon.out
+output_log.txt

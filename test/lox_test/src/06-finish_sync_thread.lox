@@ -10,6 +10,63 @@ fun main(){
                 async{
                     print threadId();
                 }
+                async{
+                    print threadId();
+                }
+                async{
+                    print threadId();
+                }              
+                async{
+                    print threadId();
+                }
+                async{
+                    print threadId();
+                }              
+                async{
+                    print threadId();
+                }
+                async{
+                    print threadId();
+                }
+                async{
+                    print threadId();
+                }
+                async{
+                    print threadId();
+                }
+                async{
+                    print threadId();
+                }
+                async{
+                    print threadId();
+                }
+                async{
+                    print threadId();
+                }
+                async{
+                    print threadId();
+                }
+                async{
+                    print threadId();
+                }
+                async{
+                    print threadId();
+                }
+                async{
+                    print threadId();
+                }
+                async{
+                    print threadId();
+                }
+                async{
+                    print threadId();
+                }
+                async{
+                    print threadId();
+                }
+                async{
+                    print threadId();
+                }
             }
         }
         async {
@@ -33,9 +90,6 @@ fun main(){
                 async{
                     print threadId();
                 }
-
-
-
                 async{
                     print threadId();
                 }
@@ -79,7 +133,6 @@ fun main(){
                 async{
                     print threadId();
                 }
-                
                 async{
                     print threadId();
                 }
