@@ -91,6 +91,10 @@ public:
    * @brief A pointer to the next object in the object list.
    */
   Obj* next;
+
+#ifdef COMPACT_LISP_2
+  Obj* moveTo;
+#endif
 };
 
 class ObjFuture : public Obj

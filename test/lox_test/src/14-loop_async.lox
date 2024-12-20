@@ -1,0 +1,31 @@
+var lck = mutex();
+var temporary1 = 0;
+var temporary2 = 0;
+var temporary3 = 0;
+var temporary4 = 0;
+var temporary5 = 0;
+var temporary6 = 0;
+fun main(){
+    var temporary = 0;
+
+    finish {
+        for(var i = 0;i<12; i = i+1){
+            async{
+                lock(lck);
+                temporary = temporary + 1;
+                var x = temporary;
+                unlock(lck); 
+                for(var j = 0;j<3;j = j+1){
+                    print x;
+                    for(var k = 0; k<100000;k=k+1){
+
+                    }
+                }
+            }
+        }
+    }
+    print "done";
+}
+
+main();
+

@@ -67,7 +67,7 @@ Entry* WorkList::getElement(int index)
  * Resets the table's internal state, setting the count and capacity to zero and
  * the entries array to null.
  */
-void Table::initTable()
+inline void Table::initTable()
 {
   this->count = 0;
   this->capacity = 0;

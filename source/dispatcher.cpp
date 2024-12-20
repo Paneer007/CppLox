@@ -127,7 +127,7 @@ ThreadTask Dispatcher::asyncBegin()
   // auto end = std::chrono::high_resolution_clock::now();
   // auto duration =
   // std::chrono::duration_cast<std::chrono::microseconds>(end - start);
-  // std::cout << "Time taken to run a VM" << duration.count() <<
+  // std::cout << "Time taken to create a VM: " << duration.count() <<
   // std::endl;
 
   auto frame = &childVM->frames[childVM->frameCount - 1];
@@ -194,13 +194,17 @@ ThreadTask Dispatcher::dispatch_loop_thread(int index,
                                             int initial_index,
                                             bool preduce)
 {
-  // auto start = std::chrono::high_resolution_clock::now();
-
   auto parent_vm = this->getVM();
   auto free_vm_index = this->findFreeVM();
   auto childVM = &this->vm_pool[free_vm_index];
   auto thread_task = ThreadTask(free_vm_index);
+
+  // auto start = std::chrono::high_resolution_clock::now();
   childVM->copyParent(parent_vm);
+  // auto end = std::chrono::high_resolution_clock::now();
+  // auto duration =
+  //     std::chrono::duration_cast<std::chrono::nanoseconds>(end - start);
+  // std::cout << "Time taken to run a VM: " << duration.count() << std::endl;
 
   if (preduce) {
     // Copying last stack elements:
@@ -226,11 +230,7 @@ ThreadTask Dispatcher::dispatch_loop_thread(int index,
 
   auto tp = ThreadPool::getTP();
   tp->enqueue(futureTask, childVM, free_vm_index, false);
-  // auto end = std::chrono::high_resolution_clock::now();
-  // auto duration =
-  // std::chrono::duration_cast<std::chrono::microseconds>(end - start);
-  // std::cout << "Time taken to run a VM: " << duration.count() <<
-  // std::endl;
+
   return thread_task;
 }
 
@@ -257,28 +257,25 @@ void Dispatcher::deleteId(size_t thread_id)
 
 static inline bool VMExecution(VM* childVM)
 {
-  childVM->state = TaskState::STATE_RUNNING;
-  while (childVM->state != TaskState::STATE_TERMINATED) {
-    // printf("before running guys \n");
-    auto res = childVM->run();
-    // printf("after running guys \n");
-    switch (res) {
-      case INTERPRET_RUNTIME_ERROR:
-        childVM->state = TaskState::STATE_TERMINATED;
-        return true;
-        break;
-      case INTERPRET_EVICT:
-        childVM->state = TaskState::STATE_READY;
-        // printf("here I am again bois \n");
-        return false;
-        break;
-      case INTERPRET_OK:
-        childVM->state = TaskState::STATE_TERMINATED;
-        return false;
-      default:
-        printf("Unexpected error \n");
-        exit(0);
-    }
+  childVM->state = TaskState::STATE_RUNNING;  // Set VM to be running
+  auto res = childVM->run();
+  switch (res) {
+    case INTERPRET_RUNTIME_ERROR:
+      childVM->state = TaskState::STATE_TERMINATED;  // Terminate VM and return
+                                                     // true for error
+      return true;
+      break;
+    case INTERPRET_EVICT:
+      childVM->state = TaskState::STATE_READY;  // Set VM to be ready state
+      return false;
+      break;
+    case INTERPRET_OK:
+      childVM->state = TaskState::STATE_TERMINATED;  // Terminate VM and return
+                                                     // false for error
+      return false;
+    default:
+      printf("Unexpected error \n");
+      exit(0);
   }
   return false;
 }
@@ -301,8 +298,8 @@ static int voidVMExecution(VM* childVM, int vm_id)
   switch (childVM->state) {
     case TaskState::STATE_NEW:
     case TaskState::STATE_RUNNING:
-    case TaskState::STATE_WAITING:
       // All are unexpected states
+      exit(0);
       break;
     case TaskState::STATE_TERMINATED:
       dispatcher->free_active_thread(thread_id);
@@ -319,7 +316,6 @@ static int voidVMExecution(VM* childVM, int vm_id)
       break;
   }
 
-  dispatcher->free_active_thread(thread_id);
   return 0;
 }
 
@@ -334,9 +330,7 @@ static int futureTask(VM* childVM, int vm_id, bool isFuture)
 
   if (VMExecution(childVM)) {
     dispatcher->terminateAllThreads();
-    // printf("unexpected error \n");
     exit(0);
-    return 1;
   }
 
   switch (childVM->state) {
@@ -353,19 +347,13 @@ static int futureTask(VM* childVM, int vm_id, bool isFuture)
       childVM->isFuture = false;
       // printf("done element \n");
       return 0;
-      break;
     case TaskState::STATE_READY:
       auto tp = ThreadPool::getTP();
       dispatcher->free_active_thread(thread_id);
       dispatcher->deleteId(thread_id);
       tp->enqueue(futureTask, childVM, vm_id, isFuture);
-      // printf("done enqueing thread \n");
       return 0;
-      break;
   }
-  // childVM->pop();
-  // dispatcher->free_active_thread(thread_id);
-  // childVM->isFuture = false;
   return 0;
 }
 

@@ -1,0 +1,93 @@
+fun main(){
+    finish {
+        print threadId();
+        async {
+            print threadId();
+            finish{
+                async{
+                    print threadId();
+                }
+                async{
+                    print threadId();
+                }
+            }
+        }
+        async {
+            print threadId();
+            finish{
+                async{
+                    print threadId();
+                }
+                async{
+                    print threadId();
+                }
+                async{
+                    print threadId();
+                }
+                async{
+                    print threadId();
+                }
+                async{
+                    print threadId();
+                }
+                async{
+                    print threadId();
+                }
+
+
+
+                async{
+                    print threadId();
+                }
+                async{
+                    print threadId();
+                }
+                async{
+                    print threadId();
+                }
+                async{
+                    print threadId();
+                }
+                async{
+                    print threadId();
+                }
+                async{
+                    print threadId();
+                }
+                async{
+                    print threadId();
+                }
+                async{
+                    print threadId();
+                }
+                async{
+                    print threadId();
+                }
+                async{
+                    print threadId();
+                }
+
+                async{
+                    print threadId();
+                }
+                async{
+                    print threadId();
+                }
+                async{
+                    print threadId();
+                }
+                async{
+                    print threadId();
+                }
+                
+                async{
+                    print threadId();
+                }
+            }
+        }
+    }
+    print "done";
+}
+
+main();
+

@@ -143,26 +143,26 @@ public:
 
 static void evict_thread()
 {
-  auto sleep_time = 10;
+  auto sleep_time = 1;  // Time Quanta
   auto dispatcher = Dispatcher::getDispatcher();
   while (true) {
-    // printf("good morning waking up from sleep \n");
     auto tp = ThreadPool::getTP();
     tp->queue_mutex.lock();
-    // printf("count of stuff: %d \n", tp->processing.size());
-    auto condition_one = tp->processing.size() == MAX_TP;
-    auto condition_two = tp->task_queue.size() != 0;
+    auto condition_one = tp->processing.size()
+        == MAX_TP;  // Condition 1: Check if atleast all threads in threadpool
+                    // are executing or not
+    auto condition_two =
+        tp->task_queue.size() != 0;  // Condition 2: Check if there is any
+                                     // pending tasks to be executed
     if (!(condition_one and condition_two)) {
       tp->queue_mutex.unlock();
       std::this_thread::sleep_for(std::chrono::milliseconds(sleep_time));
       continue;
     }
-    // printf("Thread Pool processing size: %d \n", tp->processing.size());
-    auto thread_id = tp->processing.front();
-    // tp->processing.pop_back();
-    dispatcher->flagVM(thread_id);
+    auto thread_id =
+        tp->processing.front();  // Get task ID of currently executing task
+    dispatcher->flagVM(thread_id);  // Flag the VM of this thread to be evicted
     tp->queue_mutex.unlock();
-    // printf("done with this going back to sleep \n");
     std::this_thread::sleep_for(std::chrono::milliseconds(sleep_time));
   }
 }

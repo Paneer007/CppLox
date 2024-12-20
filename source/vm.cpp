@@ -1296,6 +1296,7 @@ OP_PFOR_BEGIN_INSTRCTN : {
   // TODO: FIX THIS
 
   for (int i = 0; i < PARALLEL_COUNT; i++) {
+    
     this->finishStack[this->finishStackCount].push_back(
         dispatcher->dispatch_loop_thread(i, 3, false));
     // this->finishStack[this->finishStackCount].push_back(res);

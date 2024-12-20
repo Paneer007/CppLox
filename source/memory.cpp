@@ -395,7 +395,13 @@ void collectGarbage()
   markRoots();
   traceReferences();
   vm->strings.tableRemoveWhite();
+#ifdef COMPACT_LISP_2
+
+#endif
   sweep();
+#ifdef COMPACT_LISP_2
+
+#endif
   vm->nextGC = vm->bytesAllocated * GC_HEAP_GROW_FACTOR;
 
 #ifdef DEBUG_LOG_GC

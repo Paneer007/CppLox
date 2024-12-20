@@ -2,7 +2,7 @@ var res = 1;
 
 fun main(){
     var adjMat = [];
-    for(var i =0 ; i< 100;i = i+1){
+    for(var i =0 ; i< 10;i = i+1){
         append(adjMat,1);
     }
     var mtx = mutex();

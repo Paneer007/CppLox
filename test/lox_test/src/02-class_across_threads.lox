@@ -1,0 +1,17 @@
+class LinkedList{
+    init(){
+        this.val = 100005;
+        this.next = 100005;
+    }
+}
+
+fun main(){
+    finish{
+        async{
+            print "Done";
+            var temp = LinkedList();
+            print temp.val;
+        }
+    }
+}
+main();

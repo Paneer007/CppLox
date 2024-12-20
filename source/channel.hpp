@@ -8,9 +8,65 @@
 
 #include "value.hpp"
 
+template<typename T>
+class Node
+{
+private:
+public:
+  T data;
+  Node* next;
+  Node(T value)
+  {
+    data = value;
+    next = nullptr;
+  }
+};
+
+template<typename T>
+class Queue
+{
+private:
+  Node<T>* front;
+  Node<T>* rear;
+
+public:
+  Queue() { front = rear = nullptr; }
+  ~Queue()
+  {
+    while (!isEmpty()) {
+      dequeue();
+    }
+  }
+  bool isEmpty() { return front == nullptr; }
+  void enqueue(T value)
+  {
+    Node<T>* newNode = new Node<T>(value);
+    if (rear == nullptr) {
+      front = rear = newNode;
+    } else {
+      rear->next = newNode;
+      rear = newNode;
+    }
+  }
+  T dequeue()
+  {
+    if (isEmpty()) {
+      return T();
+    }
+    Node<T>* temp = front;
+    T value = temp->data;
+    front = front->next;
+    if (front == nullptr) {
+      rear = nullptr;
+    }
+    delete temp;
+    return value;
+  }
+};
+
 class ThreadChannel
 {
-  std::queue<Value> buffer;
+  Queue<Value> buffer;
   int mutex_id;
   bool closed;
 

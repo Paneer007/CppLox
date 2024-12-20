@@ -8,7 +8,6 @@
 ThreadTask::ThreadTask(int id)
 {
   this->vm_id = id;
-  this->result = NULL;
 };
 
 const int MAX_SLEEP_TIME = 45;

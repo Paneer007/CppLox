@@ -7,7 +7,7 @@ void ThreadChannel::initChannel()
   auto lockmanager = LockManager::getLockManager();
   this->closed = false;
   this->mutex_id = lockmanager->create_mutex();
-  this->buffer = std::queue<Value>();
+  this->buffer = Queue<Value>();
 }
 
 ThreadChannel::ThreadChannel()
@@ -27,21 +27,20 @@ void ThreadChannel::send(Value value)
   // std::unique_lock<std::mutex> lock(this->mtx);
   auto lockmanager = LockManager::getLockManager();
   lockmanager->lock_mutex(this->mutex_id);
-  this->buffer.push(value);
+  this->buffer.enqueue(value);
   lockmanager->unlock_mutex(this->mutex_id);
 }
 std::optional<Value> ThreadChannel::receive()
 {
-  while (!closed && buffer.empty()) {
+  while (!closed && buffer.isEmpty()) {
     // spin lock time
   }
-  if (buffer.empty()) {
+  if (buffer.isEmpty()) {
     return std::nullopt;  // Channel is closed and empty
   }
   auto lockmanager = LockManager::getLockManager();
   lockmanager->lock_mutex(this->mutex_id);
-  auto value = buffer.front();
-  buffer.pop();
+  auto value = buffer.dequeue();
   lockmanager->unlock_mutex(this->mutex_id);
   return value;
 }

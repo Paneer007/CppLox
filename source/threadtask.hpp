@@ -6,7 +6,6 @@
 class ThreadTask
 {
   int vm_id;
-  Value* result;
 
 public:
   ThreadTask(int id);

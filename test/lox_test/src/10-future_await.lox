@@ -8,11 +8,11 @@ fun waitForMe(){
     for (var i = 0;i<500000;i = i+1){
         append(adjMat, i);
     }
-    // pfor(var a: adjMat){
-    //     // lock(mut);
-    //     temp = temp + 1;
-    //     // unlock(mut);
-    // }
+    pfor(var a: adjMat){
+        lock(mut);
+        temp = temp + 1;
+        unlock(mut);
+    }
     print temp;
     return 1;
 }
