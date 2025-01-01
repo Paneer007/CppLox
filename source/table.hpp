@@ -7,6 +7,8 @@
 #include "value.hpp"
 #include "vector"
 
+class VM;
+
 /**
  * @brief Represents an entry in a hash table.
  *
@@ -162,8 +164,12 @@ public:
    * Iterates over all entries in the hash table and marks both the key and
    * value objects as reachable for garbage collection.
    */
-  void markTable();
 
+#ifndef GENERATIONAL_GC
+  void markTable();
+#else
+  void markTable(VM* vm);
+#endif
   /**
    * @brief Removes entries with unmarked keys from the table.
    *

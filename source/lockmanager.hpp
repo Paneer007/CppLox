@@ -11,6 +11,9 @@ class LockManager
 private:
   static LockManager* lockmanager;
 
+  std::unordered_map<int, std::unique_ptr<std::mutex>> memory_mutex_map;
+  std::unordered_map<VM*, int> memory_vm_map;
+
   std::unordered_map<int, std::unique_ptr<std::mutex>> mutex_map;
   std::unordered_map<VM*, int> vm_map;
 
@@ -28,6 +31,9 @@ public:
 
   void destroy_mutex(int id);
   void destroy_preduce_mutex(VM* vm);
+
+  void lock_memory_mutex(VM* vm);
+  void unlock_memory_mutex(VM* vm);
 };
 
 #endif

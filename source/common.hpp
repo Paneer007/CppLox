@@ -16,7 +16,9 @@
 // #define ENABLE_MP
 
 #define ROUND_ROBIN
+#define GENERATIONAL_GC
 
+// #define PARALLEL_MARKING
 #define COMPACT_LISP_2
 
 constexpr int UINT8_COUNT = (UINT8_MAX + 1);

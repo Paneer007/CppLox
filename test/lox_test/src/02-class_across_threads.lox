@@ -6,9 +6,9 @@ class LinkedList{
 }
 
 fun main(){
+    print "Here";
     finish{
         async{
-            print "Done";
             var temp = LinkedList();
             print temp.val;
         }

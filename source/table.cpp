@@ -481,6 +481,17 @@ ObjString* Table::tableFindString(const char* chars,
  * Iterates over all entries in the hash table and marks both the key and
  * value objects as reachable for garbage collection.
  */
+
+#ifdef GENERATIONAL_GC
+void Table::markTable(VM* vm)
+{
+  for (int i = 0; i < this->capacity; i++) {
+    Entry* entry = &this->entries[i];
+    markObject((Obj*)entry->key, vm);
+    markValue(entry->value, vm);
+  }
+}
+#else
 void Table::markTable()
 {
   for (int i = 0; i < this->capacity; i++) {
@@ -489,7 +500,7 @@ void Table::markTable()
     markValue(entry->value);
   }
 }
-
+#endif
 /**
  * @brief Removes entries with unmarked keys from the table.
  *

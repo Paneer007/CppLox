@@ -31,6 +31,7 @@ add_library(
     source/lockmanager.cpp
     source/channel.cpp
     source/threadtask.cpp
+    # source/memoryspace.cpp
 )
 
 target_include_directories(

@@ -1,6 +1,8 @@
 #ifndef clox_memory_h
 #define clox_memory_h
 
+#include <thread>
+
 #include "common.hpp"
 #include "object.hpp"
 
@@ -25,6 +27,10 @@ void* reallocate(void* pointer, size_t oldSize, size_t newSize);
  *
  * @param object A pointer to the object to be marked.
  */
+#ifdef GENERATIONAL_GC
+void markObject(Obj* object, VM* vm);
+#endif
+
 void markObject(Obj* object);
 
 /**
@@ -34,6 +40,10 @@ void markObject(Obj* object);
  *
  * @param value The value to be marked.
  */
+#ifdef GENERATIONAL_GC
+void markValue(Value value, VM* vm);
+#endif
+
 void markValue(Value value);
 
 /**
@@ -56,6 +66,10 @@ void freeObjects();
  * This function prevents objects used by the compiler from being freed during
  * garbage collection.
  */
+
+#ifdef GENERATIONAL_GC
+void markCompilerRoots(VM* vm);
+#endif
 void markCompilerRoots();
 
 /**
@@ -123,6 +137,7 @@ inline T* GROW_ARRAY(void* pointer, int oldCount, int newCount)
 template<typename T>
 inline void* FREE_ARRAY(void* pointer, int oldCount)
 {
+  // printf("freeing stuff 2 \n");
   return reallocate(pointer, sizeof(T) * (oldCount), 0);
 }
 
@@ -139,7 +154,78 @@ inline void* FREE_ARRAY(void* pointer, int oldCount)
 template<typename T>
 inline void* FREE(void* pointer)
 {
+  // printf("freeing stuff \n");
   return reallocate(pointer, sizeof(T), 0);
 }
+
+#ifdef GENERATIONAL_GC
+
+typedef enum
+{
+  NURSERY,
+  SURVIVOR,
+  TENURED
+} Generation;
+
+typedef enum
+{
+  STOP,
+  RUNNING
+} MarkState;
+
+class MemorySpace;
+class MemoryGeneration;
+
+class MemoryGeneration
+{
+  Generation gen;
+  MemorySpace* ms;
+  int nextSweep;
+
+  inline int increaseCapacity();
+
+public:
+  Obj* head;
+  Obj* tail;
+  int bytesAllocated;
+  void initMG(Generation gen, MemorySpace* ms);
+  void addObject(Obj* newNode);
+  bool updateStorage(int size);
+  bool resetStorage();
+  void sweep();
+
+  void unMark();
+};
+
+class MemorySpace
+{
+  MemoryGeneration nursery;
+  MemoryGeneration survivor;
+  MemoryGeneration tenured;
+  std::vector<std::thread> memoryThread;
+  bool startMarking;
+  MarkState markState;
+
+  void doMark();
+  bool moveGenerations(MemoryGeneration& A, MemoryGeneration& B);
+  void checkForTenuredGeneration();
+
+public:
+  VM* vm;
+
+  void checkMarkingThreadStateForCollection();
+
+  MemorySpace();
+  void initMS(VM* vm);
+  void startMarkingThread();
+  void waitMarkingThread();
+  void freeMarkingThread();
+  void resumeMarkingThread();
+  void forcedMark();
+  void updateNurseryStorage(int size);
+  void addObjectToNursery(Obj* newNode);
+};
+
+#endif
 
 #endif

@@ -47,4 +47,26 @@ void LockManager::destroy_mutex(int id) {}
 
 void LockManager::destroy_preduce_mutex(VM* vm) {}
 
+void LockManager::lock_memory_mutex(VM* vm)
+{
+  if (this->memory_vm_map.find(vm) == this->memory_vm_map.end()) {
+    auto mutex_id = rand();
+    this->memory_vm_map[vm] = mutex_id;
+    this->memory_mutex_map[mutex_id] = std::make_unique<std::mutex>();
+    this->memory_mutex_map[mutex_id]->lock();
+  } else {
+    this->memory_mutex_map[this->memory_vm_map[vm]]->lock();
+  }
+}
+
+void LockManager::unlock_memory_mutex(VM* vm)
+{
+  if (this->memory_vm_map.find(vm) == this->memory_vm_map.end()) {
+    printf("Unlocking a non existent mutex \n.");
+    exit(0);
+  } else {
+    this->memory_mutex_map[this->memory_vm_map[vm]]->unlock();
+  }
+}
+
 LockManager* LockManager::lockmanager = new LockManager;

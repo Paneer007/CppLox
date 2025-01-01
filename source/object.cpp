@@ -113,6 +113,26 @@ static void printFunction(ObjFunction* function)
  * @param type The type of the object.
  * @return A pointer to the newly allocated object.
  */
+#ifdef GENERATIONAL_GC
+static Obj* allocateObject(size_t size, ObjType type)
+{
+  auto dispatcher = Dispatcher::getDispatcher();
+  auto vm = dispatcher->getVM();
+  auto object = (Obj*)reallocate(NULL, 0, size);
+  object->type = type;
+  object->isMarked = false;
+  vm->memorySpace.addObjectToNursery(object);
+
+  // object->type = type;
+  // object->isMarked = false;
+  // object->next = vm->objects;
+  // vm->objects = object;
+#  ifdef DEBUG_LOG_GC
+  printf("%p allocate %zu for %d\n", (void*)object, size, type);
+#  endif
+  return object;
+}
+#else
 static Obj* allocateObject(size_t size, ObjType type)
 {
   auto dispatcher = Dispatcher::getDispatcher();
@@ -123,12 +143,12 @@ static Obj* allocateObject(size_t size, ObjType type)
   object->next = vm->objects;
   vm->objects = object;
 
-#ifdef DEBUG_LOG_GC
+#  ifdef DEBUG_LOG_GC
   printf("%p allocate %zu for %d\n", (void*)object, size, type);
-#endif
-
+#  endif
   return object;
 }
+#endif
 
 /**
  * @brief Allocates memory for an object of a specific type.

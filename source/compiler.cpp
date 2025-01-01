@@ -2123,6 +2123,9 @@ ObjFunction* compile(const char* source, const char* path)
  *
  * Iterates through the compiler hierarchy and marks function objects as roots.
  */
+
+#ifndef GENERATIONAL_GC
+
 void markCompilerRoots()
 {
   Compiler* compiler = current;
@@ -2131,3 +2134,25 @@ void markCompilerRoots()
     compiler = compiler->enclosing;
   }
 }
+
+#else
+
+void markCompilerRoots(VM* vm)
+{
+  Compiler* compiler = current;
+  while (compiler != NULL) {
+    markObject((Obj*)compiler->function, vm);
+    compiler = compiler->enclosing;
+  }
+}
+
+#endif
+
+// void markCompilerRoots(VM* vm)
+// {
+//   Compiler* compiler = current;
+//   while (compiler != NULL) {
+//     markObject((Obj*)compiler->function,vm);
+//     compiler = compiler->enclosing;
+//   }
+// }

@@ -22,7 +22,8 @@ static Value appendNative(int argCount, Value* args)
   // Append a value to the end of a list increasing the list's length by 1
   if (argCount != 2 || !IS_LIST(args[0])) {
     // TODO: Handle error
-    return ERR_VAL("Expected two arguments and a list for first argument.");
+    char* temp = "Expected two arguments and a list for first argument.";
+    return ERR_VAL(temp);
   }
   ObjList* list = AS_LIST(args[0]);
   Value item = args[1];
@@ -342,7 +343,9 @@ void VM::initVM()
   this->grayCount = 0;
   this->grayCapacity = 0;
   this->grayStack = NULL;
-
+#ifdef GENERATIONAL_GC
+  this->memorySpace.initMS(this);
+#endif
   this->strings.initTable();
   this->globals.initTable();
 
@@ -383,10 +386,13 @@ void VM::freeVM()
 {
   this->globals.freeTable();
   this->strings.freeTable();
+#ifdef GENERATIONAL_GC
+  this->memorySpace.freeMarkingThread();
+#endif
   this->initString = NULL;
   this->assigned = false;
   this->parent = NULL;
-  freeObjects();
+  // freeObjects();
 }
 
 /**
@@ -496,7 +502,9 @@ std::mutex m;
 InterpretResult VM::run()
 {
   auto frame = &this->frames[this->frameCount - 1];
-
+#ifdef GENERATIONAL_GC
+  this->memorySpace.startMarkingThread();
+#endif
   void* targets[] = {
       &&OP_CONSTANT_INSTRCTN,
       &&OP_NIL_INSTRCTN,
@@ -1778,12 +1786,24 @@ void VM::copyParent(VM* parent)
     // defineNative("unlock", unlockMutex);
     // defineNative("channel", getChannel);
     // defineNative("send", pushChannel);
-    defineNative("recv", receiveChannel);
-    defineNative("close", closeChannel);
+    // defineNative("recv", receiveChannel);
+    // defineNative("close", closeChannel);
   } else {
     this->initVM();
   }
   this->assigned = true;
+}
+
+void VM::lockGreyStack()
+{
+  auto lockmanager = LockManager::getLockManager();
+  lockmanager->lock_memory_mutex(this);
+}
+
+void VM::unlockGreyStack()
+{
+  auto lockmanager = LockManager::getLockManager();
+  lockmanager->unlock_memory_mutex(this);
 }
 
 VM* VM::vm = new VM;

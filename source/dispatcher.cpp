@@ -103,6 +103,7 @@ void Dispatcher::freeVM()
   auto thread_id = std::hash<std::thread::id> {}(std::this_thread::get_id());
   if (this->id_to_vm.find(thread_id) == this->id_to_vm.end()) {
     printf("Accessing thread that doesn't exist in the Dispatcher");
+
     exit(0);
   }
   auto vm_id = this->id_to_vm[thread_id];
@@ -255,6 +256,19 @@ void Dispatcher::deleteId(size_t thread_id)
   }
 }
 
+void Dispatcher::setopenMPVM(VM* vm)
+{
+  std::unique_lock<std::mutex> lock(this->dispatcher_mutex);
+  auto thread_id = std::hash<std::thread::id> {}(std::this_thread::get_id());
+  this->openMP_vm[thread_id] = vm;
+}
+
+VM* Dispatcher::getopenMPVM()
+{
+  auto thread_id = std::hash<std::thread::id> {}(std::this_thread::get_id());
+  return this->openMP_vm[thread_id];
+}
+
 static inline bool VMExecution(VM* childVM)
 {
   childVM->state = TaskState::STATE_RUNNING;  // Set VM to be running
@@ -336,7 +350,6 @@ static int futureTask(VM* childVM, int vm_id, bool isFuture)
   switch (childVM->state) {
     case TaskState::STATE_NEW:
     case TaskState::STATE_RUNNING:
-    case TaskState::STATE_WAITING:
       // All are unexpected states
       break;
     case TaskState::STATE_TERMINATED:

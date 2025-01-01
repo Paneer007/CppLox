@@ -6,6 +6,7 @@
 #include <thread>
 
 #include "atomic"
+#include "memory.hpp"
 #include "object.hpp"
 #include "table.hpp"
 #include "threadtask.hpp"
@@ -66,7 +67,6 @@ typedef enum
   STATE_NEW,
   STATE_READY,
   STATE_RUNNING,
-  STATE_WAITING,
   STATE_TERMINATED
 } TaskState;
 
@@ -154,7 +154,9 @@ public:
   int priority;
   int parentLastStackElement;
   TaskState state;
-
+#ifdef GENERATIONAL_GC
+  MemorySpace memorySpace;
+#endif
   /**
    * @brief Initializes the virtual machine.
    *
@@ -322,6 +324,9 @@ parent->frames + frameCount, this->frames); s the virtual machine's state after
   bool invokeFromClass(ObjClass* klass, ObjString* name, int argCount);
 
   void copyParent(VM* parent);
+
+  void lockGreyStack();
+  void unlockGreyStack();
 };
 
 #endif

@@ -72,28 +72,17 @@ typedef enum
 /**
  * @brief Base class for all objects in the virtual machine.
  *
- * Provides common attributes for objects, including type, mark flag, and next
- * pointer for object linking.
+ * Provides common attributes for objects, including type, mark flag, and
+ * next pointer for object linking.
  */
 class Obj
 {
 public:
-  /**
-   * @brief The type of the object.
-   */
   ObjType type;
-  /**
-   * @brief A flag indicating whether the object is marked for garbage
-   * collection.
-   */
   bool isMarked;
-  /**
-   * @brief A pointer to the next object in the object list.
-   */
   Obj* next;
-
-#ifdef COMPACT_LISP_2
-  Obj* moveTo;
+#ifdef GENERATIONAL_GC
+  int genCount;
 #endif
 };
 

@@ -3,6 +3,7 @@
 
 #include <chrono>
 #include <future>
+#include <map>
 #include <mutex>
 #include <thread>
 #include <unordered_map>
@@ -18,6 +19,7 @@ class Dispatcher
   std::mutex dispatcher_mutex;
   static Dispatcher* dispatcher;
   std::unordered_map<size_t, int> id_to_vm;  // Make this atomic
+  std::map<size_t, VM*> openMP_vm;
   std::mutex id_to_vm_mtx;
   VM vm_pool[MAX_TASK];  // Make this atomic
   std::mutex vm_pool_mtx;
@@ -46,6 +48,8 @@ public:
   void initVMs();
 
   void flagVM(size_t vm_id);
+  void setopenMPVM(VM* vm);
+  VM* getopenMPVM();
 };
 
 #endif

@@ -70,7 +70,7 @@ public:
                 // }
               }
               task();
-              if (thread_id != -1) {
+              if (thread_id != static_cast<size_t>(-1)) {
                 // printf("deleted thread id: %d \n", thread_id);
                 std::unique_lock<std::mutex> lock(this->queue_mutex);
                 // for (auto& x : this->processing) {
