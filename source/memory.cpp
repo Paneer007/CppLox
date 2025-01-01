@@ -369,51 +369,51 @@ void freeObjects()
  * program and should not be garbage collected. These include objects on the
  * stack, in closures, upvalues, globals, and other critical areas.
  */
-// static void markRoots()
-// {
-//   auto dispatcher = Dispatcher::getDispatcher();
-//   auto vm = dispatcher->getVM();
-// #  ifdef PARALLEL_MARKING
-//   auto index = 0;
-//   auto end = vm->stackTop - vm->stack;
-//   // printf("the start \n");
-// #    pragma omp parallel for
-//   for (auto index = 0; index < end; index++) {
-//     dispatcher->setopenMPVM(vm);
-//     auto slot = vm->stack + index;
-//     markValue(*slot);
-//   }
-//   // printf("the end \n");
-//   // TODO: fix this with VM
-// #    pragma omp parallel for
-//   for (int i = 0; i < vm->frameCount; i++) {
-//     dispatcher->setopenMPVM(vm);
-//     markObject((Obj*)vm->frames[i].closure);
-//   }
-//   for (auto upvalue = vm->openUpvalues; upvalue != NULL;
-//        upvalue = upvalue->next) {
-//     markObject((Obj*)upvalue);
-//   }
-//   vm->globals.markTable();
-//   markCompilerRoots();
-//   markObject((Obj*)vm->initString);
-// #  else
-//   for (auto slot = vm->stack; slot < vm->stackTop; slot++) {
-//     markValue(*slot);
-//   }
-//   // TODO: fix this with VM
-//   for (int i = 0; i < vm->frameCount; i++) {
-//     markObject((Obj*)vm->frames[i].closure);
-//   }
-//   for (auto upvalue = vm->openUpvalues; upvalue != NULL;
-//        upvalue = upvalue->next) {
-//     markObject((Obj*)upvalue);
-//   }
-//   vm->globals.markTable();
-//   markCompilerRoots();
-//   markObject((Obj*)vm->initString);
-// #  endif
-// }
+static void markRoots()
+{
+  auto dispatcher = Dispatcher::getDispatcher();
+  auto vm = dispatcher->getVM();
+#  ifdef PARALLEL_MARKING
+  auto index = 0;
+  auto end = vm->stackTop - vm->stack;
+  // printf("the start \n");
+#    pragma omp parallel for
+  for (auto index = 0; index < end; index++) {
+    dispatcher->setopenMPVM(vm);
+    auto slot = vm->stack + index;
+    markValue(*slot);
+  }
+  // printf("the end \n");
+  // TODO: fix this with VM
+#    pragma omp parallel for
+  for (int i = 0; i < vm->frameCount; i++) {
+    dispatcher->setopenMPVM(vm);
+    markObject((Obj*)vm->frames[i].closure);
+  }
+  for (auto upvalue = vm->openUpvalues; upvalue != NULL;
+       upvalue = upvalue->next) {
+    markObject((Obj*)upvalue);
+  }
+  vm->globals.markTable();
+  markCompilerRoots();
+  markObject((Obj*)vm->initString);
+#  else
+  for (auto slot = vm->stack; slot < vm->stackTop; slot++) {
+    markValue(*slot);
+  }
+  // TODO: fix this with VM
+  for (int i = 0; i < vm->frameCount; i++) {
+    markObject((Obj*)vm->frames[i].closure);
+  }
+  for (auto upvalue = vm->openUpvalues; upvalue != NULL;
+       upvalue = upvalue->next) {
+    markObject((Obj*)upvalue);
+  }
+  vm->globals.markTable();
+  markCompilerRoots();
+  markObject((Obj*)vm->initString);
+#  endif
+}
 
 /**
  * @brief Traces object references for garbage collection.
@@ -767,6 +767,9 @@ void MemoryGeneration::sweep()
     if (object->isMarked == true) {
       // printf("markked object \n");
       // object->isMarked = false;
+      if (this->gen == Generation::SURVIVOR) {
+        object->genCount++;
+      }
       previous = object;
       object = object->next;
     } else {
@@ -798,15 +801,10 @@ bool MemoryGeneration::updateStorage(int size)
   this->bytesAllocated += size;
   if (size > 0) {
     if (this->bytesAllocated > this->nextSweep) {
-      // if (this->gen == Generation::NURSERY) {
-      this->ms->checkMarkingThreadStateForCollection();
-      // this->ms->vm->strings.tableRemoveWhite();
-      // }
+      if (this->gen == Generation::NURSERY) {
+        this->ms->checkMarkingThreadStateForCollection();
+      }
       this->sweep();
-      // printf("Post sweeping \n");
-      // if (this->gen == Generation::NURSERY) {
-      // this->ms->resumeMarkingThread();
-      // }
       this->increaseCapacity();
       return true;
     }
@@ -928,19 +926,14 @@ void MemorySpace::updateNurseryStorage(int size)
 {
   // printf("pre updating storage \n");
   auto didNurserySweep = this->nursery.updateStorage(size);
-  if (didNurserySweep) {
-    this->nursery.unMark();
-  }
   // if (didNurserySweep) {
-  //   auto didSurvivorsWeep =
-  //       this->moveGenerations(this->nursery, this->survivor);
-  //   this->survivor.unMark();
-  //   // Sweep Time
-
-  //   // if (didSurvivorsWeep) {
-  //   //   // this->checkForTenuredGeneration();
-  //   // }
+  //   this->nursery.unMark();
   // }
+  if (didNurserySweep) {
+    auto didSurvivorsWeep =
+        this->moveGenerations(this->nursery, this->survivor);
+    this->survivor.unMark();
+  }
 }
 
 void MemorySpace::addObjectToNursery(Obj* newNode)
