@@ -766,7 +766,7 @@ void MemoryGeneration::sweep()
   while (object != NULL) {
     if (object->isMarked == true) {
       // printf("markked object \n");
-      // object->isMarked = false;
+      object->isMarked = false;
       if (this->gen == Generation::SURVIVOR) {
         object->genCount++;
       }
@@ -875,8 +875,10 @@ bool MemorySpace::moveGenerations(MemoryGeneration& A, MemoryGeneration& B)
   // auto temp = B.head;
   if (B.tail == NULL) {
     B.head = A.head;
-    B.tail = A.head;
+    B.tail = A.tail;
+
     A.head = NULL;
+    A.tail = NULL;
     return res;
   }
   // while (temp->next != NULL) {
@@ -884,9 +886,11 @@ bool MemorySpace::moveGenerations(MemoryGeneration& A, MemoryGeneration& B)
   // }
   // temp->next = A.head;
 
+  // TODO: pls check if this works
   B.tail->next = A.head;
-  B.tail = A.head;
+  B.tail = A.tail;
   A.head = NULL;
+  A.tail = NULL;
   return res;
 }
 
@@ -920,7 +924,47 @@ void MemorySpace::startMarkingThread()
   // memoryThread.emplace_back([this] { this->doMark(); });
 }
 
-void MemorySpace::checkForTenuredGeneration() {}
+void MemorySpace::moveSurvivors()
+{
+  int space = 0;
+  auto survivorHead = this->survivor.head;
+  Obj* prev = NULL;
+  Obj* temp = new Obj();  // Holds list of objects to add to next list
+  auto dummyNode = new Obj();  // dummy node pointer
+
+  auto x = temp, y = dummyNode;
+
+  dummyNode->genCount = 0;
+  dummyNode->next = survivorHead;
+  while (dummyNode != NULL) {
+    if (dummyNode->genCount > 2) {
+      space += sizeof(dummyNode);
+      temp->next = dummyNode;
+      temp = temp->next;
+      auto next = dummyNode->next;
+      dummyNode->next = NULL;
+      prev->next = next;
+      dummyNode = next;
+    } else {
+      prev = dummyNode;
+      dummyNode = dummyNode->next;
+    }
+  }
+
+  this->survivor.head = y->next;
+  this->tenured.updateStorage(space);
+
+  if (this->tenured.tail == NULL) {
+    this->tenured.head = x->next;
+    this->tenured.tail = temp;
+  } else {
+    this->tenured.tail->next = x->next;
+    this->tenured.tail = temp;
+  }
+
+  delete x;
+  delete y;
+}
 
 void MemorySpace::updateNurseryStorage(int size)
 {
@@ -932,7 +976,12 @@ void MemorySpace::updateNurseryStorage(int size)
   if (didNurserySweep) {
     auto didSurvivorsWeep =
         this->moveGenerations(this->nursery, this->survivor);
-    this->survivor.unMark();
+    if (didSurvivorsWeep) {
+      this->moveSurvivors();
+      // this->tenured.unMark();
+    } else {
+      // this->survivor.unMark();
+    }
   }
 }
 

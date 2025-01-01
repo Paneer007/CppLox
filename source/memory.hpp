@@ -208,7 +208,7 @@ class MemorySpace
 
   void doMark();
   bool moveGenerations(MemoryGeneration& A, MemoryGeneration& B);
-  void checkForTenuredGeneration();
+  void moveSurvivors();
 
 public:
   VM* vm;
