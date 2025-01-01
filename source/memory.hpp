@@ -180,7 +180,7 @@ class MemoryGeneration
 {
   Generation gen;
   MemorySpace* ms;
-  int nextSweep;
+  int64_t nextSweep;
 
   inline int increaseCapacity();
 

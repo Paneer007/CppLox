@@ -747,10 +747,10 @@ void MemoryGeneration::initMG(Generation gen, MemorySpace* ms)
       this->nextSweep = 1024 * 1024;
       break;
     case Generation::SURVIVOR:
-      this->nextSweep = 1024 * 1024 * 16;
+      this->nextSweep = 1024 * 1024 * 8;
       break;
     case Generation::TENURED:
-      this->nextSweep = 1024 * 1024 * 128;
+      this->nextSweep = 1024 * 1024 * 64;
       break;
     default:
       break;
@@ -769,9 +769,7 @@ void MemoryGeneration::sweep()
       // object->isMarked = false;
       previous = object;
       object = object->next;
-      // printObject(OBJ_VAL(object));
     } else {
-      // printf("unmarkked object \n");
       auto unreached = object;
       object = object->next;
       if (previous != NULL) {
@@ -797,13 +795,6 @@ void MemoryGeneration::addObject(Obj* newNode)
 
 bool MemoryGeneration::updateStorage(int size)
 {
-  if (this->gen == Generation::SURVIVOR) {
-    // printf("currently allocated: %d, new size: %d, next sweep: %d \n",
-    //        this->bytesAllocated,
-    //        size,
-    //        this->nextSweep);
-  }
-
   this->bytesAllocated += size;
   if (size > 0) {
     if (this->bytesAllocated > this->nextSweep) {
@@ -811,7 +802,6 @@ bool MemoryGeneration::updateStorage(int size)
       this->ms->checkMarkingThreadStateForCollection();
       // this->ms->vm->strings.tableRemoveWhite();
       // }
-      // printf("Pre sweeping \n");
       this->sweep();
       // printf("Post sweeping \n");
       // if (this->gen == Generation::NURSERY) {
@@ -829,13 +819,15 @@ inline int MemoryGeneration::increaseCapacity()
   switch (this->gen) {
     case Generation::NURSERY:
       this->nextSweep =
-          static_cast<int>(static_cast<float>(this->nextSweep) * 2);
+          static_cast<int64_t>(static_cast<float>(this->nextSweep) * 2);
+      break;
     case Generation::SURVIVOR:
       this->nextSweep =
-          static_cast<int>(static_cast<float>(this->nextSweep) * 4);
+          static_cast<int64_t>(static_cast<float>(this->nextSweep) * 4);
+      break;
     case Generation::TENURED:
       this->nextSweep =
-          static_cast<int>(static_cast<float>(this->nextSweep) * 16);
+          static_cast<int64_t>(static_cast<float>(this->nextSweep) * 16);
       break;
     default:
       break;
