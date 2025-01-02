@@ -179,13 +179,14 @@ class MemoryGeneration;
 
 class MemoryGeneration
 {
-  Generation gen;
   MemorySpace* ms;
-  int64_t nextSweep;
 
   inline int increaseCapacity();
 
 public:
+  int64_t nextSweep;
+  Generation gen;
+
   Obj* head;
   Obj* tail;
   int bytesAllocated;

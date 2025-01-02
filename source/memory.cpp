@@ -764,7 +764,7 @@ void MemoryGeneration::initMG(Generation gen, MemorySpace* ms)
       this->nextSweep = 1024 * 1024 * 2;
       break;
     case Generation::TENURED:
-      this->nextSweep = 1024 * 1024 * 128;
+      this->nextSweep = 1024 * 1024 * 16;
       break;
     default:
       break;
@@ -826,7 +826,7 @@ bool MemoryGeneration::updateStorage(int size)
   //     \n", size, this->bytesAllocated, this->nextSweep, this->gen);
 
   if (size > 0) {
-    if (this->bytesAllocated > this->nextSweep) {
+    if (this->bytesAllocated > this->nextSweep) {  // Comment this for testing
       auto sizeBefore = this->bytesAllocated;
       if (this->gen == Generation::NURSERY) {
         this->ms->checkMarkingThreadStateForCollection();
@@ -973,12 +973,20 @@ bool MemorySpace::moveSurvivors()
   Obj* temp = new Obj();  // Holds list of objects to add to next list
   auto dummyNode = new Obj();  // dummy node pointer
 
-  auto x = temp, y = dummyNode;
+  auto x = temp, y = dummyNode, z = dummyNode;
+  auto count = -1;
 
   dummyNode->genCount = 0;
   dummyNode->next = survivorHead;
+
+  // while (z != NULL) {
+  //   count++;
+  //   z = z->next;
+  // }
+
   while (dummyNode != NULL) {
     if (dummyNode->genCount > 2) {
+      // printf("Here we go \n");
       space += sizeof(dummyNode);
       temp->next = dummyNode;
       temp = temp->next;
@@ -992,8 +1000,37 @@ bool MemorySpace::moveSurvivors()
     }
   }
 
+  // auto a = x, b = y;
+
+  // int count1 = -1, count2 = -1;
+  // while (a != NULL) {
+  //   printf("%d ", a->genCount);
+  //   count1++;
+  //   a = a->next;
+  // }
+  // printf("\n");
+
+  // while (b != NULL) {
+  //   printf("%d ", b->genCount);
+  //   count2++;
+  //   b = b->next;
+  // }
+  // printf("\n");
+
+  // printf("count1: %d, count2: %d, count: %d \n", count1, count2, count);
+
   this->survivor.head = y->next;
+  this->survivor.tail = prev;
+
+  // printf("allocated bytes: %d, current capacity: %d, next sweep:  %d,
+  // gen:%d\n",
+  //        space,
+  //        this->tenured.bytesAllocated,
+  //        this->tenured.nextSweep,
+  //        this->tenured.gen);
+
   auto res = this->tenured.updateStorage(space);
+  this->survivor.bytesAllocated -= space;
 
   if (this->tenured.tail == NULL) {
     this->tenured.head = x->next;
@@ -1020,12 +1057,13 @@ void MemorySpace::updateNurseryStorage(int size)
     auto didSurvivorsWeep =
         this->moveGenerations(&this->nursery, &this->survivor);
 
-    // if (didSurvivorsWeep) {
-    //   printf("cleaned prev region \n");
-    //   auto didCleanTEnured = this->moveSurvivors();
-    //   if (didCleanTEnured) {
-    //     printf("cleaned tenured region \n");
-    //   }
+    if (didSurvivorsWeep) {
+      // printf("cleaned prev region \n");
+      auto didCleanTEnured = this->moveSurvivors();
+      // if (didCleanTEnured) {
+      // printf("cleaned tenured region \n");
+      // }
+    }
   }
   // this->tenured.unMark();
   // this->survivor.unMark();

@@ -592,15 +592,15 @@ InterpretResult VM::run()
     if (this->threadFailure) {
       exit(0);
     };
-    if (frame == NULL) {
-      printf("Skill issue \n");
-      exit(0);
-    }
-    if (frame->ip == NULL) {
-      printf("More Skill issue \n");
-      throw std::runtime_error("Skill issue \n");
-      exit(0);
-    }
+    // if (frame == NULL) {
+    //   printf("Skill issue \n");
+    //   exit(0);
+    // }
+    // if (frame->ip == NULL) {
+    //   printf("More Skill issue \n");
+    //   throw std::runtime_error("Skill issue \n");
+    //   exit(0);
+    // }
     return *frame->ip++;
   };
 #ifdef DEBUG_TRACE_EXECUTION
@@ -1097,6 +1097,8 @@ OP_INHERIT_INSTRCTN : {
 OP_INVOKE_INSTRCTN : {
   auto method = READ_STRING();
   auto argCount = READ_BYTE();
+  // printObject(OBJ_VAL(method));
+  // printf("\n");
   if (!invoke(method, argCount)) {
     return INTERPRET_RUNTIME_ERROR;
   }
