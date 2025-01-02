@@ -747,7 +747,7 @@ void MemoryGeneration::initMG(Generation gen, MemorySpace* ms)
       this->nextSweep = 1024 * 1024;
       break;
     case Generation::SURVIVOR:
-      this->nextSweep = 1024 * 1024 * 8;
+      this->nextSweep = 1024 * 1024 * 16;
       break;
     case Generation::TENURED:
       this->nextSweep = 1024 * 1024 * 64;
@@ -838,10 +838,7 @@ void MemoryGeneration::unMark()
   // printf("Calling unmark here \n");
   auto temp = this->head;
   while (temp != NULL) {
-    if (temp->isMarked == true) {
-      // printf("Here i am \n");
-      temp->isMarked = false;
-    }
+    temp->isMarked = false;
     temp = temp->next;
   }
 }
@@ -978,10 +975,9 @@ void MemorySpace::updateNurseryStorage(int size)
         this->moveGenerations(this->nursery, this->survivor);
     if (didSurvivorsWeep) {
       this->moveSurvivors();
-      // this->tenured.unMark();
-    } else {
-      // this->survivor.unMark();
     }
+    this->tenured.unMark();
+    this->survivor.unMark();
   }
 }
 
