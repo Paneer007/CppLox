@@ -1,6 +1,7 @@
 #ifndef clox_memory_h
 #define clox_memory_h
 
+#include <set>
 #include <thread>
 
 #include "common.hpp"
@@ -202,16 +203,18 @@ class MemorySpace
   MemoryGeneration nursery;
   MemoryGeneration survivor;
   MemoryGeneration tenured;
+
   std::vector<std::thread> memoryThread;
   bool startMarking;
   MarkState markState;
 
   void doMark();
-  bool moveGenerations(MemoryGeneration& A, MemoryGeneration& B);
-  void moveSurvivors();
+  bool moveGenerations(MemoryGeneration* A, MemoryGeneration* B);
+  bool moveSurvivors();
 
 public:
   VM* vm;
+  std::set<Obj*> rememberedSet;
 
   void checkMarkingThreadStateForCollection();
 
@@ -224,6 +227,8 @@ public:
   void forcedMark();
   void updateNurseryStorage(int size);
   void addObjectToNursery(Obj* newNode);
+  void addObjectToRememberedSet(Obj* newNode);
+  void removeObjectFromRememberedSet(Obj* newNode);
 };
 
 #endif

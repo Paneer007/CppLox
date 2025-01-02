@@ -116,6 +116,8 @@ static void printFunction(ObjFunction* function)
 #ifdef GENERATIONAL_GC
 static Obj* allocateObject(size_t size, ObjType type)
 {
+  // printf(" allocated %zu for type %d\n", size, type);
+
   auto dispatcher = Dispatcher::getDispatcher();
   auto vm = dispatcher->getVM();
   auto object = (Obj*)reallocate(NULL, 0, size);
@@ -127,9 +129,8 @@ static Obj* allocateObject(size_t size, ObjType type)
   // object->isMarked = false;
   // object->next = vm->objects;
   // vm->objects = object;
-#  ifdef DEBUG_LOG_GC
-  printf("%p allocate %zu for %d\n", (void*)object, size, type);
-#  endif
+  // #  ifdef DEBUG_LOG_GC
+  // #  endif
   return object;
 }
 #else
@@ -409,6 +410,9 @@ void printObject(Value value)
       }
       printf("]");
       break;
+    default:
+      printf("Unidentified object \n");
+      exit(1);
   }
 }
 

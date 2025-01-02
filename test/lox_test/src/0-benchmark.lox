@@ -19,6 +19,7 @@ var sum = 0;
 var start = clock();
 var list = [];
 while (sum < 10000000) {
+  // print sum;
   var zoo = Zoo();  
   sum = sum + zoo.ant()
             + zoo.banana()
@@ -29,6 +30,10 @@ while (sum < 10000000) {
   var temp = "lol";
   append(list, sum);
   append(list, temp);
+  var idx = rand();
+  var leng = len(list);
+  idx = idx % leng;
+  // print list[idx];
     // print sum;
 }
 

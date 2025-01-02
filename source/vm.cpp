@@ -28,6 +28,17 @@ static Value appendNative(int argCount, Value* args)
   ObjList* list = AS_LIST(args[0]);
   Value item = args[1];
 
+  // Write Barriers
+
+#ifdef GENERATIONAL_GC
+  if (list->isMarked && IS_OBJ(item)) {
+    // printf("Here I am \n");
+    auto dispatcher = Dispatcher::getDispatcher();
+    auto vm = dispatcher->getVM();
+    vm->memorySpace.addObjectToRememberedSet(AS_OBJ(item));
+  }
+#endif
+
   appendToList(list, item);
   return NIL_VAL;
 }
@@ -49,6 +60,16 @@ static Value deleteNative(int argCount, Value* args)
     // TODO: Handle error
     return ERR_VAL("Invalid list index");
   }
+
+  auto item = list->items[index];
+
+#ifdef GENERATIONAL_GC
+  if (list->isMarked && IS_OBJ(item)) {
+    auto dispatcher = Dispatcher::getDispatcher();
+    auto vm = dispatcher->getVM();
+    vm->memorySpace.removeObjectFromRememberedSet(AS_OBJ(item));
+  }
+#endif
 
   deleteFromList(list, index);
   return NIL_VAL;
@@ -577,6 +598,7 @@ InterpretResult VM::run()
     }
     if (frame->ip == NULL) {
       printf("More Skill issue \n");
+      throw std::runtime_error("Skill issue \n");
       exit(0);
     }
     return *frame->ip++;
