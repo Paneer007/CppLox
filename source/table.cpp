@@ -485,6 +485,7 @@ ObjString* Table::tableFindString(const char* chars,
 #ifdef GENERATIONAL_GC
 void Table::markTable(VM* vm)
 {
+  // printf("marking capacity of size %d \n", this->capacity);
   for (int i = 0; i < this->capacity; i++) {
     Entry* entry = &this->entries[i];
     markObject((Obj*)entry->key, vm);

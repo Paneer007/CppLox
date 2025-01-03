@@ -6,14 +6,14 @@ input_program="./build/CppLox"
 input_file="./test/lox_test/src/0-benchmark.lox"
 
 # g++ ./source/*.cpp -o $input_program  
-# g++ -Wall -g -fsanitize=address -lpthread -static-libasan  ./source/*.cpp -o $input_program
-g++ -Wall -g  -lpthread  ./source/*.cpp -o $input_program
+g++ -Wall -g -fsanitize=address -lpthread -static-libasan  ./source/*.cpp -o $input_program
+# g++ -Wall -g  -lpthread  ./source/*.cpp -o $input_program
 
 
 # gdb  ./$input_program
 
-# gdb  --args ./$input_program $input_file
-gdb -tui --args ./$input_program $input_file
+gdb  --args ./$input_program $input_file
+# gdb -tui --args ./$input_program $input_file
 # gdb -q -x segfault_test.gdb --args ./$input_program $input_file
 
 

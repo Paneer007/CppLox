@@ -453,7 +453,11 @@ void VM::defineMethod(ObjString* name)
 {
   auto method = peek(0);
   auto klass = AS_CLASS(peek(1));
+
   klass->methods.tableSet(name, method);
+  if (klass->isMarked) {
+    this->memorySpace.addObjectToRememberedSet(klass);
+  }
   pop();
 }
 
@@ -503,6 +507,9 @@ bool VM::bindMethod(ObjClass* klass, ObjString* name)
   }
 
   auto bound = newBoundMethod(peek(0), AS_CLOSURE(method));
+  if (klass->isMarked) {
+    this->memorySpace.addObjectToRememberedSet(klass);
+  }
   pop();
   push(OBJ_VAL(bound));
   return true;
@@ -961,10 +968,15 @@ OP_SET_PROPERTY_INSTRCTN : {
     return INTERPRET_RUNTIME_ERROR;
   }
   auto instance = AS_INSTANCE(peek(1));
+
   instance->fields.tableSet(READ_STRING(), peek(0));
   auto value = pop();
   pop();
   push(value);
+  if (instance->isMarked) {
+    // printf("marked instance \n");
+    this->memorySpace.addObjectToRememberedSet(instance);
+  }
   NEXT_INSTRCTN();
 }
 
@@ -1057,6 +1069,9 @@ OP_SET_GLOBAL_INSTRCTN : {
           // runtimeError(
           //     "Attempting to modify global variable inside a asynchronous
           //     " "block of code '%s'.", name->chars);
+          if (name->isMarked) {
+            this->memorySpace.addObjectToRememberedSet(AS_OBJ(peek(0)));
+          }
           NEXT_INSTRCTN();
           // return INTERPRET_RUNTIME_ERROR;
         }
@@ -1598,6 +1613,9 @@ bool VM::callValue(Value callee, int argCount)
         this->stackTop[-argCount - 1] = OBJ_VAL(newInstance(klass));
         Value initializer;
         if (klass->methods.tableGet(this->initString, &initializer)) {
+          if (klass->isMarked) {
+            this->memorySpace.addObjectToRememberedSet(klass);
+          }
           return call(AS_CLOSURE(initializer), argCount);
         } else if (argCount != 0) {
           runtimeError("Expected 0 arguments but got %d.", argCount);

@@ -1,6 +1,7 @@
 #ifndef clox_memory_h
 #define clox_memory_h
 
+#include <mutex>
 #include <set>
 #include <thread>
 
@@ -209,11 +210,15 @@ class MemorySpace
   bool startMarking;
   MarkState markState;
 
+  std::mutex threadLock;
+
   void doMark();
   bool moveGenerations(MemoryGeneration* A, MemoryGeneration* B);
   bool moveSurvivors();
 
 public:
+  std::mutex rsLock;
+
   VM* vm;
   std::set<Obj*> rememberedSet;
 

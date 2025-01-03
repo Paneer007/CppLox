@@ -1,4 +1,5 @@
 #include <chrono>
+#include <iostream>
 #include <thread>
 
 #include "memory.hpp"
@@ -21,7 +22,7 @@
 
 constexpr int GC_HEAP_GROW_FACTOR = 2;
 
-const int MAX_SLEEP_TIME = 45;
+const int MAX_SLEEP_TIME = 1;
 
 #ifndef GENERATIONAL_GC
 
@@ -513,12 +514,16 @@ void* reallocate(void* pointer, size_t oldSize, size_t newSize)
     return NULL;
   }
   // TODO: allocate object to the new heap
-  void* result;
-  if (pointer == NULL) {
-    result = malloc(newSize);
-  } else {
-    result = realloc(pointer, newSize);
-  }
+
+  // auto prev = pointer;
+  // bool flag = false;
+  // if (pointer != NULL) {
+  //   Obj* temp = (Obj*)pointer;
+  //   if (temp->isMarked) {
+  //     flag = true;
+  //   }
+  // }
+  auto result = realloc(pointer, newSize);
 
   if (result == NULL)
     exit(1);
@@ -530,7 +535,7 @@ void markObject(Obj* object, VM* vm)
   if (object == NULL)
     return;
   // printObject(OBJ_VAL(object));
-  // printf("\n");
+  // printf("%d \n", object->type);
   if (object->isMarked)
     return;
 #  ifdef DEBUG_LOG_GC
@@ -587,6 +592,8 @@ static void blackenObject(Obj* object, VM* vm)
     case OBJ_INSTANCE: {
       auto instance = (ObjInstance*)object;
       markObject((Obj*)instance->klass, vm);
+      // printf("marking instance of object %s of ",
+      // instance->klass->name->chars);
       instance->fields.markTable(vm);
       break;
     }
@@ -625,10 +632,13 @@ static void blackenObject(Obj* object, VM* vm)
 
 static void markRememberedSet(VM* vm)
 {
+  std::unique_lock<std::mutex> lck(vm->memorySpace.rsLock);
+
   for (auto& x : vm->memorySpace.rememberedSet) {
     markObject(x, vm);
   }
-  vm->memorySpace.rememberedSet.clear();
+  // printf("clearing this \n");
+  vm->memorySpace.rememberedSet = std::set<Obj*>();
 }
 
 static void markRoots(VM* vm)
@@ -677,6 +687,7 @@ void freeObject(Obj* object)
     }
     case OBJ_CLOSURE: {
       auto closure = (ObjClosure*)object;
+      printf("%s free type \n", closure->function->name->chars);
       FREE_ARRAY<ObjUpvalue*>(closure->upvalues, closure->upvalueCount);
       FREE<ObjClosure>(object);
       break;
@@ -761,10 +772,10 @@ void MemoryGeneration::initMG(Generation gen, MemorySpace* ms)
       this->nextSweep = 1024 * 1024;
       break;
     case Generation::SURVIVOR:
-      this->nextSweep = 1024 * 1024 * 2;
+      this->nextSweep = 1024 * 1024 * 16;
       break;
     case Generation::TENURED:
-      this->nextSweep = 1024 * 1024 * 16;
+      this->nextSweep = 1024 * 1024 * 64;
       break;
     default:
       break;
@@ -773,39 +784,67 @@ void MemoryGeneration::initMG(Generation gen, MemorySpace* ms)
 
 void MemoryGeneration::sweep()
 {
-  // printf("Sweepy Sweepy time \n");
   auto object = this->head;
   Obj* previous = NULL;
-  while (object != NULL) {
-    // if (this->gen == Generation::SURVIVOR) {
-    //   // printf("sweepy sweepy \n");
-    // }
-    if (object->isMarked) {
-      if (this->gen == Generation::SURVIVOR) {
-        // printf("markked object \n");
+
+  if (this->gen == Generation::SURVIVOR) {
+    while (object != NULL) {
+      if (object->isMarked) {
         object->genCount++;
-      }
-      object->isMarked = false;
-      previous = object;
-      object = object->next;
-    } else {
-      if (this->gen == Generation::SURVIVOR) {
-        // printf("unmarked object \n");
-      }
-      auto unreached = object;
-      object = object->next;
-      if (previous != NULL) {
-        previous->next = object;
+        object->isMarked = false;
+        previous = object;
+        object = object->next;
       } else {
-        this->head = object;
+        auto unreached = object;
+        object = object->next;
+        if (previous != NULL) {
+          previous->next = object;
+        } else {
+          this->head = object;
+        }
+        freeObject(unreached);
       }
-      freeObject(unreached);
+    }
+  } else {
+    while (object != NULL) {
+      if (object->isMarked) {
+        object->isMarked = false;
+        previous = object;
+        object = object->next;
+      } else {
+        auto unreached = object;
+        object = object->next;
+        if (previous != NULL) {
+          previous->next = object;
+        } else {
+          this->head = object;
+        }
+        freeObject(unreached);
+      }
     }
   }
 
-  this->tail = previous;
+  // while (object != NULL) {
+  //   if (object->isMarked) {
+  //     if (this->gen == Generation::SURVIVOR) {
+  //       object->genCount++;
+  //     }
+  //     object->isMarked = false;
+  //     previous = object;
+  //     object = object->next;
+  //   } else {
+  //     auto unreached = object;
+  //     object = object->next;
+  //     if (previous != NULL) {
+  //       previous->next = object;
+  //     } else {
+  //       this->head = object;
+  //     }
+  //     freeObject(unreached);
+  //   }
+  // }
 
-  // printf("Done Sweepy Sweepy time \n");
+  this->tail = previous;
 }
 
 void MemoryGeneration::addObject(Obj* newNode)
@@ -827,13 +866,16 @@ bool MemoryGeneration::updateStorage(int size)
 
   if (size > 0) {
     if (this->bytesAllocated > this->nextSweep) {  // Comment this for testing
-      auto sizeBefore = this->bytesAllocated;
+      // auto sizeBefore = this->bytesAllocated;
       if (this->gen == Generation::NURSERY) {
         this->ms->checkMarkingThreadStateForCollection();
       }
       this->sweep();
       this->increaseCapacity();
-      auto sizeAfter = this->bytesAllocated;
+      if (this->gen == Generation::NURSERY) {
+        this->ms->resumeMarkingThread();
+      }
+      // auto sizeAfter = this->bytesAllocated;
       // printf("gen: %d, before: %d, after : %d \n",
       //        this->gen,
       //        sizeBefore,
@@ -874,7 +916,6 @@ inline int MemoryGeneration::increaseCapacity()
 
 void MemoryGeneration::unMark()
 {
-  // printf("Calling unmark here \n");
   auto temp = this->head;
   while (temp != NULL) {
     temp->isMarked = false;
@@ -892,21 +933,28 @@ bool MemoryGeneration::resetStorage()
 
 void MemorySpace::checkMarkingThreadStateForCollection()
 {
+  // this->threadLock.lock();
   this->startMarking = false;
-  // if (this->markState == MarkState::STOP) {
-  this->forcedMark();
-  // } else {
-  // int sleep_time = 1;
-  // while (this->markState != MarkState::STOP) {
-  // std::this_thread::sleep_for(std::chrono::milliseconds(sleep_time));
-  // sleep_time = std::min(MAX_SLEEP_TIME, sleep_time * 2);
-  // }
-  // }
+  // this->threadLock.unlock();
+  if (this->markState == MarkState::STOP) {
+    // printf("Show time 1 \n");
+    this->forcedMark();
+  } else {
+    int sleep_time = 1;
+    while (this->markState != MarkState::STOP) {
+      std::this_thread::sleep_for(std::chrono::milliseconds(sleep_time));
+      sleep_time = std::min(MAX_SLEEP_TIME, sleep_time * 2);
+    }
+    // printf("Show time 2 \n");
+    this->forcedMark();
+  }
+
+  // this->forcedMark();
 }
 
 bool MemorySpace::moveGenerations(MemoryGeneration* A, MemoryGeneration* B)
 {
-  // printf("Moving generations \n");
+  // printf("Moving generations \n");do
   auto res = B->updateStorage(A->bytesAllocated);
   A->bytesAllocated = 0;
 
@@ -938,15 +986,21 @@ bool MemorySpace::moveGenerations(MemoryGeneration* A, MemoryGeneration* B)
 void MemorySpace::doMark()
 {
   while (true) {
-    if (this->startMarking) {
-      // std::cout << "Hello World " << std::endl;
+    if (this->startMarking == true) {
+      // printf("new time \n");
       this->markState = MarkState::RUNNING;
+      // while (this->startMarking == false) {
+      // }
       markRoots(this->vm);
       traceReferences(vm);
+      // this->threadLock.lock();
+      this->markState = MarkState::STOP;
+      // this->threadLock.unlock();
       std::this_thread::sleep_for(std::chrono::milliseconds(5));
       // std::cout << "Marking Stack" << std::endl;
+    } else {
+      // printf("waiting \n");
     }
-    this->markState = MarkState::STOP;
   }
 }
 
@@ -961,8 +1015,8 @@ void MemorySpace::initMS(VM* vm)
 
 void MemorySpace::startMarkingThread()
 {
-  this->startMarking = false;
-  // memoryThread.emplace_back([this] { this->doMark(); });
+  this->startMarking = true;
+  memoryThread.emplace_back([this] { this->doMark(); });
 }
 
 bool MemorySpace::moveSurvivors()
@@ -1057,13 +1111,13 @@ void MemorySpace::updateNurseryStorage(int size)
     auto didSurvivorsWeep =
         this->moveGenerations(&this->nursery, &this->survivor);
 
-    if (didSurvivorsWeep) {
-      // printf("cleaned prev region \n");
-      auto didCleanTEnured = this->moveSurvivors();
-      // if (didCleanTEnured) {
-      // printf("cleaned tenured region \n");
-      // }
-    }
+    // if (didSurvivorsWeep) {
+    //   // printf("cleaned prev region \n");
+    //   auto didCleanTenured = this->moveSurvivors();
+    //   // if (didCleanTEnured) {
+    //   // printf("cleaned tenured region \n");
+    //   // }
+    // }
   }
   // this->tenured.unMark();
   // this->survivor.unMark();
@@ -1072,14 +1126,16 @@ void MemorySpace::updateNurseryStorage(int size)
 
 void MemorySpace::addObjectToRememberedSet(Obj* newNode)
 {
-  // if (this->rememberedSet.find(newNode) != this->rememberedSet.end()) {
-  // return;
-  // }
+  std::unique_lock<std::mutex> lck(this->rsLock);
+  if (this->rememberedSet.find(newNode) != this->rememberedSet.end()) {
+    return;
+  }
   this->rememberedSet.insert(newNode);
 }
 
 void MemorySpace::removeObjectFromRememberedSet(Obj* newNode)
 {
+  std::unique_lock<std::mutex> lck(this->rsLock);
   if (this->rememberedSet.find(newNode) == this->rememberedSet.end()) {
     return;
   }
@@ -1097,7 +1153,7 @@ void MemorySpace::forcedMark()
   // printf("Marking thread \n");
   markRoots(this->vm);
   traceReferences(this->vm);
-  this->vm->strings.tableRemoveWhite();
+  // this->vm->strings.tableRemoveWhite();
 }
 
 void MemorySpace::resumeMarkingThread()

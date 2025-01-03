@@ -403,12 +403,12 @@ void printObject(Value value)
       break;
     case OBJ_LIST:
       printf("[");
-      for (int i = 0; i < AS_LIST(value)->count; i++) {
-        printValue(AS_LIST(value)->items[i]);
-        if (i != AS_LIST(value)->count - 1) {
-          printf(",");
-        }
-      }
+      // for (int i = 0; i < AS_LIST(value)->count; i++) {
+      //   printValue(AS_LIST(value)->items[i]);
+      //   if (i != AS_LIST(value)->count - 1) {
+      //     printf(",");
+      //   }
+      // }
       printf("]");
       break;
     default:
