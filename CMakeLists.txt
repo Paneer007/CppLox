@@ -23,7 +23,6 @@ add_library(
     source/memory.cpp
     source/object.cpp
     source/scanner.cpp
-    source/table.cpp
     source/value.cpp
     source/dispatcher.cpp
     source/threadpool.cpp
@@ -31,6 +30,7 @@ add_library(
     source/lockmanager.cpp
     source/channel.cpp
     source/threadtask.cpp
+    source/table.cpp
     # source/memoryspace.cpp
 )
 

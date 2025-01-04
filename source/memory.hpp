@@ -181,15 +181,22 @@ class MemoryGeneration;
 class MemoryGeneration
 {
   MemorySpace* ms;
-
   inline int increaseCapacity();
 
 public:
+  std::mutex sweepLock;
   int64_t nextSweep;
   Generation gen;
-
   Obj* head;
   Obj* tail;
+
+  std::vector<std::thread> sweepThread;
+
+  Obj* sweepStart;
+  Obj* sweepEnd;
+
+  bool isSweeping;
+
   int bytesAllocated;
   void initMG(Generation gen, MemorySpace* ms);
   void addObject(Obj* newNode);
@@ -206,7 +213,6 @@ class MemorySpace
   MemoryGeneration survivor;
   MemoryGeneration tenured;
 
-  std::vector<std::thread> memoryThread;
   bool startMarking;
   MarkState markState;
 
@@ -218,9 +224,11 @@ class MemorySpace
 
 public:
   std::mutex rsLock;
+  std::vector<std::thread> memoryThread;
 
   VM* vm;
   std::set<Obj*> rememberedSet;
+  int sweepCount;
 
   void checkMarkingThreadStateForCollection();
 

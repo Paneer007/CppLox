@@ -19,11 +19,13 @@ class Dispatcher
   std::mutex dispatcher_mutex;
   static Dispatcher* dispatcher;
   std::unordered_map<size_t, int> id_to_vm;  // Make this atomic
+
   std::map<size_t, VM*> openMP_vm;
   std::mutex id_to_vm_mtx;
   VM vm_pool[MAX_TASK];  // Make this atomic
   std::mutex vm_pool_mtx;
   std::vector<size_t> thread_arr;
+
   Dispatcher();
   void initDispatcher();
   void freeDispatcher();
@@ -32,6 +34,11 @@ class Dispatcher
 public:
   static Dispatcher* getDispatcher();
   VM* getVM();
+
+  VM* temp;
+
+  void setForceVM(VM* vm);
+
   VM* dispatchThread(VM* parent);  // Sets new VM loop with this
   ThreadTask asyncBegin();
   void freeVM();

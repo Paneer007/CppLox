@@ -120,7 +120,9 @@ static Obj* allocateObject(size_t size, ObjType type)
 
   auto dispatcher = Dispatcher::getDispatcher();
   auto vm = dispatcher->getVM();
+  // auto lockmanager = LockManager::getLockManager();
   auto object = (Obj*)reallocate(NULL, 0, size);
+  // object->lck = lockmanager->create_mutex();
   object->type = type;
   object->isMarked = false;
   object->genCount = 0;

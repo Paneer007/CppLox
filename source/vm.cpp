@@ -29,6 +29,7 @@ static Value appendNative(int argCount, Value* args)
   Value item = args[1];
 
   // Write Barriers
+  appendToList(list, item);
 
 #ifdef GENERATIONAL_GC
   if (list->isMarked && IS_OBJ(item)) {
@@ -39,7 +40,6 @@ static Value appendNative(int argCount, Value* args)
   }
 #endif
 
-  appendToList(list, item);
   return NIL_VAL;
 }
 
@@ -455,9 +455,11 @@ void VM::defineMethod(ObjString* name)
   auto klass = AS_CLASS(peek(1));
 
   klass->methods.tableSet(name, method);
+#ifdef GENERATIONAL_GC
   if (klass->isMarked) {
     this->memorySpace.addObjectToRememberedSet(klass);
   }
+#endif
   pop();
 }
 
@@ -507,9 +509,11 @@ bool VM::bindMethod(ObjClass* klass, ObjString* name)
   }
 
   auto bound = newBoundMethod(peek(0), AS_CLOSURE(method));
+#ifdef GENERATIONAL_GC
   if (klass->isMarked) {
     this->memorySpace.addObjectToRememberedSet(klass);
   }
+#endif
   pop();
   push(OBJ_VAL(bound));
   return true;
@@ -531,7 +535,7 @@ InterpretResult VM::run()
 {
   auto frame = &this->frames[this->frameCount - 1];
 #ifdef GENERATIONAL_GC
-  this->memorySpace.startMarkingThread();
+  // this->memorySpace.startMarkingThread();
 #endif
   void* targets[] = {
       &&OP_CONSTANT_INSTRCTN,
@@ -967,9 +971,16 @@ OP_SET_PROPERTY_INSTRCTN : {
     runtimeError("Only instances have fields.");
     return INTERPRET_RUNTIME_ERROR;
   }
+  // auto lockmanager = LockManager::getLockManager();
   auto instance = AS_INSTANCE(peek(1));
-
+  // if (this->memorySpace.memoryThread.size() == 1) {
+  // lockmanager->lock_mutex(instance->lck);
+  // }
   instance->fields.tableSet(READ_STRING(), peek(0));
+  // if (this->memorySpace.memoryThread.size() == 1) {
+  // lockmanager->unlock_mutex(instance->lck);
+  // }
+
   auto value = pop();
   pop();
   push(value);
@@ -1066,12 +1077,14 @@ OP_SET_GLOBAL_INSTRCTN : {
       while (curr_parent != NULL) {
         if (curr_parent->globals.tableGet(name, &value)) {
           curr_parent->globals.tableSet(name, peek(0));
-          // runtimeError(
-          //     "Attempting to modify global variable inside a asynchronous
-          //     " "block of code '%s'.", name->chars);
+// runtimeError(
+//     "Attempting to modify global variable inside a asynchronous
+//     " "block of code '%s'.", name->chars);
+#ifdef GENERATIONAL_GC
           if (name->isMarked) {
             this->memorySpace.addObjectToRememberedSet(AS_OBJ(peek(0)));
           }
+#endif
           NEXT_INSTRCTN();
           // return INTERPRET_RUNTIME_ERROR;
         }
@@ -1613,10 +1626,13 @@ bool VM::callValue(Value callee, int argCount)
         this->stackTop[-argCount - 1] = OBJ_VAL(newInstance(klass));
         Value initializer;
         if (klass->methods.tableGet(this->initString, &initializer)) {
+          auto res = call(AS_CLOSURE(initializer), argCount);
+#ifdef GENERATIONAL_GC
           if (klass->isMarked) {
             this->memorySpace.addObjectToRememberedSet(klass);
           }
-          return call(AS_CLOSURE(initializer), argCount);
+#endif
+          return res;
         } else if (argCount != 0) {
           runtimeError("Expected 0 arguments but got %d.", argCount);
           return false;

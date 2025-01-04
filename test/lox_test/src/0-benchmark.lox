@@ -18,6 +18,7 @@ class Zoo {
 var sum = 0;
 var start = clock();
 var list = [];
+var count = 0;
 while (sum < 10000000) {
   // print sum;
   var zoo = Zoo();  
@@ -27,12 +28,17 @@ while (sum < 10000000) {
             + zoo.hay()
             + zoo.grass()
             + zoo.mouse();
+  sum = sum + 6;
   var temp = "lol";
   append(list, sum);
   append(list, temp);
   var idx = rand();
   var leng = len(list);
-  idx = idx % leng;
+  // idx = idx % leng;
+  // count = count+ 1;
+  // if(count % 2 == 0){
+  //   delete(list, idx);
+  // }
   // print list[idx];
     // print sum;
 }
